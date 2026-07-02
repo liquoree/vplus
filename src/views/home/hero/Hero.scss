@@ -1,0 +1,96 @@
+.hero {
+    position: relative;
+    width: 100%;
+    min-height: 511px;
+    overflow: hidden;
+    background: var(--color-black) url('/images/hero-background.jpeg') center / cover no-repeat;
+
+    &__image {
+        display: none;
+    }
+
+    &__content {
+        position: relative;
+        z-index: 1;
+        max-width: calc(1200px + 48px*2);
+        padding: 0 48px;
+        margin: 0 auto;
+        margin-top: 55px;
+    }
+
+    &__title {
+        max-width: 620px;
+        margin: 0;
+        font-family: var(--font-family-accent), Arial, Helvetica, sans-serif;
+        font-size: 58px;
+        font-weight: 400;
+        line-height: 0.92;
+        color: var(--color-white);
+    }
+
+    &__text {
+        margin: 35px 0 0;
+        font-size: 20px;
+        line-height: 1.35;
+        color: var(--color-white);
+    }
+
+    &__button {
+        margin-top: 46px;
+    }
+}
+
+@media (max-width: 1100px) {
+    .hero {    
+        &__content {
+            padding: 0 28px 40px;
+        }
+    }
+}
+
+@media (max-width: 767px) {
+    .hero {
+        display: flex;
+        flex-direction: column;
+        min-height: auto;
+        max-height: none;
+        background: var(--color-black);
+        overflow: visible;
+
+        &__image {
+            display: block;
+            width: 100%;
+            aspect-ratio: 390 / 243;
+            height: auto;
+            background-image: url('/images/hero-background_mobile.png');
+            background-repeat: no-repeat;
+            background-position: center top;
+            background-size: 100% 100%;
+            flex-shrink: 0;
+        }
+
+        &__content {
+            max-width: none;
+            padding: 15px 20px 50px;
+            background: var(--color-black);
+            width: 100%;
+            margin-top: 0;
+        }
+
+        &__title {
+            max-width: 999px;
+            font-size: 32px;
+            line-height: 1.05;
+        }
+
+        &__text {
+            margin-top: 17px;
+            font-size: 16px;
+            line-height: 1.22;
+        }
+
+        &__button {
+            margin-top: 27px;
+        }
+    }
+}

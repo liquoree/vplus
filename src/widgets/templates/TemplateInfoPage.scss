@@ -1,0 +1,29 @@
+.template-info-page {
+    display: flex;
+    flex-direction: column;
+    background: url('/images/template-info-page-background.png') no-repeat center/cover;
+
+    &__inner {
+        width: min(100% - 56px, var(--container-width));
+        margin: 0 auto;
+        padding-top: 45px;
+        padding-bottom: 40px;
+        display: flex;
+        flex-direction: column;
+        
+    }
+
+    &__title {
+        margin-bottom: 15px;
+        font-size: 40px;
+        line-height: 1.1;
+        font-weight: 600;
+        color: var(--color-white);
+    }
+
+    &__description {
+        font-size: 18px;
+        line-height: 1.1;
+        color: var(--color-white);
+    }
+}

@@ -1,0 +1,119 @@
+.how-rent {
+    width: 100%;
+    background: #f4f4f4;
+
+    &__container {
+        width: 100%;
+        width: min(100% - 96px, var(--container-width));
+        margin: 0 auto;
+        padding: 60px 0 66px;
+    }
+
+    &__title {
+        margin: 0;
+        text-align: center;
+        font-size: 40px;
+        font-weight: 700;
+        line-height: 1.15;
+        color: var(--color-black);
+    }
+
+    &__steps {
+        position: relative;
+        display: grid;
+        grid-template-columns: repeat(4, 270px);
+        justify-content: center;
+        gap: 40px;
+        margin-top: 48px;
+
+        &::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 135px;
+            right: 135px;
+            height: 10px;
+            background: var(--color-accent);
+            transform: translateY(-50%);
+            z-index: 0;
+        }
+    }
+
+    &__step {
+        position: relative;
+        z-index: 1;
+    }
+}
+
+@media (max-width: 1248px) {
+    .how-rent {
+        &__container {
+            max-width: 680px;
+        }
+
+        &__steps {
+            grid-template-columns: repeat(2, 270px);
+
+            &::before {
+                display: none;
+            }
+        }
+    }
+}
+
+@media (max-width: 768px) {
+    .how-rent {
+        &__container {
+            width: 100%;
+            padding: 30px 20px 54px;
+        }
+
+        &__title {
+            font-size: 28px;
+            line-height: 1;
+        }
+
+        &__steps {
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
+            margin-top: 30px;
+
+            &::before {
+                display: none;
+            }
+        }
+
+        &__step {
+            position: relative;
+
+            &:not(:last-child)::after {
+                content: '';
+                position: absolute;
+                z-index: 0;
+                top: 100%;
+                left: 50%;
+                width: 7px;
+                height: 24px;
+                background: var(--color-accent);
+                transform: translateX(-50%);
+            }
+        }
+
+        .info-card {
+            height: auto;
+            min-height: 96px;
+            padding: 20px 44px 20px 20px;
+        }
+
+        .info-card__title {
+            max-width: 360px;
+        }
+
+        .info-card__step {
+            top: 10px;
+            right: 10px;
+            left: auto;
+        }
+    }
+}

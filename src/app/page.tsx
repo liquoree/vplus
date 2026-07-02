@@ -1,7 +1,5 @@
-export default function HomePage() {
-  return (
-    <main>
-      <h1>ВЕЗДЕХОД+ Карелия</h1>
-    </main>
-  );
+import { HomePage } from '@/views';
+
+export default function Page() {
+  return <HomePage />;
 }

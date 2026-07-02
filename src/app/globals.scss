@@ -1,6 +1,9 @@
-@use '@/shared/styles/reset';
-@use '@/shared/styles/tokens';
-@use '@/shared/styles/typography';
+@use '../shared/styles/reset';
+@use '../shared/styles/tokens';
+@use '../shared/ui';
+@use '../widgets';
+@use '../views';
+@use '../entities/catalog';
 
 * {
   box-sizing: border-box;

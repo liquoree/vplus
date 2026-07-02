@@ -1,7 +1,10 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  /* config options here */
+  sassOptions: {
+    loadPaths: ['./src'],
+    resolveUrlLoader: false,
+  },
 };
 
 export default nextConfig;

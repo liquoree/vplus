@@ -1,0 +1,32 @@
+.ui-button {
+    padding: 18px 35px;
+    font-size: 20px;
+    line-height: 100%;
+    border-radius: 10px;
+    max-width: 300px;
+    width: fit-content;
+    color: var(--color-white);
+    background: var(--color-accent);
+    transition: background 0.2s ease;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    user-select: none;
+
+    &:hover {
+        background: var(--color-accent-hover);
+    }
+
+    &--mid {
+        padding: 13px 25px;
+        font-size: 18px;
+    }
+
+    &--hero {
+        @media (max-width: 768px) {
+            padding: 15px 20px;
+            font-size: 18px;
+        }
+    }
+}

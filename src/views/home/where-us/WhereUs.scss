@@ -1,0 +1,143 @@
+.where-us {
+    min-height: 400px;
+    background:
+        linear-gradient(rgba(0, 0, 0, 0.58), rgba(0, 0, 0, 0.58)),
+        url('/images/back-img.png') center / cover no-repeat;
+    color: var(--color-white);
+
+    &__inner {
+        width: min(100% - 56px, var(--container-width));
+        margin: 0 auto;
+        padding-top: 60px;
+        padding-bottom: 120px;
+    }
+
+    &__title {
+        margin-bottom: 42px;
+        text-align: center;
+        font-size: 40px;
+        line-height: 1.1;
+        font-weight: 700;
+    }
+
+    &__content {
+        display: grid;
+        grid-template-columns: 210px minmax(0, 660px) 222px;
+        align-items: center;
+        justify-content: space-between;
+        gap: 20px;
+    }
+
+    &__contacts,
+    &__advantages {
+        display: flex;
+        flex-direction: column;
+        gap: 15px;
+    }
+
+    &__item {
+        display: flex;
+        align-items: flex-start;
+        gap: 15px;
+        color: var(--color-white);
+        font-size: 16px;
+        line-height: 1.2;
+
+        span {
+            margin-top: 3px;
+        }
+    }
+
+    &__icon {
+        flex: 0 0 25px;
+    }
+
+    &__map {
+        width: 100%;
+        max-width: 660px;
+        min-height: 165px;
+        height: 100%;
+        border-radius: 12px;
+        background: #d9d9d9;
+        color: var(--color-black);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 24px;
+        text-align: center;
+        font-size: 28px;
+        font-weight: 700;
+    }
+
+    &__info {
+        display: flex;
+        flex-direction: column;
+        height: 100%;
+        justify-content: space-between;
+    }
+}
+
+@media (max-width: 768px) {
+    .where-us {
+        min-height: auto;
+
+        &__inner {
+            width: 100%;
+            padding: 40px 20px;
+        }
+
+        &__title {
+            margin-bottom: 30px;
+            font-size: 28px;
+        }
+
+        &__content {
+            display: flex;
+            flex-direction: column;
+            align-items: stretch;
+            gap: 24px;
+        }
+
+        &__map {
+            order: 1;
+            width: 100%;
+            max-width: 999px;
+            min-height: 230px;
+            margin: 0 auto;
+            border-radius: 10px;
+            font-size: 22px;
+            line-height: 1.1;
+        }
+
+        &__contacts {
+            order: 2;
+            gap: 14px;
+        }
+
+        &__info {
+            order: 3;
+            gap: 24px;
+        }
+
+        &__advantages {
+            gap: 16px;
+            padding-top: 20px;
+            border-top: 1px solid rgba(255, 255, 255, 0.25);
+        }
+
+        &__item {
+            gap: 10px;
+            font-size: 14px;
+            line-height: 1.2;
+
+            span {
+                margin-top: 5px;
+            }
+        }
+
+        &__button {
+            width: 100%;
+            max-width: 999px;
+        }
+    }
+}
