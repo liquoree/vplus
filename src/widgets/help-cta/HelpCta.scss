@@ -1,0 +1,109 @@
+.help-cta {
+    width: 100%;
+    padding: 25px 40px;
+    border-radius: 10px;
+    background: rgba(20, 20, 20, 0.92);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    display: grid;
+    grid-template-columns: 1fr auto;
+    align-items: center;
+    gap: 30px;
+    color: var(--color-white);
+
+    &__text {
+        display: flex;
+        align-items: center;
+        gap: 30px;
+        min-width: 0;
+    }
+
+    &__heading {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        min-width: 0;
+    }
+
+    &__icon {
+        width: 65px;
+        height: 65px;
+        flex: 0 0 65px;
+        object-fit: contain;
+    }
+
+    &__title {
+        margin: 0;
+        font-size: 20px;
+        line-height: 1.1;
+        font-weight: 700;
+    }
+
+    &__description {
+        margin: 0;
+        color: var(--color-text-secondary);
+        font-size: 14px;
+        line-height: 1.25;
+    }
+
+    &__button {
+        justify-self: end;
+    }
+}
+
+@media (max-width: 768px) {
+    .help-cta {
+        max-width: 450px;
+        margin: 0 auto;
+        padding: 18px 20px 20px;
+        border-radius: 10px;
+        grid-template-columns: 1fr;
+        gap: 18px;
+        text-align: center;
+
+        &__text {
+            display: grid;
+            grid-template-columns: 35px max-content;
+            grid-template-areas:
+                "icon title"
+                "description description";
+            justify-content: center;
+            align-items: center;
+            column-gap: 12px;
+            row-gap: 10px;
+        }
+
+        &__heading {
+            display: contents;
+        }
+
+        &__icon {
+            grid-area: icon;
+            width: 35px;
+            height: 35px;
+            flex: none;
+        }
+
+        &__title {
+            grid-area: title;
+            margin: 0;
+            font-size: 18px;
+            line-height: 1.1;
+            white-space: nowrap;
+        }
+
+        &__description {
+            grid-area: description;
+            max-width: 260px;
+            margin: 0 auto;
+            font-size: 13px;
+            line-height: 1.2;
+            text-align: center;
+        }
+
+        &__button {
+            width: 100%;
+            max-width: 260px;
+            justify-self: center;
+        }
+    }
+}

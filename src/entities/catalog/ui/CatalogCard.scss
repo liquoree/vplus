@@ -115,6 +115,7 @@
 
 @media (max-width: 768px) {
     .catalog-card {
+        max-width: none;
         &__body {
             padding: 10px;
         }
