@@ -17,7 +17,9 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="ru" className={`${ibmPlexSans.variable} ${russoOne.variable}`} data-scroll-behavior="smooth">
-      <body>{children}</body>
+      <body>
+        {children}
+      </body>
     </html>
   );
 }

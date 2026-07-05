@@ -1,8 +1,9 @@
 import Image from 'next/image';
-import { Footer, Header, HelpCta, TemplateInfoPage } from '@/widgets';
+import { Footer, Header, HelpCta, TemplateInfoPage, YandexMap } from '@/widgets';
 import { DirectionInfoCard } from './direction-info-card/DirectionInfoCard';
 
 import './DirectionsPage.scss';
+import { COMPANY_LOCATION } from '@/shared/config/company-location';
 
 export function DirectionsPage() {
   return (
@@ -39,15 +40,13 @@ export function DirectionsPage() {
                 </p>
               </section>
 
-              <div className="directions-page__map">
-                <Image
-                  className="directions-page__map-image"
-                  src="/images/directions-map.png"
-                  alt="Карта проезда"
-                  fill
-                  sizes="(max-width: 768px) 100vw, 610px"
+                <YandexMap
+                    className="directions-page__map"
+                    center={COMPANY_LOCATION.coordinates}
+                    markerCoordinates={COMPANY_LOCATION.coordinates}
+                    zoom={15}
+                    title={COMPANY_LOCATION.title}
                 />
-              </div>
             </div>
 
             <div className="directions-page__cards">

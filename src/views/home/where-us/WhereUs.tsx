@@ -1,6 +1,8 @@
 import Image from 'next/image';
 import { Button } from '@/shared/ui';
 import './WhereUs.scss';
+import { COMPANY_LOCATION } from '@/shared/config';
+import { YandexMap } from '@/widgets/';
 
 const contacts = [
   {
@@ -59,9 +61,13 @@ export function WhereUs() {
             })}
           </div>
 
-          <div className="where-us__map">
-            <span>(подгрузка локации с Я.Карты)</span>
-          </div>
+        <YandexMap
+          className="where-us__map"
+          center={COMPANY_LOCATION.coordinates}
+          markerCoordinates={COMPANY_LOCATION.coordinates}
+          zoom={15}
+          title={COMPANY_LOCATION.title}
+        />
 
           <div className="where-us__info">
             <div className="where-us__advantages">
