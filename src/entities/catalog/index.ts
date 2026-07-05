@@ -8,4 +8,6 @@ export type {
 
 export { getCatalogItems } from './api/get-catalog-items';
 
-export { CatalogCard } from './ui/CatalogCard';
+export { CatalogCard } from './ui/catalog-card/CatalogCard';
+export { CatalogModal } from './ui/catalog-modal/CatalogModal';
+export { CatalogModalSkeleton } from './ui/catalog-modal/CatalogModalSkeleton';

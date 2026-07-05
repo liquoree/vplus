@@ -8,6 +8,13 @@ const quadBikeImages = [
     sortOrder: 0,
     isMain: true,
   },
+  {
+    id: 'quad-bike-main-2',
+    url: '/images/catalog/quad-bike.jpg',
+    alt: 'Квадроцикл для аренды в Карелии',
+    sortOrder: 1,
+    isMain: true,
+  },
 ];
 
 export const catalogItems: CatalogItem[] = [
@@ -22,6 +29,11 @@ export const catalogItems: CatalogItem[] = [
     images: quadBikeImages,
     isAvailable: true,
     isPopular: true,
+    characteristics: [
+      { name: 'Мест', value: '2' },
+      { name: 'Мощность', value: '500 куб. см' },
+      { name: 'Маршрут', value: 'лесные и смешанные трассы' },
+    ],
     season: 'summer',
     serviceIds: ['fishing', 'quest', 'base-rent'],
   },
@@ -39,6 +51,13 @@ export const catalogItems: CatalogItem[] = [
         url: '/images/catalog/quad-bike.jpg',
         alt: 'Снегоход для аренды в Карелии',
         sortOrder: 0,
+        isMain: true,
+      },
+      {
+        id: 'snowmobile-main-2',
+        url: '/images/catalog/quad-bike.jpg',
+        alt: 'Снегоход для аренды в Карелии',
+        sortOrder: 1,
         isMain: true,
       },
     ],
@@ -66,6 +85,11 @@ export const catalogItems: CatalogItem[] = [
     ],
     isAvailable: true,
     isPopular: true,
+    characteristics: [
+      { name: 'Мест', value: '1' },
+      { name: 'Мощность', value: '500 куб. см' },
+      { name: 'Маршрут', value: 'лесные и смешанные трассы' },
+    ],
     season: 'summer',
     serviceIds: ['base-rent'],
   },

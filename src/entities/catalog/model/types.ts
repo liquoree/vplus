@@ -4,6 +4,11 @@ export type Season = 'summer' | 'winter' | 'all_season';
 
 export type PriceUnit = 'hour' | 'fixed';
 
+export type CatalogCharacteristic = {
+  name: string;
+  value: string;
+};
+
 export type CatalogImage = {
   id: string;
   url: string;
@@ -21,6 +26,7 @@ export type CatalogItemBase = {
   price: number;
   priceUnit: PriceUnit;
   images: CatalogImage[];
+  characteristics?: CatalogCharacteristic[];
   isAvailable: boolean;
   isPopular: boolean;
 };

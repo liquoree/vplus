@@ -1,9 +1,13 @@
+'use client';
+
 import Image from 'next/image';
 import Link from 'next/link';
-import type { CatalogItem } from '../model/types';
+import type { MouseEvent } from 'react';
+import type { CatalogItem } from '../../model/types';
 
 type CatalogCardProps = {
   item: CatalogItem;
+  onOpen?: (item: CatalogItem) => void;
 };
 
 function getBookingHref(item: CatalogItem) {
@@ -28,13 +32,27 @@ function getMainImage(item: CatalogItem) {
   return item.images.find((image) => image.isMain) ?? item.images[0];
 }
 
-export function CatalogCard({ item }: CatalogCardProps) {
+export function CatalogCard({ item, onOpen }: CatalogCardProps) {
   const mainImage = getMainImage(item);
+
+  const handleImageClick = (event: MouseEvent<HTMLAnchorElement>) => {
+    if (!onOpen) {
+      return;
+    }
+
+    event.preventDefault();
+    onOpen(item);
+  };
 
   return (
     <article className="catalog-card">
       {mainImage && (
-        <Link className="catalog-card__image-link" href={`/catalog/${item.slug}`}>
+        <Link
+          className="catalog-card__image-link"
+          href={`/catalog/${item.slug}`}
+          onClick={handleImageClick}
+          prefetch
+        >
           <Image
             className="catalog-card__image"
             src={mainImage.url}

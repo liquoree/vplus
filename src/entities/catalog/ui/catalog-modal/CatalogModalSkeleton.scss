@@ -1,0 +1,204 @@
+.catalog-modal-skeleton {
+    position: fixed;
+    inset: 0;
+    z-index: 100;
+    padding: 95px 20px 40px;
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+    overflow-y: auto;
+
+    &__overlay {
+        position: fixed;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.72);
+    }
+
+    &__dialog {
+        position: relative;
+        z-index: 1;
+        width: min(100%, 720px);
+        overflow: hidden;
+        border-radius: 10px;
+        background: var(--color-white);
+        color: var(--color-black);
+        box-shadow: 0 20px 70px rgba(0, 0, 0, 0.45);
+    }
+
+    &__close {
+        position: absolute;
+        top: 14px;
+        right: 18px;
+        z-index: 3;
+        color: rgba(255, 255, 255, 0.72);
+        font-size: 38px;
+        line-height: 1;
+
+        &:hover {
+            color: var(--color-white);
+        }
+    }
+
+    &__gallery {
+        width: 100%;
+        height: 315px;
+        background: #171717;
+        color: rgba(255, 255, 255, 0.7);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 22px;
+        font-weight: 700;
+    }
+
+    &__body {
+        padding: 20px 30px 24px;
+    }
+
+    &__title-row,
+    &__price-row {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        margin-bottom: 12px;
+    }
+
+    &__title,
+    &__price,
+    &__badge,
+    &__status,
+    &__line,
+    &__subtitle,
+    &__button {
+        border-radius: 8px;
+        background: #e5e5e5;
+        animation: catalog-modal-skeleton-pulse 1.1s ease-in-out infinite;
+    }
+
+    &__title {
+        width: 220px;
+        height: 32px;
+    }
+
+    &__badge {
+        width: 60px;
+        height: 24px;
+        border-radius: 999px;
+    }
+
+    &__price {
+        width: 130px;
+        height: 28px;
+    }
+
+    &__status {
+        width: 100px;
+        height: 26px;
+        border-radius: 999px;
+    }
+
+    &__line {
+        height: 16px;
+        margin-bottom: 8px;
+
+        &--wide {
+            width: 100%;
+        }
+
+        &--medium {
+            width: 65%;
+        }
+    }
+
+    &__divider {
+        height: 1px;
+        margin: 16px 0;
+        background: rgba(0, 0, 0, 0.16);
+    }
+
+    &__subtitle {
+        width: 150px;
+        height: 18px;
+        margin-bottom: 10px;
+    }
+
+    &__actions {
+        display: flex;
+        justify-content: center;
+        gap: 24px;
+        margin-top: 22px;
+    }
+
+    &__button {
+        width: 190px;
+        height: 48px;
+        background: var(--color-accent);
+
+        &--gray {
+            width: 150px;
+            background: #a8a8a8;
+        }
+    }
+}
+
+@keyframes catalog-modal-skeleton-pulse {
+    0% {
+        opacity: 0.55;
+    }
+
+    50% {
+        opacity: 1;
+    }
+
+    100% {
+        opacity: 0.55;
+    }
+}
+
+@media (max-width: 768px) {
+    .catalog-modal-skeleton {
+        padding: 80px 20px 30px;
+
+        &__dialog {
+            width: 100%;
+            max-width: 360px;
+            border-radius: 8px;
+        }
+
+        &__close {
+            top: 8px;
+            right: 10px;
+            font-size: 42px;
+        }
+
+        &__gallery {
+            height: 220px;
+            font-size: 20px;
+        }
+
+        &__body {
+            padding: 12px 14px 14px;
+        }
+
+        &__title {
+            width: 170px;
+            height: 26px;
+        }
+
+        &__price {
+            width: 120px;
+            height: 24px;
+        }
+
+        &__actions {
+            flex-direction: column;
+            gap: 10px;
+            margin-top: 18px;
+        }
+
+        &__button,
+        &__button--gray {
+            width: 100%;
+        }
+    }
+}

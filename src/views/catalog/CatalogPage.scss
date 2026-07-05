@@ -41,14 +41,19 @@
         cursor: pointer;
         transition: border-color 0.2s ease, color 0.2s ease;
 
-        &--active {
-            border-color: var(--color-accent);
-            color: var(--color-accent);
-        }
-
         &:hover {
             border-color: var(--color-white);
             color: var(--color-white);
+        }
+
+        &--active {
+            border-color: var(--color-accent);
+            color: var(--color-accent);
+
+            &:hover {
+                border-color: var(--color-accent-hover);
+                color: var(--color-accent-hover);
+            }
         }
     }
 
