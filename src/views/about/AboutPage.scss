@@ -1,0 +1,208 @@
+.about-page {
+    display: flex;
+    flex-direction: column;
+    min-height: 100svh;
+    background: var(--color-page-bg);
+
+    >header,
+    >footer {
+        flex-shrink: 0;
+    }
+
+    &__main {
+        margin-top: 75px;
+        flex: 1 0 auto;
+        width: 100%;
+        display: flex;
+    }
+
+    &__content {
+        display: grid;
+        grid-template-columns: minmax(0, 420px) minmax(0, 1fr);
+        align-items: stretch;
+        gap: 40px;
+        margin-top: 30px;
+    }
+
+    &__info {
+        display: flex;
+        flex-direction: column;
+        gap: 30px;
+    }
+
+    &__card {
+        padding: 28px 32px;
+        border: 1px solid rgba(255, 255, 255, 0.16);
+        border-radius: 10px;
+        background: rgba(20, 20, 20, 0.92);
+        color: var(--color-white);
+    }
+
+    &__card-title {
+        margin-bottom: 18px;
+        font-size: 24px;
+        line-height: 1.1;
+        font-weight: 700;
+    }
+
+    &__text {
+        margin-bottom: 22px;
+        font-size: 16px;
+        line-height: 1.25;
+    }
+
+    &__advantages {
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+    }
+
+    &__advantage {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        font-size: 16px;
+        line-height: 1.2;
+    }
+
+    &__advantage-icon {
+        width: 24px;
+        height: 24px;
+        flex: 0 0 24px;
+        object-fit: contain;
+    }
+
+    &__contacts {
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+    }
+
+    &__contact {
+        display: flex;
+        align-items: flex-start;
+        gap: 14px;
+        color: var(--color-white);
+        font-size: 16px;
+        line-height: 1.25;
+        transition: color 0.2s ease;
+
+        &:hover {
+            color: var(--color-accent);
+        }
+    }
+
+    &__contact-icon {
+        width: 24px;
+        height: 24px;
+        flex: 0 0 24px;
+        object-fit: contain;
+    }
+
+    &__address {
+        font-style: normal;
+
+        &:hover {
+            color: var(--color-white);
+        }
+    }
+
+    &__photo {
+        position: relative;
+        width: 100%;
+        height: 100%;
+        min-height: 440px;
+        overflow: hidden;
+        border-radius: 10px;
+        background: rgba(20, 20, 20, 0.92);
+    }
+
+    &__photo-image {
+        object-fit: cover;
+    }
+}
+
+@media (max-width: 940px) {
+    .about-page {
+        &__content {
+            grid-template-columns: 1fr;
+        }
+
+        &__photo {
+            height: auto;
+            min-height: 0;
+            aspect-ratio: 1.18 / 1;
+        }
+    }
+}
+
+@media (max-width: 768px) {
+    .about-page {
+        &__main {
+            margin-top: 60px;
+        }
+
+        &__content {
+            gap: 12px;
+            margin-top: 22px;
+        }
+
+        &__info {
+            gap: 12px;
+        }
+
+        &__card {
+            padding: 18px 20px;
+            border-radius: 8px;
+        }
+
+        &__card-title {
+            margin-bottom: 12px;
+            font-size: 18px;
+            line-height: 1.1;
+        }
+
+        &__text {
+            margin-bottom: 18px;
+            font-size: 12px;
+            line-height: 1.25;
+        }
+
+        &__advantages {
+            gap: 12px;
+        }
+
+        &__advantage {
+            gap: 10px;
+            font-size: 12px;
+            line-height: 1.2;
+        }
+
+        &__advantage-icon {
+            width: 22px;
+            height: 22px;
+            flex-basis: 22px;
+        }
+
+        &__contacts {
+            gap: 12px;
+        }
+
+        &__contact {
+            gap: 10px;
+            font-size: 12px;
+            line-height: 1.25;
+        }
+
+        &__contact-icon {
+            width: 22px;
+            height: 22px;
+            flex-basis: 22px;
+        }
+
+        &__photo {
+            border-radius: 8px;
+            aspect-ratio: 1.18 / 1;
+        }
+    }
+}
