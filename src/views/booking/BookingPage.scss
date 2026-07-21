@@ -1,0 +1,354 @@
+.booking-page {
+    display: flex;
+    flex-direction: column;
+    min-height: 100svh;
+    background: var(--color-page-bg);
+
+    >header,
+    >footer {
+        flex-shrink: 0;
+    }
+
+    &__main {
+        width: 100%;
+        margin-top: 75px;
+        flex: 1 0 auto;
+        display: flex;
+    }
+
+    &__form {
+        margin-top: 40px;
+    }
+
+    &__panel {
+        padding: 28px 32px 34px;
+        border-radius: 10px;
+        background: #f7f7f7;
+        color: var(--color-black);
+    }
+
+    &__units {
+        display: flex;
+        flex-direction: column;
+        gap: 18px;
+    }
+
+    &__summary {
+        margin: 22px 0 14px;
+        text-align: center;
+    }
+
+    &__total {
+        font-size: 18px;
+        line-height: 1.2;
+    }
+
+    &__prepayment {
+        margin-top: 5px;
+        color: var(--color-text-secondary);
+        font-size: 14px;
+        line-height: 1.2;
+    }
+
+    &__add {
+        margin: 0 auto;
+        background: var(--color-black);
+
+        &:hover {
+            background: #222;
+        }
+    }
+
+    &__divider {
+        width: 100%;
+        height: 1px;
+        margin: 28px 0 22px;
+        background: var(--color-line);
+    }
+
+    &__contacts {
+        width: 100%;
+    }
+
+    &__contacts-inner {
+        --contacts-grid-gap: 30px;
+
+        width: min(100%, 920px);
+        margin: 0 auto;
+    }
+
+    &__contacts-title {
+        margin-bottom: 32px;
+        font-size: 28px;
+        line-height: 1.1;
+        font-weight: 700;
+        text-align: center;
+    }
+
+    &__contact-fields {
+        width: 100%;
+        margin-bottom: 24px;
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        column-gap: var(--contacts-grid-gap);
+    }
+
+    &__verification {
+        width: 100%;
+        margin-bottom: 28px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        column-gap: var(--contacts-grid-gap);
+    }
+
+    &__agreements {
+        width: min(100%, 400px);
+        justify-self: center;
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+    }
+
+    &__agreement-item {
+        min-width: 0;
+    }
+
+    &__agreement {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        color: var(--color-black);
+        font-size: 16px;
+        line-height: 1.25;
+
+        input {
+            position: relative;
+            width: 23px;
+            height: 23px;
+            margin: 0;
+            flex: 0 0 23px;
+            appearance: none;
+            border: 2px solid var(--color-accent);
+            border-radius: 5px;
+            background: var(--color-white);
+            cursor: pointer;
+
+            &:checked::after {
+                content: '';
+                position: absolute;
+                top: 2px;
+                left: 7px;
+                width: 6px;
+                height: 12px;
+                border: solid var(--color-accent);
+                border-width: 0 2px 2px 0;
+                transform: rotate(45deg);
+            }
+
+            &:focus-visible {
+                outline: 2px solid rgba(235, 0, 30, 0.25);
+                outline-offset: 2px;
+            }
+        }
+
+        span {
+            min-width: 0;
+        }
+
+        a {
+            color: var(--color-accent);
+            text-decoration: underline;
+            text-underline-offset: 2px;
+        }
+    }
+
+    &__agreement-error {
+        display: block;
+        margin: 4px 0 0 35px;
+        color: var(--color-accent);
+        font-size: 11px;
+        line-height: 1.1;
+    }
+
+    &__captcha {
+        width: 284px;
+        height: 96px;
+        border: 1px solid var(--color-line);
+        border-radius: 8px;
+        background: var(--color-white);
+        color: var(--color-text-secondary);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 13px;
+        line-height: 1.2;
+        text-align: center;
+    }
+
+    &__submit {
+        width: 318px;
+        max-width: 100%;
+        margin: 0 auto 24px;
+    }
+
+    &__note {
+        max-width: 470px;
+        margin: 0 auto;
+        color: var(--color-text-secondary);
+        font-size: 16px;
+        line-height: 1.25;
+        text-align: center;
+    }
+}
+
+@media (max-width: 940px) {
+    .booking-page {
+        &__contacts-inner {
+            --contacts-grid-gap: 28px;
+        }
+
+        &__contact-fields {
+            column-gap: var(--contacts-grid-gap);
+        }
+
+        &__verification {
+            column-gap: var(--contacts-grid-gap);
+        }
+    }
+}
+
+@media (max-width: 768px) {
+    .booking-page {
+        &__main {
+            margin-top: 60px;
+        }
+
+        &__form {
+            margin-top: 20px;
+        }
+
+        &__panel {
+            padding: 0;
+            background: transparent;
+        }
+
+        &__units {
+            gap: 12px;
+        }
+
+        &__summary {
+            margin: 16px 0 12px;
+            color: var(--color-white);
+        }
+
+        &__total {
+            font-size: 20px;
+        }
+
+        &__prepayment {
+            color: var(--color-text-secondary);
+            font-size: 18px;
+            font-weight: 700;
+        }
+
+        &__add {
+            width: 100%;
+            max-width: none;
+            border: 1px solid var(--color-white);
+            background: transparent;
+            color: var(--color-white);
+
+            &:hover {
+                background: rgba(255, 255, 255, 0.1);
+            }
+        }
+
+        &__divider {
+            display: none;
+        }
+
+        &__contacts {
+            width: 100%;
+            margin-top: 40px;
+            padding: 18px;
+            border-radius: 8px;
+            background: var(--color-white);
+            color: var(--color-black);
+        }
+
+        &__contacts-inner {
+            --contacts-grid-gap: 0;
+
+            width: 100%;
+        }
+
+        &__contacts-title {
+            margin-bottom: 16px;
+            font-size: 18px;
+        }
+
+        &__contact-fields {
+            width: 100%;
+            margin-bottom: 14px;
+            grid-template-columns: 1fr;
+            gap: 8px;
+        }
+
+        &__verification {
+            width: 100%;
+            margin-bottom: 18px;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        &__agreements {
+            width: 100%;
+            justify-self: stretch;
+            gap: 10px;
+        }
+
+        &__agreement {
+            align-items: flex-start;
+            gap: 9px;
+            font-size: 14px;
+            line-height: 1.25;
+
+            input {
+                width: 18px;
+                height: 18px;
+                flex: 0 0 18px;
+
+                &:checked::after {
+                    top: 1px;
+                    left: 5px;
+                    width: 5px;
+                    height: 10px;
+                }
+            }
+        }
+
+        &__agreement-error {
+            margin: 3px 0 0 27px;
+            font-size: 10px;
+        }
+
+        &__captcha {
+            width: 100%;
+            max-width: 360px;
+            height: 96px;
+            margin: 0 auto;
+        }
+
+        &__submit {
+            width: 100%;
+            max-width: none;
+            margin-bottom: 16px;
+        }
+
+        &__note {
+            max-width: 500px;
+            font-size: 14px;
+        }
+    }
+}

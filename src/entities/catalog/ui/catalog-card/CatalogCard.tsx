@@ -12,14 +12,14 @@ type CatalogCardProps = {
 
 function getBookingHref(item: CatalogItem) {
   if (item.kind === 'package') {
-    return `/rent?package=${item.slug}`;
+    return `/booking?package=${item.slug}`;
   }
 
   if (item.kind === 'service') {
-    return `/rent?service=${item.slug}`;
+    return `/booking?service=${item.slug}`;
   }
 
-  return `/rent?vehicle=${item.slug}`;
+  return `/booking?vehicle=${item.slug}`;
 }
 
 function getPriceLabel(item: CatalogItem) {

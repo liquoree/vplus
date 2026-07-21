@@ -17,6 +17,14 @@ export type CatalogImage = {
   isMain: boolean;
 };
 
+export type CatalogBookingOption = {
+  id: string;
+  title: string;
+  price: number;
+  durationHours?: number;
+  relatedServiceSlug?: string;
+};
+
 export type CatalogItemBase = {
   id: string;
   slug: string;
@@ -27,6 +35,8 @@ export type CatalogItemBase = {
   priceUnit: PriceUnit;
   images: CatalogImage[];
   characteristics?: CatalogCharacteristic[];
+  bookingOptions?: CatalogBookingOption[];
+  availableHours?: number[];
   isAvailable: boolean;
   isPopular: boolean;
 };

@@ -19,7 +19,7 @@ const techniqueLinks = [
 
 const companyLinks = [
   { label: 'О нас', href: '/about' },
-  { label: 'Условия аренды', href: '/rent-terms' },
+  { label: 'Условия аренды', href: '/booking-terms' },
   { label: 'Политика конфиденциальности', href: '/privacy' },
   { label: 'Пользовательское соглашение', href: '/agreement' },
 ];

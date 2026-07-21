@@ -20,7 +20,7 @@ export const Hero = () => {
 
         <Button
           as="link"
-          href="/rent"
+          href="/booking"
           text="Забронировать"
           variant="hero"
           className="hero__button"

@@ -1,8 +1,8 @@
 'use client';
 
 import Link from 'next/link';
-import type { ButtonHTMLAttributes } from 'react';
 import { cn } from '@/shared/lib/cn';
+
 import './Button.scss';
 
 type BaseButtonProps = {
@@ -14,10 +14,10 @@ type BaseButtonProps = {
   isLoading?: boolean;
 };
 
-type ButtonAsButtonProps = BaseButtonProps &
-  ButtonHTMLAttributes<HTMLButtonElement> & {
-    as?: 'button';
-  };
+type ButtonAsButtonProps = BaseButtonProps & {
+  as?: 'button';
+  type?: 'button' | 'submit' | 'reset';
+};
 
 type ButtonAsLinkProps = BaseButtonProps & {
   as: 'link';
@@ -66,6 +66,7 @@ export function Button(props: ButtonProps) {
   return (
     <button
       className={buttonClassName}
+      type={props.type ?? 'button'}
       onClick={onClick}
       disabled={isDisabled || isLoading}
     >

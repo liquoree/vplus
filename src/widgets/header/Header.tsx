@@ -60,7 +60,7 @@ export function Header() {
 
         <Button
           as="link"
-          href="/rent"
+          href="/booking"
           text="Забронировать"
           variant="mid"
           className="header__booking"
@@ -119,7 +119,7 @@ export function Header() {
 
           <Button
             as="link"
-            href="/rent"
+            href="/booking"
             text="Забронировать"
             variant="mid"
             className="header__booking header__booking--mobile"
