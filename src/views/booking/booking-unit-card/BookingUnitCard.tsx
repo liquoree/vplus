@@ -1,74 +1,108 @@
 import Image from 'next/image';
-import { SelectField, TextField } from '@/shared/ui';
+
+import {
+  SelectField,
+  TextField,
+} from '@/shared/ui';
 import type { SelectFieldOption } from '@/shared/ui';
 
-import './BookingUnitCard.scss';
+import type { BookingLineErrors } from '../model/types';
 
-type BookingUnitCardErrors = {
-  catalogItemId?: string;
-  bookingOptionId?: string;
-  date?: string;
-  time?: string;
-};
+import './BookingUnitCard.scss';
 
 type BookingUnitCardProps = {
   index: number;
   canRemove: boolean;
 
-  catalogValue: string;
   serviceValue: string;
+  bookableItemValue: string;
+  bookingOptionValue: string;
   dateValue: string;
   timeValue: string;
 
-  catalogOptions: SelectFieldOption[];
   serviceOptions: SelectFieldOption[];
+  bookableItemOptions: SelectFieldOption[];
+  bookingOptionOptions: SelectFieldOption[];
   timeOptions: SelectFieldOption[];
 
+  isPackage?: boolean;
   isTimeLoading?: boolean;
-  errors?: BookingUnitCardErrors;
+
+  errors?: BookingLineErrors;
 
   minDate: string;
   maxDate: string;
 
-  onChangeCatalog: (value: string) => void;
   onChangeService: (value: string) => void;
+
+  onChangeBookableItem: (
+    value: string
+  ) => void;
+
+  onChangeBookingOption: (
+    value: string
+  ) => void;
+
   onChangeDate: (value: string) => void;
   onChangeTime: (value: string) => void;
+
   onRemove: () => void;
 };
 
 export function BookingUnitCard({
   index,
   canRemove,
-  catalogValue,
+
   serviceValue,
+  bookableItemValue,
+  bookingOptionValue,
   dateValue,
   timeValue,
-  catalogOptions,
+
   serviceOptions,
+  bookableItemOptions,
+  bookingOptionOptions,
   timeOptions,
+
+  isPackage = false,
   isTimeLoading = false,
+
   errors,
+
   minDate,
   maxDate,
-  onChangeCatalog,
+
   onChangeService,
+  onChangeBookableItem,
+  onChangeBookingOption,
   onChangeDate,
   onChangeTime,
   onRemove,
 }: BookingUnitCardProps) {
+  const canSelectBookingOption =
+    Boolean(bookableItemValue) &&
+    (isPackage || Boolean(serviceValue));
+
+  const canSelectDate =
+    Boolean(bookingOptionValue);
+
+  const canSelectTime =
+    Boolean(bookingOptionValue) &&
+    Boolean(dateValue) &&
+    !isTimeLoading;
+
   return (
     <section className="booking-unit-card">
       <div className="booking-unit-card__header">
         <h2 className="booking-unit-card__title">
-          Техника #{index + 1}
+          Бронирование #{index + 1}
         </h2>
 
         {canRemove && (
           <button
             className="booking-unit-card__remove"
             type="button"
-            aria-label="Удалить технику"
+            aria-label="Удалить бронирование"
             onClick={onRemove}
           >
             <Image
@@ -83,26 +117,53 @@ export function BookingUnitCard({
 
       <div className="booking-unit-card__fields">
         <SelectField
-          label="Техника"
-          value={catalogValue}
-          placeholder="Выберите технику"
-          options={catalogOptions}
-          error={errors?.catalogItemId}
-          required
-          onChange={onChangeCatalog}
-        />
-
-        <SelectField
+          className="booking-unit-card__field booking-unit-card__field--service"
           label="Услуга"
           value={serviceValue}
-          placeholder="Выберите услугу"
+          placeholder={
+            isPackage
+              ? 'Готовая программа'
+              : 'Выберите услугу'
+          }
           options={serviceOptions}
-          error={errors?.bookingOptionId}
-          required
+          error={errors?.serviceId}
+          required={!isPackage}
+          allowEmptySelection
+          isDisabled={isPackage}
           onChange={onChangeService}
         />
 
+        <SelectField
+          className="booking-unit-card__field booking-unit-card__field--bookable"
+          label="Техника или пакет"
+          value={bookableItemValue}
+          placeholder="Выберите технику или пакет"
+          options={bookableItemOptions}
+          error={errors?.bookableItemId}
+          required
+          allowEmptySelection
+          onChange={onChangeBookableItem}
+        />
+
+        <SelectField
+          className="booking-unit-card__field booking-unit-card__field--option"
+          label="Опция"
+          value={bookingOptionValue}
+          placeholder={
+            isPackage
+              ? 'Выберите вариант пакета'
+              : 'Выберите количество людей и время'
+          }
+          options={bookingOptionOptions}
+          error={errors?.bookingOptionId}
+          required
+          allowEmptySelection
+          isDisabled={!canSelectBookingOption}
+          onChange={onChangeBookingOption}
+        />
+
         <TextField
+          className="booking-unit-card__field booking-unit-card__field--date"
           label="Дата"
           type="date"
           value={dateValue}
@@ -111,10 +172,14 @@ export function BookingUnitCard({
           max={maxDate}
           error={errors?.date}
           required
-          onChange={(event) => onChangeDate(event.target.value)}
+          disabled={!canSelectDate}
+          onChange={(event) =>
+            onChangeDate(event.target.value)
+          }
         />
 
         <SelectField
+          className="booking-unit-card__field booking-unit-card__field--time"
           label="Время"
           value={timeValue}
           placeholder={
@@ -125,6 +190,8 @@ export function BookingUnitCard({
           options={timeOptions}
           error={errors?.time}
           required
+          allowEmptySelection
+          isDisabled={!canSelectTime}
           onChange={onChangeTime}
         />
       </div>

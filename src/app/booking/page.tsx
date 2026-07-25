@@ -1,24 +1,34 @@
-import { getCatalogItems } from '@/entities/catalog';
+import {
+  getCatalogBookingOptions,
+  getCatalogItems,
+} from '@/entities/catalog';
 import { BookingPage } from '@/views';
 
-type PageProps = {
-  searchParams?: Promise<{
+type BookingRouteProps = {
+  searchParams: Promise<{
     vehicle?: string;
     service?: string;
     package?: string;
   }>;
 };
 
-export default async function Page({ searchParams }: PageProps) {
+export default async function Page({
+  searchParams,
+}: BookingRouteProps) {
   const params = await searchParams;
-  const items = await getCatalogItems();
+
+  const [items, bookingOptions] = await Promise.all([
+    getCatalogItems(),
+    getCatalogBookingOptions(),
+  ]);
 
   return (
     <BookingPage
       items={items}
-      initialVehicleSlug={params?.vehicle}
-      initialServiceSlug={params?.service}
-      initialPackageSlug={params?.package}
+      bookingOptions={bookingOptions}
+      initialVehicleSlug={params.vehicle}
+      initialServiceSlug={params.service}
+      initialPackageSlug={params.package}
     />
   );
 }

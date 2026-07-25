@@ -28,9 +28,23 @@
 
     &__fields {
         display: grid;
-        grid-template-columns:
-            minmax(160px, 1fr) minmax(250px, 1.3fr) minmax(140px, 0.8fr) minmax(140px, 0.8fr);
+        grid-template-columns: repeat(6, minmax(0, 1fr));
         gap: 16px;
+    }
+
+    &__field {
+        min-width: 0;
+
+        &--service,
+        &--bookable,
+        &--option {
+            grid-column: span 2;
+        }
+
+        &--date,
+        &--time {
+            grid-column: span 3;
+        }
     }
 }
 
@@ -38,6 +52,10 @@
     .booking-unit-card {
         &__fields {
             grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+
+        &__field {
+            grid-column: auto;
         }
     }
 }

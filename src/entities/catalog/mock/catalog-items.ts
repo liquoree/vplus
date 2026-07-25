@@ -23,57 +23,36 @@ export const catalogItems: CatalogItem[] = [
     slug: 'quad-bike',
     kind: 'vehicle',
     title: 'Квадроцикл длинное название',
-    description: 'Почувствуйте мощь бездорожья за рулём четырёхколёсного монстра.',
+    description:
+      'Почувствуйте мощь бездорожья за рулём четырёхколёсного монстра.',
     price: 3500,
     priceUnit: 'hour',
     images: quadBikeImages,
+    characteristics: [
+      {
+        name: 'Мест',
+        value: '2',
+      },
+      {
+        name: 'Мощность',
+        value: '500 куб. см',
+      },
+      {
+        name: 'Маршрут',
+        value: 'лесные и смешанные трассы',
+      },
+    ],
     isAvailable: true,
     isPopular: true,
-    characteristics: [
-      { name: 'Мест', value: '2' },
-      { name: 'Мощность', value: '500 куб. см' },
-      { name: 'Маршрут', value: 'лесные и смешанные трассы' },
-    ],
-    bookingOptions: [
-      {
-        id: 'quad-base-1-1h',
-        title: 'Базовый прокат - 1 чел, 1 час',
-        price: 3500,
-        durationHours: 1,
-        relatedServiceSlug: 'base-rent',
-      },
-      {
-        id: 'quad-base-2-2h',
-        title: 'Базовый прокат - 2 чел, 2 часа',
-        price: 7000,
-        durationHours: 2,
-        relatedServiceSlug: 'base-rent',
-      },
-      {
-        id: 'quad-fishing-2-3h',
-        title: 'Рыбалка - 2 чел, 3 часа',
-        price: 9500,
-        durationHours: 3,
-        relatedServiceSlug: 'fishing',
-      },
-      {
-        id: 'quad-quest-2-2h',
-        title: 'Квест - 2 чел, 2 часа',
-        price: 8500,
-        durationHours: 2,
-        relatedServiceSlug: 'quest',
-      },
-    ],
-    availableHours: [1, 2, 3, 4, 5, 6],
     season: 'summer',
-    serviceIds: ['fishing', 'quest', 'base-rent'],
   },
   {
     id: 'snowmobile',
     slug: 'snowmobile',
     kind: 'vehicle',
     title: 'Снегоход',
-    description: 'Мощная техника для зимних маршрутов и активного отдыха.',
+    description:
+      'Мощная техника для зимних маршрутов и активного отдыха.',
     price: 4500,
     priceUnit: 'hour',
     images: [
@@ -92,46 +71,31 @@ export const catalogItems: CatalogItem[] = [
         isMain: false,
       },
     ],
+    characteristics: [
+      {
+        name: 'Мест',
+        value: '2',
+      },
+      {
+        name: 'Мощность',
+        value: '600 куб. см',
+      },
+      {
+        name: 'Маршрут',
+        value: 'зимние лесные трассы',
+      },
+    ],
     isAvailable: true,
     isPopular: true,
-    characteristics: [
-      { name: 'Мест', value: '2' },
-      { name: 'Мощность', value: '600 куб. см' },
-      { name: 'Маршрут', value: 'зимние лесные трассы' },
-    ],
-    bookingOptions: [
-      {
-        id: 'snowmobile-base-1-1h',
-        title: 'Базовый прокат - 1 чел, 1 час',
-        price: 4500,
-        durationHours: 1,
-        relatedServiceSlug: 'base-rent',
-      },
-      {
-        id: 'snowmobile-base-2-2h',
-        title: 'Базовый прокат - 2 чел, 2 часа',
-        price: 9000,
-        durationHours: 2,
-        relatedServiceSlug: 'base-rent',
-      },
-      {
-        id: 'snowmobile-route-2-3h',
-        title: 'Зимний маршрут - 2 чел, 3 часа',
-        price: 12500,
-        durationHours: 3,
-        relatedServiceSlug: 'winter-route',
-      },
-    ],
-    availableHours: [1, 2, 3, 4],
     season: 'winter',
-    serviceIds: ['base-rent', 'winter-route'],
   },
   {
     id: 'sup-board',
     slug: 'sup-board',
     kind: 'vehicle',
     title: 'SUP-борд',
-    description: 'Спокойные прогулки по воде и красивые маршруты Карелии.',
+    description:
+      'Спокойные прогулки по воде и красивые маршруты Карелии.',
     price: 1200,
     priceUnit: 'hour',
     images: [
@@ -143,46 +107,31 @@ export const catalogItems: CatalogItem[] = [
         isMain: true,
       },
     ],
+    characteristics: [
+      {
+        name: 'Мест',
+        value: '1',
+      },
+      {
+        name: 'Маршрут',
+        value: 'водные прогулки',
+      },
+      {
+        name: 'Сезон',
+        value: 'лето',
+      },
+    ],
     isAvailable: true,
     isPopular: true,
-    characteristics: [
-      { name: 'Мест', value: '1' },
-      { name: 'Маршрут', value: 'водные прогулки' },
-      { name: 'Сезон', value: 'лето' },
-    ],
-    bookingOptions: [
-      {
-        id: 'sup-base-1-1h',
-        title: 'Базовый прокат - 1 чел, 1 час',
-        price: 1200,
-        durationHours: 1,
-        relatedServiceSlug: 'base-rent',
-      },
-      {
-        id: 'sup-base-1-2h',
-        title: 'Базовый прокат - 1 чел, 2 часа',
-        price: 2200,
-        durationHours: 2,
-        relatedServiceSlug: 'base-rent',
-      },
-      {
-        id: 'sup-route-1-3h',
-        title: 'Водный маршрут - 1 чел, 3 часа',
-        price: 3200,
-        durationHours: 3,
-        relatedServiceSlug: 'water-route',
-      },
-    ],
-    availableHours: [1, 2, 3],
     season: 'summer',
-    serviceIds: ['base-rent', 'water-route'],
   },
   {
     id: 'all-inclusive',
     slug: 'all-inclusive',
     kind: 'package',
     title: 'All-inclusive',
-    description: 'Готовая программа с техникой, маршрутом и сопровождением.',
+    description:
+      'Готовая программа с техникой, маршрутом и сопровождением.',
     price: 12000,
     priceUnit: 'fixed',
     images: [
@@ -194,44 +143,39 @@ export const catalogItems: CatalogItem[] = [
         isMain: true,
       },
     ],
+    characteristics: [
+      {
+        name: 'Формат',
+        value: 'техника + маршрут + сопровождение',
+      },
+      {
+        name: 'Группа',
+        value: 'до 4 человек',
+      },
+      {
+        name: 'Длительность',
+        value: 'от 3 часов',
+      },
+    ],
     isAvailable: true,
     isPopular: true,
-    characteristics: [
-      { name: 'Формат', value: 'техника + маршрут + сопровождение' },
-      { name: 'Группа', value: 'до 4 человек' },
-      { name: 'Длительность', value: 'от 3 часов' },
+    includedVehicleIds: [
+      'quad-bike',
+      'snowmobile',
     ],
-    bookingOptions: [
-      {
-        id: 'all-inclusive-2-3h',
-        title: 'All-inclusive - 2 чел, 3 часа',
-        price: 12000,
-        durationHours: 3,
-      },
-      {
-        id: 'all-inclusive-4-4h',
-        title: 'All-inclusive - 4 чел, 4 часа',
-        price: 18000,
-        durationHours: 4,
-      },
-      {
-        id: 'all-inclusive-family-4h',
-        title: 'Семейная программа - до 4 чел, 4 часа',
-        price: 20000,
-        durationHours: 4,
-      },
+    includedServiceIds: [
+      'fishing',
+      'quest',
     ],
-    availableHours: [3, 4, 5],
-    includedVehicleIds: ['quad-bike', 'snowmobile'],
-    includedServiceIds: ['fishing', 'quest'],
   },
   {
     id: 'base-rent',
     slug: 'base-rent',
     kind: 'service',
     title: 'Базовый прокат',
-    description: 'Самостоятельная прогулка на выбранной технике по согласованному маршруту.',
-    price: 3500,
+    description:
+      'Самостоятельная прогулка на выбранной технике по согласованному маршруту.',
+    price: 1200,
     priceUnit: 'hour',
     images: [
       {
@@ -242,17 +186,28 @@ export const catalogItems: CatalogItem[] = [
         isMain: true,
       },
     ],
+    characteristics: [
+      {
+        name: 'Формат',
+        value: 'самостоятельная прогулка',
+      },
+      {
+        name: 'Сопровождение',
+        value: 'инструктаж перед поездкой',
+      },
+    ],
     isAvailable: true,
     isPopular: false,
-    bookingMode: 'requires_vehicle',
+    bookingMode: 'requires_bookable_item',
   },
   {
     id: 'fishing',
     slug: 'fishing',
     kind: 'service',
     title: 'Рыбалка',
-    description: 'Выездная программа с техникой и маршрутом.',
-    price: 2500,
+    description:
+      'Выездная программа с техникой и маршрутом.',
+    price: 9500,
     priceUnit: 'fixed',
     images: [
       {
@@ -263,17 +218,28 @@ export const catalogItems: CatalogItem[] = [
         isMain: true,
       },
     ],
+    characteristics: [
+      {
+        name: 'Формат',
+        value: 'выездная программа',
+      },
+      {
+        name: 'Сопровождение',
+        value: 'по согласованию',
+      },
+    ],
     isAvailable: true,
     isPopular: false,
-    bookingMode: 'requires_vehicle',
+    bookingMode: 'requires_bookable_item',
   },
   {
     id: 'quest',
     slug: 'quest',
     kind: 'service',
     title: 'Квест',
-    description: 'Маршрут с заданиями, сопровождением и активной программой.',
-    price: 3000,
+    description:
+      'Маршрут с заданиями, сопровождением и активной программой.',
+    price: 8500,
     priceUnit: 'fixed',
     images: [
       {
@@ -284,17 +250,28 @@ export const catalogItems: CatalogItem[] = [
         isMain: true,
       },
     ],
+    characteristics: [
+      {
+        name: 'Формат',
+        value: 'маршрут с заданиями',
+      },
+      {
+        name: 'Сопровождение',
+        value: 'инструктор',
+      },
+    ],
     isAvailable: true,
     isPopular: false,
-    bookingMode: 'requires_vehicle',
+    bookingMode: 'requires_bookable_item',
   },
   {
     id: 'winter-route',
     slug: 'winter-route',
     kind: 'service',
     title: 'Зимний маршрут',
-    description: 'Зимняя прогулка на снегоходах по подготовленному маршруту.',
-    price: 4000,
+    description:
+      'Зимняя прогулка на снегоходах по подготовленному маршруту.',
+    price: 12500,
     priceUnit: 'fixed',
     images: [
       {
@@ -305,17 +282,28 @@ export const catalogItems: CatalogItem[] = [
         isMain: true,
       },
     ],
+    characteristics: [
+      {
+        name: 'Формат',
+        value: 'зимняя прогулка',
+      },
+      {
+        name: 'Техника',
+        value: 'снегоход',
+      },
+    ],
     isAvailable: true,
     isPopular: false,
-    bookingMode: 'requires_vehicle',
+    bookingMode: 'requires_bookable_item',
   },
   {
     id: 'water-route',
     slug: 'water-route',
     kind: 'service',
     title: 'Водный маршрут',
-    description: 'Маршрут по воде на SUP-бордах с сопровождением.',
-    price: 2000,
+    description:
+      'Маршрут по воде на SUP-бордах с сопровождением.',
+    price: 3200,
     priceUnit: 'fixed',
     images: [
       {
@@ -326,8 +314,18 @@ export const catalogItems: CatalogItem[] = [
         isMain: true,
       },
     ],
+    characteristics: [
+      {
+        name: 'Формат',
+        value: 'водный маршрут',
+      },
+      {
+        name: 'Техника',
+        value: 'SUP-борд',
+      },
+    ],
     isAvailable: true,
     isPopular: false,
-    bookingMode: 'requires_vehicle',
+    bookingMode: 'requires_bookable_item',
   },
 ];

@@ -2,11 +2,17 @@
 
 import Image from 'next/image';
 import Link from 'next/link';
-import { Swiper, SwiperSlide } from 'swiper/react';
 import type { MouseEvent } from 'react';
 import { Navigation, Pagination } from 'swiper/modules';
+import { Swiper, SwiperSlide } from 'swiper/react';
 
 import { Button } from '@/shared/ui';
+
+import {
+  getAvailableBookableItems,
+  getAvailableServices,
+} from '../../lib/booking-options';
+import type { CatalogBookingOption } from '../../model/booking-option-types';
 import type { CatalogItem } from '../../model/types';
 
 import './CatalogModal.scss';
@@ -14,6 +20,7 @@ import './CatalogModal.scss';
 type CatalogModalProps = {
   item: CatalogItem;
   items: CatalogItem[];
+  bookingOptions: CatalogBookingOption[];
   onClose?: () => void;
 };
 
@@ -32,7 +39,7 @@ function getBookingHref(item: CatalogItem) {
 function getPriceLabel(item: CatalogItem) {
   const unit = item.priceUnit === 'hour' ? '/ч' : '';
 
-  return `от ${item.price}₽${unit}`;
+  return `от ${item.price.toLocaleString('ru-RU')}₽${unit}`;
 }
 
 function getSeasonLabel(item: CatalogItem) {
@@ -53,34 +60,72 @@ function getSeasonLabel(item: CatalogItem) {
   return seasonLabels[item.season];
 }
 
-function getProgramNames(item: CatalogItem, items: CatalogItem[]) {
+function getRelatedItemNames(
+  item: CatalogItem,
+  items: CatalogItem[],
+  bookingOptions: CatalogBookingOption[]
+) {
   if (item.kind === 'vehicle') {
-    return item.serviceIds
-      .map((id) => items.find((catalogItem) => catalogItem.id === id)?.title)
-      .filter(Boolean);
+    return getAvailableServices(
+      items,
+      bookingOptions,
+      item.id
+    ).map((service) => service.title);
   }
 
-  if (item.kind === 'package') {
-    return item.includedServiceIds
-      .map((id) => items.find((catalogItem) => catalogItem.id === id)?.title)
-      .filter(Boolean);
+  if (item.kind === 'service') {
+    return getAvailableBookableItems(
+      items,
+      bookingOptions,
+      item.id
+    ).map((bookableItem) => bookableItem.title);
   }
 
-  return [];
+  return item.includedServiceIds
+    .map((serviceId) => {
+      return items.find(
+        (catalogItem) =>
+          catalogItem.kind === 'service' &&
+          catalogItem.id === serviceId
+      )?.title;
+    })
+    .filter((title): title is string => Boolean(title));
 }
 
-export function CatalogModal({ item, items, onClose }: CatalogModalProps) {
-  const images = [...item.images].sort((a, b) => a.sortOrder - b.sortOrder);
-  const programs = getProgramNames(item, items);
+function getRelatedItemsTitle(item: CatalogItem) {
+  if (item.kind === 'service') {
+    return 'Доступная техника';
+  }
 
-    const handleCloseClick = (event: MouseEvent<HTMLAnchorElement>) => {
+  return 'Доступные программы';
+}
+
+export function CatalogModal({
+  item,
+  items,
+  bookingOptions,
+  onClose,
+}: CatalogModalProps) {
+  const images = [...item.images].sort(
+    (first, second) => first.sortOrder - second.sortOrder
+  );
+
+  const relatedItemNames = getRelatedItemNames(
+    item,
+    items,
+    bookingOptions
+  );
+
+  const handleCloseClick = (
+    event: MouseEvent<HTMLAnchorElement>
+  ) => {
     if (!onClose) {
-        return;
+      return;
     }
 
     event.preventDefault();
     onClose();
-    };
+  };
 
   return (
     <div className="catalog-modal">
@@ -94,6 +139,7 @@ export function CatalogModal({ item, items, onClose }: CatalogModalProps) {
           onClick={handleCloseClick}
         >
           <Image
+            className="catalog-modal__close-icon"
             src="/images/close.svg"
             alt=""
             width={20}
@@ -106,12 +152,21 @@ export function CatalogModal({ item, items, onClose }: CatalogModalProps) {
             className="catalog-modal__swiper"
             modules={[Navigation, Pagination]}
             navigation={images.length > 1}
-            pagination={images.length > 1 ? { clickable: true } : false}
+            pagination={
+              images.length > 1
+                ? {
+                    clickable: true,
+                  }
+                : false
+            }
             slidesPerView={1}
             loop={images.length > 1}
           >
             {images.map((image) => (
-              <SwiperSlide className="catalog-modal__slide" key={image.id}>
+              <SwiperSlide
+                className="catalog-modal__slide"
+                key={image.id}
+              >
                 <div className="catalog-modal__image-wrap">
                   <Image
                     className="catalog-modal__image"
@@ -129,27 +184,43 @@ export function CatalogModal({ item, items, onClose }: CatalogModalProps) {
 
         <div className="catalog-modal__body">
           <div className="catalog-modal__header">
-            <h2 className="catalog-modal__title">{item.title}</h2>
-            <span className="catalog-modal__season">{getSeasonLabel(item)}</span>
-          </div>
+            <h2 className="catalog-modal__title">
+              {item.title}
+            </h2>
 
-          <div className="catalog-modal__price-row">
-            <p className="catalog-modal__price">{getPriceLabel(item)}</p>
-
-            <span className="catalog-modal__status">
-              {item.isAvailable ? 'В наличии' : 'Нет в наличии'}
+            <span className="catalog-modal__season">
+              {getSeasonLabel(item)}
             </span>
           </div>
 
-          <p className="catalog-modal__description">{item.description}</p>
+          <div className="catalog-modal__price-row">
+            <p className="catalog-modal__price">
+              {getPriceLabel(item)}
+            </p>
 
-          {item.characteristics && item.characteristics.length > 0 && (
+            <span className="catalog-modal__status">
+              {item.isAvailable
+                ? 'В наличии'
+                : 'Нет в наличии'}
+            </span>
+          </div>
+
+          <p className="catalog-modal__description">
+            {item.description}
+          </p>
+
+          {item.characteristics.length > 0 && (
             <div className="catalog-modal__block">
-              <h3 className="catalog-modal__subtitle">Характеристики</h3>
+              <h3 className="catalog-modal__subtitle">
+                Характеристики
+              </h3>
 
               <ul className="catalog-modal__list">
                 {item.characteristics.map((characteristic) => (
-                  <li className="catalog-modal__list-item" key={characteristic.name}>
+                  <li
+                    className="catalog-modal__list-item"
+                    key={`${characteristic.name}-${characteristic.value}`}
+                  >
                     <span>{characteristic.name}: </span>
                     {characteristic.value}
                   </li>
@@ -158,14 +229,19 @@ export function CatalogModal({ item, items, onClose }: CatalogModalProps) {
             </div>
           )}
 
-          {programs.length > 0 && (
+          {relatedItemNames.length > 0 && (
             <div className="catalog-modal__block">
-              <h3 className="catalog-modal__subtitle">Доступные программы</h3>
+              <h3 className="catalog-modal__subtitle">
+                {getRelatedItemsTitle(item)}
+              </h3>
 
               <ul className="catalog-modal__list">
-                {programs.map((program) => (
-                  <li className="catalog-modal__list-item" key={program}>
-                    {program}
+                {relatedItemNames.map((name) => (
+                  <li
+                    className="catalog-modal__list-item"
+                    key={name}
+                  >
+                    {name}
                   </li>
                 ))}
               </ul>

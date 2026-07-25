@@ -1,18 +1,24 @@
 'use client';
 
-import { Button } from '@/shared/ui';
 import { BookingModal } from '@/entities/booking';
-import { Footer, Header, TemplateInfoPage } from '@/widgets';
+import { Button } from '@/shared/ui';
+import {
+  Footer,
+  Header,
+  TemplateInfoPage,
+} from '@/widgets';
 
 import { BookingContacts } from './booking-contacts/BookingContacts';
 import { BookingSummary } from './booking-summary/BookingSummary';
 import { BookingUnitCard } from './booking-unit-card/BookingUnitCard';
-import { useBookingForm } from './model/useBookingForm';
 import type { BookingPageProps } from './model/types';
+import { useBookingForm } from './model/useBookingForm';
 
 import './BookingPage.scss';
 
-export function BookingPage(props: BookingPageProps) {
+export function BookingPage(
+  props: BookingPageProps
+) {
   const form = useBookingForm(props);
 
   return (
@@ -22,7 +28,7 @@ export function BookingPage(props: BookingPageProps) {
       <main className="booking-page__main">
         <TemplateInfoPage
           title="Бронирование техники"
-          description="Выберите технику, а также дату и время, когда подъедете на базу"
+          description="Выберите услугу, технику, дату и удобное время"
         >
           <form
             className="booking-page__form"
@@ -31,51 +37,110 @@ export function BookingPage(props: BookingPageProps) {
           >
             <div className="booking-page__panel">
               <div className="booking-page__units">
-                {form.bookingLines.map((line, index) => {
-                  const availability =
-                    form.availabilityByLine[line.id];
+                {form.bookingLines.map(
+                  (line, index) => {
+                    const availability =
+                      form.availabilityByLine[
+                        line.id
+                      ];
 
-                  return (
-                    <BookingUnitCard
-                      key={line.id}
-                      index={index}
-                      canRemove={form.bookingLines.length > 1}
-                      catalogValue={line.catalogItemId}
-                      serviceValue={line.bookingOptionId}
-                      dateValue={line.date}
-                      timeValue={line.time}
-                      catalogOptions={form.catalogOptions}
-                      serviceOptions={form.getServiceOptions(line)}
-                      timeOptions={availability?.timeOptions ?? []}
-                      isTimeLoading={
-                        availability?.isLoading ?? false
-                      }
-                      errors={form.bookingLineErrors[line.id]}
-                      minDate={form.minDate}
-                      maxDate={form.maxDate}
-                      onChangeCatalog={(value) =>
-                        form.handleCatalogChange(line, value)
-                      }
-                      onChangeService={(value) =>
-                        form.handleServiceChange(line, value)
-                      }
-                      onChangeDate={(value) =>
-                        form.handleDateChange(line, value)
-                      }
-                      onChangeTime={(value) =>
-                        form.handleTimeChange(line.id, value)
-                      }
-                      onRemove={() =>
-                        form.removeBookingLine(line.id)
-                      }
-                    />
-                  );
-                })}
+                    const isPackage =
+                      form.isLinePackage(line);
+
+                    return (
+                      <BookingUnitCard
+                        key={line.id}
+                        index={index}
+                        canRemove={
+                          form.bookingLines.length >
+                          1
+                        }
+                        serviceValue={
+                          line.serviceId
+                        }
+                        bookableItemValue={
+                          line.bookableItemId
+                        }
+                        bookingOptionValue={
+                          line.bookingOptionId
+                        }
+                        dateValue={line.date}
+                        timeValue={line.time}
+                        serviceOptions={form.getLineServiceOptions(
+                          line
+                        )}
+                        bookableItemOptions={form.getLineBookableOptions(
+                          line
+                        )}
+                        bookingOptionOptions={form.getLineProgramOptions(
+                          line
+                        )}
+                        timeOptions={
+                          availability?.timeOptions ??
+                          []
+                        }
+                        isPackage={isPackage}
+                        isTimeLoading={
+                          availability?.isLoading ??
+                          false
+                        }
+                        errors={
+                          form.bookingLineErrors[
+                            line.id
+                          ]
+                        }
+                        minDate={form.minDate}
+                        maxDate={form.maxDate}
+                        onChangeService={(value) =>
+                          form.handleServiceChange(
+                            line,
+                            value
+                          )
+                        }
+                        onChangeBookableItem={(
+                          value
+                        ) =>
+                          form.handleBookableItemChange(
+                            line,
+                            value
+                          )
+                        }
+                        onChangeBookingOption={(
+                          value
+                        ) =>
+                          form.handleBookingOptionChange(
+                            line,
+                            value
+                          )
+                        }
+                        onChangeDate={(value) =>
+                          form.handleDateChange(
+                            line,
+                            value
+                          )
+                        }
+                        onChangeTime={(value) =>
+                          form.handleTimeChange(
+                            line.id,
+                            value
+                          )
+                        }
+                        onRemove={() =>
+                          form.removeBookingLine(
+                            line.id
+                          )
+                        }
+                      />
+                    );
+                  }
+                )}
               </div>
 
               <BookingSummary
                 totalPrice={form.totalPrice}
-                prepaymentPrice={form.prepaymentPrice}
+                prepaymentPrice={
+                  form.prepaymentPrice
+                }
               />
 
               <Button
@@ -91,7 +156,9 @@ export function BookingPage(props: BookingPageProps) {
               <BookingContacts
                 values={form.contacts}
                 errors={form.contactErrors}
-                isSubmitting={form.isSubmitting}
+                isSubmitting={
+                  form.isSubmitting
+                }
                 onChange={form.updateContact}
               />
             </div>
@@ -104,9 +171,13 @@ export function BookingPage(props: BookingPageProps) {
       {form.modalStatus && (
         <BookingModal
           status={form.modalStatus}
-          bookingItems={form.submittedBookingItems}
+          bookingItems={
+            form.submittedBookingItems
+          }
           totalPrice={form.totalPrice}
-          prepaymentPrice={form.prepaymentPrice}
+          prepaymentPrice={
+            form.prepaymentPrice
+          }
           onClose={form.closeModal}
         />
       )}

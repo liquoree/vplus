@@ -1,4 +1,5 @@
 import Image from 'next/image';
+
 import { cn } from '@/shared/lib/cn';
 
 import './SelectField.scss';
@@ -6,6 +7,7 @@ import './SelectField.scss';
 export type SelectFieldOption = {
   value: string;
   label: string;
+  disabled?: boolean;
 };
 
 type SelectFieldProps = {
@@ -14,9 +16,13 @@ type SelectFieldProps = {
   placeholder: string;
   options: SelectFieldOption[];
   onChange: (value: string) => void;
+
   error?: string;
   required?: boolean;
   className?: string;
+
+  allowEmptySelection?: boolean;
+  isDisabled?: boolean;
 };
 
 export function SelectField({
@@ -26,12 +32,31 @@ export function SelectField({
   options,
   onChange,
   error,
-  required,
+  required = false,
   className,
+  allowEmptySelection = false,
+  isDisabled = false,
 }: SelectFieldProps) {
   return (
-    <label className={cn('select-field', className)}>
-      <span className="select-field__label">{label}</span>
+    <label
+      className={cn(
+        'select-field',
+        isDisabled && 'select-field--disabled',
+        className
+      )}
+    >
+      <span className="select-field__label">
+        {label}
+
+        {required && (
+          <span
+            className="select-field__required"
+            aria-hidden="true"
+          >
+            *
+          </span>
+        )}
+      </span>
 
       <span className="select-field__control">
         <select
@@ -41,14 +66,25 @@ export function SelectField({
           )}
           value={value}
           required={required}
-          onChange={(event) => onChange(event.target.value)}
+          disabled={isDisabled}
+          aria-invalid={Boolean(error)}
+          onChange={(event) =>
+            onChange(event.target.value)
+          }
         >
-          <option value="" disabled>
+          <option
+            value=""
+            disabled={!allowEmptySelection}
+          >
             {placeholder}
           </option>
 
           {options.map((option) => (
-            <option value={option.value} key={option.value}>
+            <option
+              value={option.value}
+              disabled={option.disabled}
+              key={option.value}
+            >
               {option.label}
             </option>
           ))}
@@ -60,10 +96,15 @@ export function SelectField({
           alt=""
           width={18}
           height={18}
+          aria-hidden="true"
         />
       </span>
 
-      <span className="select-field__error">{error}</span>
+      {error && (
+        <span className="select-field__error">
+          {error}
+        </span>
+      )}
     </label>
   );
 }

@@ -1,5 +1,7 @@
+import { CatalogModalSkeleton } from '@/entities/catalog';
 import { Footer, Header, TemplateInfoPage } from '@/widgets';
-import { CatalogModalSkeleton } from '@/entities/catalog/';
+
+const filters = ['Все', 'Лето', 'Зима', 'Услуги'];
 
 export default function Loading() {
   return (
@@ -12,13 +14,24 @@ export default function Loading() {
           description="Выберите технику и забронируйте онлайн за пару минут"
         >
           <div className="catalog-page__content">
-            <div className="catalog-page__filters">
-              <button className="catalog-page__filter catalog-page__filter--active">
-                Все
-              </button>
-              <button className="catalog-page__filter">Лето</button>
-              <button className="catalog-page__filter">Зима</button>
-              <button className="catalog-page__filter">Услуги</button>
+            <div
+              className="catalog-page__filters"
+              aria-hidden="true"
+            >
+              {filters.map((filter, index) => (
+                <button
+                  className={
+                    index === 0
+                      ? 'catalog-page__filter catalog-page__filter--active'
+                      : 'catalog-page__filter'
+                  }
+                  type="button"
+                  disabled
+                  key={filter}
+                >
+                  {filter}
+                </button>
+              ))}
             </div>
           </div>
         </TemplateInfoPage>

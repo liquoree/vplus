@@ -1,5 +1,9 @@
 import type { FormEvent } from 'react';
-import { useMemo, useRef, useState } from 'react';
+import {
+  useMemo,
+  useRef,
+  useState,
+} from 'react';
 
 import {
   getBookingAvailability,
@@ -11,15 +15,21 @@ import {
   buildBookingItems,
   createEmptyBookingLine,
   createInitialBookingLine,
+  getBookableItemOptions,
   getBookingLinePrice,
-  getBookingServiceOptions,
-  getCatalogOptions,
+  getCatalogItem,
+  getProgramOptions,
   getSelectedBookingOption,
+  getServiceOptions,
+  isBookableItemCompatibleWithService,
+  isPackageBookingLine,
 } from '../lib/booking-catalog';
+
 import {
   getMaxBookingDateValue,
   getTodayDateValue,
 } from '../lib/booking-date';
+
 import {
   validateBookingLines,
   validateContacts,
@@ -44,23 +54,35 @@ const initialContacts: ContactValues = {
 
 export function useBookingForm({
   items,
+  bookingOptions,
   initialVehicleSlug,
   initialServiceSlug,
   initialPackageSlug,
 }: BookingPageProps) {
-  const [bookingLines, setBookingLines] = useState<BookingLine[]>(() => [
-    createInitialBookingLine(items, {
-      initialVehicleSlug,
-      initialServiceSlug,
-      initialPackageSlug,
-    }),
-  ]);
+  const [bookingLines, setBookingLines] =
+    useState<BookingLine[]>(() => [
+      createInitialBookingLine(
+        items,
+        bookingOptions,
+        {
+          initialVehicleSlug,
+          initialServiceSlug,
+          initialPackageSlug,
+        }
+      ),
+    ]);
 
-  const [bookingLineErrors, setBookingLineErrors] = useState<
+  const [
+    bookingLineErrors,
+    setBookingLineErrors,
+  ] = useState<
     Record<string, BookingLineErrors>
   >({});
 
-  const [availabilityByLine, setAvailabilityByLine] = useState<
+  const [
+    availabilityByLine,
+    setAvailabilityByLine,
+  ] = useState<
     Record<string, BookingLineAvailability>
   >({});
 
@@ -70,43 +92,48 @@ export function useBookingForm({
   const [contactErrors, setContactErrors] =
     useState<ContactErrors>({});
 
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isSubmitting, setIsSubmitting] =
+    useState(false);
 
-  const [modalStatus, setModalStatus] = useState<
-    'success' | 'error' | null
-  >(null);
+  const [modalStatus, setModalStatus] =
+    useState<
+      'success' | 'error' | null
+    >(null);
 
-  const [submittedBookingItems, setSubmittedBookingItems] =
-    useState<BookingRequestItem[]>([]);
+  const [
+    submittedBookingItems,
+    setSubmittedBookingItems,
+  ] = useState<BookingRequestItem[]>([]);
 
-  /*
-   * Номер последнего запроса для каждой строки.
-   * Не даёт старому ответу API перезаписать новые слоты,
-   * если пользователь быстро меняет дату или услугу.
-   */
-  const availabilityRequestIds = useRef<Record<string, number>>({});
-
-  const catalogOptions = useMemo(() => {
-    return getCatalogOptions(items);
-  }, [items]);
+  const availabilityRequestIds = useRef<
+    Record<string, number>
+  >({});
 
   const totalPrice = useMemo(() => {
-    return bookingLines.reduce((total, line) => {
-      return total + getBookingLinePrice(line, items);
-    }, 0);
-  }, [bookingLines, items]);
+    return bookingLines.reduce(
+      (total, line) =>
+        total +
+        getBookingLinePrice(
+          line,
+          bookingOptions
+        ),
+      0
+    );
+  }, [bookingLines, bookingOptions]);
 
-  const prepaymentPrice = Math.ceil(totalPrice / 2);
+  const prepaymentPrice =
+    Math.ceil(totalPrice / 2);
 
   const minDate = getTodayDateValue();
   const maxDate = getMaxBookingDateValue();
 
   const clearBookingLineErrors = (
-    id: string,
+    lineId: string,
     patch: Partial<BookingLine>
   ) => {
     setBookingLineErrors((currentErrors) => {
-      const currentLineErrors = currentErrors[id];
+      const currentLineErrors =
+        currentErrors[lineId];
 
       if (!currentLineErrors) {
         return currentErrors;
@@ -116,9 +143,19 @@ export function useBookingForm({
         ...currentLineErrors,
       };
 
-      Object.keys(patch).forEach((key) => {
-        if (key !== 'id') {
-          delete nextLineErrors[key as keyof BookingLineErrors];
+      const errorFields: Array<
+        keyof BookingLineErrors
+      > = [
+        'serviceId',
+        'bookableItemId',
+        'bookingOptionId',
+        'date',
+        'time',
+      ];
+
+      errorFields.forEach((field) => {
+        if (field in patch) {
+          delete nextLineErrors[field];
         }
       });
 
@@ -126,10 +163,12 @@ export function useBookingForm({
         ...currentErrors,
       };
 
-      if (Object.keys(nextLineErrors).length === 0) {
-        delete nextErrors[id];
+      if (
+        Object.keys(nextLineErrors).length === 0
+      ) {
+        delete nextErrors[lineId];
       } else {
-        nextErrors[id] = nextLineErrors;
+        nextErrors[lineId] = nextLineErrors;
       }
 
       return nextErrors;
@@ -137,12 +176,12 @@ export function useBookingForm({
   };
 
   const updateBookingLine = (
-    id: string,
+    lineId: string,
     patch: Partial<BookingLine>
   ) => {
     setBookingLines((currentLines) =>
       currentLines.map((line) =>
-        line.id === id
+        line.id === lineId
           ? {
               ...line,
               ...patch,
@@ -151,10 +190,12 @@ export function useBookingForm({
       )
     );
 
-    clearBookingLineErrors(id, patch);
+    clearBookingLineErrors(lineId, patch);
   };
 
-  const updateContact = <Key extends keyof ContactValues>(
+  const updateContact = <
+    Key extends keyof ContactValues,
+  >(
     key: Key,
     value: ContactValues[Key]
   ) => {
@@ -178,101 +219,273 @@ export function useBookingForm({
     });
   };
 
-  const clearAvailability = (lineId: string) => {
+  const clearAvailability = (
+    lineId: string
+  ) => {
     availabilityRequestIds.current[lineId] =
-      (availabilityRequestIds.current[lineId] ?? 0) + 1;
+      (availabilityRequestIds.current[lineId] ??
+        0) + 1;
 
-    setAvailabilityByLine((currentAvailability) => ({
-      ...currentAvailability,
-      [lineId]: {
-        isLoading: false,
-        timeOptions: [],
-      },
-    }));
-  };
-
-  const loadAvailability = async (line: BookingLine) => {
-    const requestId =
-      (availabilityRequestIds.current[line.id] ?? 0) + 1;
-
-    availabilityRequestIds.current[line.id] = requestId;
-
-    const selectedOption = getSelectedBookingOption(line, items);
-
-    if (
-      !line.catalogItemId ||
-      !line.date ||
-      !selectedOption?.durationHours
-    ) {
-      setAvailabilityByLine((currentAvailability) => ({
+    setAvailabilityByLine(
+      (currentAvailability) => ({
         ...currentAvailability,
-        [line.id]: {
+        [lineId]: {
           isLoading: false,
           timeOptions: [],
         },
-      }));
+      })
+    );
+  };
+
+  const loadAvailability = async (
+    line: BookingLine
+  ) => {
+    const requestId =
+      (availabilityRequestIds.current[line.id] ??
+        0) + 1;
+
+    availabilityRequestIds.current[line.id] =
+      requestId;
+
+    const selectedOption =
+      getSelectedBookingOption(
+        line,
+        bookingOptions
+      );
+
+    if (
+      !line.bookableItemId ||
+      !line.date ||
+      !selectedOption ||
+      selectedOption.durationMinutes <= 0
+    ) {
+      setAvailabilityByLine(
+        (currentAvailability) => ({
+          ...currentAvailability,
+          [line.id]: {
+            isLoading: false,
+            timeOptions: [],
+          },
+        })
+      );
 
       return;
     }
 
-    setAvailabilityByLine((currentAvailability) => ({
-      ...currentAvailability,
-      [line.id]: {
-        isLoading: true,
-        timeOptions: [],
-      },
-    }));
-
-    try {
-      const result = await getBookingAvailability({
-        catalogItemId: line.catalogItemId,
-        date: line.date,
-        durationMinutes: selectedOption.durationHours * 60,
-      });
-
-      if (availabilityRequestIds.current[line.id] !== requestId) {
-        return;
-      }
-
-      setAvailabilityByLine((currentAvailability) => ({
+    setAvailabilityByLine(
+      (currentAvailability) => ({
         ...currentAvailability,
         [line.id]: {
-          isLoading: false,
-          timeOptions: result.slots.map((slot) => ({
-            value: slot.startTime,
-            label: `${slot.startTime}–${slot.endTime}`,
-          })),
-        },
-      }));
-    } catch {
-      if (availabilityRequestIds.current[line.id] !== requestId) {
-        return;
-      }
-
-      setAvailabilityByLine((currentAvailability) => ({
-        ...currentAvailability,
-        [line.id]: {
-          isLoading: false,
+          isLoading: true,
           timeOptions: [],
         },
-      }));
+      })
+    );
+
+    try {
+      const result =
+        await getBookingAvailability({
+          /*
+           * Временное название поля API.
+           * Позже заменим на bookableItemId.
+           */
+          catalogItemId:
+            line.bookableItemId,
+
+          date: line.date,
+
+          durationMinutes:
+            selectedOption.durationMinutes,
+        });
+
+      if (
+        availabilityRequestIds.current[
+          line.id
+        ] !== requestId
+      ) {
+        return;
+      }
+
+      setAvailabilityByLine(
+        (currentAvailability) => ({
+          ...currentAvailability,
+          [line.id]: {
+            isLoading: false,
+
+            timeOptions: result.slots.map(
+              (slot) => ({
+                value: slot.startTime,
+                label: `${slot.startTime}–${slot.endTime}`,
+              })
+            ),
+          },
+        })
+      );
+    } catch {
+      if (
+        availabilityRequestIds.current[
+          line.id
+        ] !== requestId
+      ) {
+        return;
+      }
+
+      setAvailabilityByLine(
+        (currentAvailability) => ({
+          ...currentAvailability,
+          [line.id]: {
+            isLoading: false,
+            timeOptions: [],
+          },
+        })
+      );
     }
   };
 
-  const handleCatalogChange = (
+  const handleServiceChange = (
     line: BookingLine,
-    catalogItemId: string
+    serviceId: string
   ) => {
+    if (!serviceId) {
+      updateBookingLine(line.id, {
+        serviceId: '',
+        bookingOptionId: '',
+
+        selectionSource:
+          line.bookableItemId
+            ? 'bookable'
+            : null,
+
+        time: '',
+      });
+
+      clearAvailability(line.id);
+      return;
+    }
+
+    const canKeepBookableItem =
+      isBookableItemCompatibleWithService(
+        line.bookableItemId,
+        serviceId,
+        bookingOptions
+      );
+
+    const nextBookableItemId =
+      canKeepBookableItem
+        ? line.bookableItemId
+        : '';
+
+    /*
+     * Если техника сохранилась, сохраняем и первоначальный
+     * источник выбора.
+     *
+     * Если технику пришлось очистить, новой основной
+     * точкой выбора становится услуга.
+     */
+    const nextSelectionSource =
+      nextBookableItemId
+        ? line.selectionSource ?? 'service'
+        : 'service';
+
     updateBookingLine(line.id, {
-      catalogItemId,
+      serviceId,
+      bookableItemId:
+        nextBookableItemId,
+
       bookingOptionId: '',
+      selectionSource:
+        nextSelectionSource,
+
       time: '',
     });
 
     clearAvailability(line.id);
   };
 
-  const handleServiceChange = (
+  const handleBookableItemChange = (
+    line: BookingLine,
+    bookableItemId: string
+  ) => {
+    if (!bookableItemId) {
+      updateBookingLine(line.id, {
+        bookableItemId: '',
+        bookingOptionId: '',
+
+        selectionSource:
+          line.serviceId
+            ? 'service'
+            : null,
+
+        time: '',
+      });
+
+      clearAvailability(line.id);
+      return;
+    }
+
+    const selectedItem = getCatalogItem(
+      items,
+      bookableItemId
+    );
+
+    if (selectedItem?.kind === 'package') {
+      updateBookingLine(line.id, {
+        serviceId: '',
+        bookableItemId,
+        bookingOptionId: '',
+
+        /*
+         * Пакет является самостоятельной программой,
+         * поэтому источник выбора становится bookable.
+         */
+        selectionSource: 'bookable',
+
+        time: '',
+      });
+
+      clearAvailability(line.id);
+      return;
+    }
+
+    const canKeepService =
+      isBookableItemCompatibleWithService(
+        bookableItemId,
+        line.serviceId,
+        bookingOptions
+      );
+
+    const nextServiceId =
+      canKeepService
+        ? line.serviceId
+        : '';
+
+    /*
+     * Если услуга сохранилась, не меняем первоначальный
+     * источник подбора.
+     *
+     * Если услуга несовместима и была очищена,
+     * основной точкой выбора становится техника.
+     */
+    const nextSelectionSource =
+      nextServiceId
+        ? line.selectionSource ?? 'bookable'
+        : 'bookable';
+
+    updateBookingLine(line.id, {
+      serviceId: nextServiceId,
+      bookableItemId,
+      bookingOptionId: '',
+
+      selectionSource:
+        nextSelectionSource,
+
+      time: '',
+    });
+
+    clearAvailability(line.id);
+  };
+
+  const handleBookingOptionChange = (
     line: BookingLine,
     bookingOptionId: string
   ) => {
@@ -287,7 +500,15 @@ export function useBookingForm({
       time: '',
     });
 
-    void loadAvailability(nextLine);
+    if (
+      bookingOptionId &&
+      nextLine.date
+    ) {
+      void loadAvailability(nextLine);
+      return;
+    }
+
+    clearAvailability(line.id);
   };
 
   const handleDateChange = (
@@ -324,12 +545,17 @@ export function useBookingForm({
     ]);
   };
 
-  const removeBookingLine = (lineId: string) => {
+  const removeBookingLine = (
+    lineId: string
+  ) => {
     availabilityRequestIds.current[lineId] =
-      (availabilityRequestIds.current[lineId] ?? 0) + 1;
+      (availabilityRequestIds.current[lineId] ??
+        0) + 1;
 
     setBookingLines((currentLines) =>
-      currentLines.filter((line) => line.id !== lineId)
+      currentLines.filter(
+        (line) => line.id !== lineId
+      )
     );
 
     setBookingLineErrors((currentErrors) => {
@@ -342,21 +568,59 @@ export function useBookingForm({
       return nextErrors;
     });
 
-    setAvailabilityByLine((currentAvailability) => {
-      const nextAvailability = {
-        ...currentAvailability,
-      };
+    setAvailabilityByLine(
+      (currentAvailability) => {
+        const nextAvailability = {
+          ...currentAvailability,
+        };
 
-      delete nextAvailability[lineId];
+        delete nextAvailability[lineId];
 
-      return nextAvailability;
-    });
+        return nextAvailability;
+      }
+    );
 
-    delete availabilityRequestIds.current[lineId];
+    delete availabilityRequestIds.current[
+      lineId
+    ];
   };
 
-  const getServiceOptions = (line: BookingLine) => {
-    return getBookingServiceOptions(line, items);
+  const getLineServiceOptions = (
+    line: BookingLine
+  ) => {
+    return getServiceOptions(
+      line,
+      items,
+      bookingOptions
+    );
+  };
+
+  const getLineBookableOptions = (
+    line: BookingLine
+  ) => {
+    return getBookableItemOptions(
+      line,
+      items,
+      bookingOptions
+    );
+  };
+
+  const getLineProgramOptions = (
+    line: BookingLine
+  ) => {
+    return getProgramOptions(
+      line,
+      bookingOptions
+    );
+  };
+
+  const isLinePackage = (
+    line: BookingLine
+  ) => {
+    return isPackageBookingLine(
+      line,
+      items
+    );
   };
 
   const handleSubmit = async (
@@ -369,40 +633,61 @@ export function useBookingForm({
     }
 
     const nextBookingLineErrors =
-      validateBookingLines(bookingLines);
+      validateBookingLines(
+        bookingLines,
+        items,
+        bookingOptions
+      );
 
     const nextContactErrors =
       validateContacts(contacts);
 
-    setBookingLineErrors(nextBookingLineErrors);
-    setContactErrors(nextContactErrors);
+    setBookingLineErrors(
+      nextBookingLineErrors
+    );
+
+    setContactErrors(
+      nextContactErrors
+    );
 
     if (
-      Object.keys(nextBookingLineErrors).length > 0 ||
-      Object.keys(nextContactErrors).length > 0
+      Object.keys(
+        nextBookingLineErrors
+      ).length > 0 ||
+      Object.keys(
+        nextContactErrors
+      ).length > 0
     ) {
       return;
     }
 
-    const bookingItems = buildBookingItems(
-      bookingLines,
-      items
+    const bookingItems =
+      buildBookingItems(
+        bookingLines,
+        items,
+        bookingOptions
+      );
+
+    setSubmittedBookingItems(
+      bookingItems
     );
 
-    setSubmittedBookingItems(bookingItems);
     setIsSubmitting(true);
 
     try {
-      const result = await submitBookingRequest({
-        items: bookingItems,
-        customer: {
-          name: contacts.name.trim(),
-          email: contacts.email.trim(),
-          phone: contacts.phone.trim(),
-        },
-        totalPrice,
-        prepaymentPrice,
-      });
+      const result =
+        await submitBookingRequest({
+          items: bookingItems,
+
+          customer: {
+            name: contacts.name.trim(),
+            email: contacts.email.trim(),
+            phone: contacts.phone.trim(),
+          },
+
+          totalPrice,
+          prepaymentPrice,
+        });
 
       if (!result.success) {
         setModalStatus('error');
@@ -429,7 +714,6 @@ export function useBookingForm({
     contacts,
     contactErrors,
 
-    catalogOptions,
     minDate,
     maxDate,
 
@@ -440,10 +724,14 @@ export function useBookingForm({
     modalStatus,
     submittedBookingItems,
 
-    getServiceOptions,
+    getLineServiceOptions,
+    getLineBookableOptions,
+    getLineProgramOptions,
+    isLinePackage,
 
-    handleCatalogChange,
     handleServiceChange,
+    handleBookableItemChange,
+    handleBookingOptionChange,
     handleDateChange,
     handleTimeChange,
 

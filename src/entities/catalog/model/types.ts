@@ -4,6 +4,10 @@ export type Season = 'summer' | 'winter' | 'all_season';
 
 export type PriceUnit = 'hour' | 'fixed';
 
+export type ServiceBookingMode =
+  | 'requires_bookable_item'
+  | 'standalone';
+
 export type CatalogCharacteristic = {
   name: string;
   value: string;
@@ -17,26 +21,26 @@ export type CatalogImage = {
   isMain: boolean;
 };
 
-export type CatalogBookingOption = {
-  id: string;
-  title: string;
-  price: number;
-  durationHours?: number;
-  relatedServiceSlug?: string;
-};
-
 export type CatalogItemBase = {
   id: string;
   slug: string;
   kind: CatalogItemKind;
   title: string;
   description: string;
+
+  /**
+   * Минимальная цена для отображения карточки:
+   * «от 3 500 ₽/ч».
+   *
+   * Точная стоимость бронирования хранится
+   * в CatalogBookingOption.
+   */
   price: number;
   priceUnit: PriceUnit;
+
   images: CatalogImage[];
-  characteristics?: CatalogCharacteristic[];
-  bookingOptions?: CatalogBookingOption[];
-  availableHours?: number[];
+  characteristics: CatalogCharacteristic[];
+
   isAvailable: boolean;
   isPopular: boolean;
 };
@@ -44,12 +48,11 @@ export type CatalogItemBase = {
 export type VehicleItem = CatalogItemBase & {
   kind: 'vehicle';
   season: Season;
-  serviceIds: string[];
 };
 
 export type ServiceItem = CatalogItemBase & {
   kind: 'service';
-  bookingMode: 'requires_vehicle';
+  bookingMode: ServiceBookingMode;
 };
 
 export type PackageItem = CatalogItemBase & {
@@ -58,4 +61,11 @@ export type PackageItem = CatalogItemBase & {
   includedServiceIds: string[];
 };
 
-export type CatalogItem = VehicleItem | ServiceItem | PackageItem;
+export type CatalogItem =
+  | VehicleItem
+  | ServiceItem
+  | PackageItem;
+
+export type BookableCatalogItem =
+  | VehicleItem
+  | PackageItem;

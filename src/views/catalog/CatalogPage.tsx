@@ -2,38 +2,67 @@
 
 import { useState, useTransition } from 'react';
 import { useRouter } from 'next/navigation';
+
 import { CatalogCard } from '@/entities/catalog/ui/catalog-card/CatalogCard';
 import { CatalogModal } from '@/entities/catalog/ui/catalog-modal/CatalogModal';
+import type { CatalogBookingOption } from '@/entities/catalog/model/booking-option-types';
 import type { CatalogItem } from '@/entities/catalog/model/types';
-import { Footer, Header, HelpCta, TemplateInfoPage } from '@/widgets';
 import { cn } from '@/shared/lib/cn';
+import {
+  Footer,
+  Header,
+  HelpCta,
+  TemplateInfoPage,
+} from '@/widgets';
 
 import './CatalogPage.scss';
 
 type CatalogPageProps = {
   items: CatalogItem[];
+  bookingOptions: CatalogBookingOption[];
   selectedItem?: CatalogItem;
 };
 
-type CatalogFilter = 'all' | 'summer' | 'winter' | 'services';
+type CatalogFilter =
+  | 'all'
+  | 'summer'
+  | 'winter'
+  | 'services';
 
 const filters: Array<{
   value: CatalogFilter;
   label: string;
 }> = [
-  { value: 'all', label: 'Все' },
-  { value: 'summer', label: 'Лето' },
-  { value: 'winter', label: 'Зима' },
-  { value: 'services', label: 'Услуги' },
+  {
+    value: 'all',
+    label: 'Все',
+  },
+  {
+    value: 'summer',
+    label: 'Лето',
+  },
+  {
+    value: 'winter',
+    label: 'Зима',
+  },
+  {
+    value: 'services',
+    label: 'Услуги',
+  },
 ];
 
-function filterItems(items: CatalogItem[], filter: CatalogFilter) {
+function filterItems(
+  items: CatalogItem[],
+  filter: CatalogFilter
+) {
   if (filter === 'all') {
     return items;
   }
 
   if (filter === 'services') {
-    return items.filter((item) => item.kind === 'service');
+    return items.filter(
+      (item) => item.kind === 'service'
+    );
   }
 
   return items.filter((item) => {
@@ -41,31 +70,30 @@ function filterItems(items: CatalogItem[], filter: CatalogFilter) {
       return false;
     }
 
-    return item.season === filter || item.season === 'all_season';
+    return (
+      item.season === filter ||
+      item.season === 'all_season'
+    );
   });
 }
 
-export function CatalogPage({ items, selectedItem }: CatalogPageProps) {
+export function CatalogPage({
+  items,
+  bookingOptions,
+  selectedItem,
+}: CatalogPageProps) {
   const router = useRouter();
   const [, startTransition] = useTransition();
 
-  const [activeFilter, setActiveFilter] = useState<CatalogFilter>('all');
+  const [activeFilter, setActiveFilter] =
+    useState<CatalogFilter>('all');
 
-  const selectedSlug = selectedItem?.slug ?? null;
-
-  const [routeSlug, setRouteSlug] = useState<string | null>(selectedSlug);
-  const [modalItem, setModalItem] = useState<CatalogItem | undefined>(selectedItem);
-
-  if (selectedSlug !== routeSlug) {
-    setRouteSlug(selectedSlug);
-    setModalItem(selectedItem);
-  }
-
-  const filteredItems = filterItems(items, activeFilter);
+  const filteredItems = filterItems(
+    items,
+    activeFilter
+  );
 
   const openModal = (item: CatalogItem) => {
-    setModalItem(item);
-
     startTransition(() => {
       router.push(`/catalog/${item.slug}`, {
         scroll: false,
@@ -74,8 +102,6 @@ export function CatalogPage({ items, selectedItem }: CatalogPageProps) {
   };
 
   const closeModal = () => {
-    setModalItem(undefined);
-
     startTransition(() => {
       router.push('/catalog', {
         scroll: false,
@@ -98,11 +124,14 @@ export function CatalogPage({ items, selectedItem }: CatalogPageProps) {
                 <button
                   className={cn(
                     'catalog-page__filter',
-                    activeFilter === filter.value && 'catalog-page__filter--active'
+                    activeFilter === filter.value &&
+                      'catalog-page__filter--active'
                   )}
                   type="button"
                   key={filter.value}
-                  onClick={() => setActiveFilter(filter.value)}
+                  onClick={() =>
+                    setActiveFilter(filter.value)
+                  }
                 >
                   {filter.label}
                 </button>
@@ -129,10 +158,11 @@ export function CatalogPage({ items, selectedItem }: CatalogPageProps) {
           </div>
         </TemplateInfoPage>
 
-        {modalItem && (
+        {selectedItem && (
           <CatalogModal
-            item={modalItem}
+            item={selectedItem}
             items={items}
+            bookingOptions={bookingOptions}
             onClose={closeModal}
           />
         )}
