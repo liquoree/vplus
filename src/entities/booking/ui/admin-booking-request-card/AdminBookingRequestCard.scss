@@ -1,0 +1,264 @@
+.admin-booking-request-card {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 130px;
+    align-items: center;
+    gap: 20px;
+    width: 100%;
+
+    &__panel {
+        min-width: 0;
+        padding: 20px;
+        border-radius: 12px;
+        background: #ffffff;
+        box-shadow: 0 4px 18px rgb(0 0 0 / 8%);
+    }
+
+    &__header {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        gap: 20px;
+        margin-bottom: 18px;
+    }
+
+    &__customer {
+        display: flex;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 4px 8px;
+        min-width: 0;
+        font-size: 17px;
+        line-height: 1.3;
+
+        strong {
+            color: #111111;
+        }
+
+        a {
+            color: var(--color-accent);
+            font-weight: 600;
+            text-decoration: none;
+
+            &:hover {
+                text-decoration: underline;
+            }
+        }
+    }
+
+    &__created {
+        flex-shrink: 0;
+        color: #8b8b8b;
+        font-size: 12px;
+        line-height: 1.4;
+    }
+
+    &__items {
+        display: flex;
+        flex-direction: column;
+        gap: 18px;
+    }
+
+    &__booking-item {
+        min-width: 0;
+
+        &+& {
+            padding-top: 18px;
+            border-top: 1px solid #e8e8e8;
+        }
+    }
+
+    &__item-title {
+        margin: 0 0 10px;
+        font-size: 14px;
+        font-weight: 700;
+    }
+
+    &__fields {
+        display: grid;
+        grid-template-columns:
+            repeat(4, minmax(0, 1fr));
+        gap: 12px;
+    }
+
+    &__field {
+        display: flex;
+        flex-direction: column;
+        min-width: 0;
+        gap: 5px;
+
+        span {
+            color: #999999;
+            font-size: 11px;
+            line-height: 1.2;
+        }
+
+        strong {
+            min-height: 38px;
+            padding: 10px 12px;
+            overflow: hidden;
+            border: 1px solid #d9d9d9;
+            border-radius: 8px;
+            background: #ffffff;
+            color: #222222;
+            font-size: 13px;
+            font-weight: 400;
+            line-height: 1.25;
+            text-overflow: ellipsis;
+        }
+
+        &--wide {
+            grid-column: span 2;
+        }
+    }
+
+    &__summary {
+        display: flex;
+        align-items: center;
+        justify-content: flex-end;
+        flex-wrap: wrap;
+        gap: 8px 22px;
+        margin-top: 18px;
+        padding-top: 14px;
+        border-top: 1px solid #e8e8e8;
+        font-size: 13px;
+
+        b {
+            font-size: 15px;
+        }
+    }
+
+    &__actions {
+        display: flex;
+        flex-direction: column;
+        align-items: stretch;
+        gap: 12px;
+    }
+
+    &__action,
+    &__status {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 100%;
+        min-height: 42px;
+        padding: 0 15px;
+        border-radius: 8px;
+        font-size: 13px;
+        font-weight: 600;
+        line-height: 1;
+    }
+
+    &__action {
+        border: 0;
+        color: #ffffff;
+        cursor: pointer;
+        transition:
+            opacity 0.2s ease,
+            transform 0.2s ease;
+
+        &:hover:not(:disabled) {
+            opacity: 0.85;
+        }
+
+        &:active:not(:disabled) {
+            transform: translateY(1px);
+        }
+
+        &:disabled {
+            cursor: not-allowed;
+            opacity: 0.6;
+        }
+
+        &--approve {
+            background: #18c900;
+        }
+
+        &--reject {
+            background: var(--color-accent);
+        }
+    }
+
+    &__status {
+        background: transparent;
+
+        &--approved {
+            border: 1px solid #18c900;
+            color: #18c900;
+        }
+
+        &--rejected {
+            border: 1px solid var(--color-accent);
+            color: var(--color-accent);
+        }
+    }
+}
+
+@media (max-width: 1000px) {
+    .admin-booking-request-card {
+        &__fields {
+            grid-template-columns:
+                repeat(2, minmax(0, 1fr));
+        }
+    }
+}
+
+@media (max-width: 768px) {
+    .admin-booking-request-card {
+        grid-template-columns: minmax(0, 1fr);
+        gap: 10px;
+
+        &__panel {
+            padding: 15px;
+            border-radius: 10px;
+        }
+
+        &__header {
+            flex-direction: column;
+            gap: 7px;
+            margin-bottom: 14px;
+        }
+
+        &__customer {
+            align-items: flex-start;
+            font-size: 15px;
+        }
+
+        &__created {
+            font-size: 11px;
+        }
+
+        &__fields {
+            grid-template-columns: minmax(0, 1fr);
+            gap: 9px;
+        }
+
+        &__field {
+            &--wide {
+                grid-column: auto;
+            }
+
+            strong {
+                min-height: 36px;
+                padding: 9px 10px;
+                font-size: 12px;
+            }
+        }
+
+        &__summary {
+            align-items: flex-start;
+            justify-content: flex-start;
+            flex-direction: column;
+            gap: 5px;
+        }
+
+        &__actions {
+            flex-direction: row;
+        }
+
+        &__action,
+        &__status {
+            flex: 1 1 0;
+            min-height: 42px;
+        }
+    }
+}

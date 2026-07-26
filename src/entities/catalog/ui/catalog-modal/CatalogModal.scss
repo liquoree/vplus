@@ -260,11 +260,11 @@
     }
 
     &__cancel {
-        background: var(--color-muted);
+        background: var(--color-muted) !important;
         color: var(--color-white);
 
         &:hover {
-            background: var(--color-text-secondary);
+            background: var(--color-text-secondary) !important;
         }
     }
 }

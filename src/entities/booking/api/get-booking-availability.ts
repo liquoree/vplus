@@ -5,18 +5,49 @@ import {
   timeToMinutes,
 } from '../lib/time';
 import { getMockReservations } from '../mock/booking-reservation-repository';
+
 import type {
   BookingAvailabilityQuery,
   BookingAvailabilityResult,
+  BookingReservationStatus,
+  BookingTimeSlot,
 } from '../model/availability-types';
 
-const blockingStatuses = new Set([
-  'pending',
-  'approved',
-]);
+const blockingStatuses =
+  new Set<BookingReservationStatus>([
+    'pending',
+    'approved',
+  ]);
+
+function formatLocalDateValue(date: Date) {
+  const year = date.getFullYear();
+
+  const month = String(
+    date.getMonth() + 1
+  ).padStart(2, '0');
+
+  const day = String(
+    date.getDate()
+  ).padStart(2, '0');
+
+  return `${year}-${month}-${day}`;
+}
+
+function createEmptyResult({
+  bookableItemId,
+  date,
+  durationMinutes,
+}: BookingAvailabilityQuery): BookingAvailabilityResult {
+  return {
+    bookableItemId,
+    date,
+    durationMinutes,
+    slots: [],
+  };
+}
 
 export async function getBookingAvailability({
-  catalogItemId,
+  bookableItemId,
   date,
   durationMinutes,
 }: BookingAvailabilityQuery): Promise<BookingAvailabilityResult> {
@@ -24,50 +55,87 @@ export async function getBookingAvailability({
     setTimeout(resolve, 200);
   });
 
+  const now = new Date();
+  const todayValue = formatLocalDateValue(now);
+
+  if (
+    !bookableItemId ||
+    !date ||
+    date < todayValue ||
+    !Number.isFinite(durationMinutes) ||
+    durationMinutes <= 0
+  ) {
+    return createEmptyResult({
+      bookableItemId,
+      date,
+      durationMinutes,
+    });
+  }
+
   const reservations = getMockReservations().filter(
     (reservation) =>
-      reservation.catalogItemId === catalogItemId &&
+      reservation.bookableItemId === bookableItemId &&
       reservation.date === date &&
       blockingStatuses.has(reservation.status)
   );
 
-  const slots = BOOKING_SCHEDULE.workingIntervals.flatMap(
-    (workingInterval) => {
-      const intervalStart = timeToMinutes(workingInterval.startTime);
-      const intervalEnd = timeToMinutes(workingInterval.endTime);
+  const currentMinutes =
+    now.getHours() * 60 + now.getMinutes();
 
-      const availableSlots = [];
+  const isToday = date === todayValue;
 
-      for (
-        let start = intervalStart;
-        start + durationMinutes <= intervalEnd;
-        start += BOOKING_SCHEDULE.slotStepMinutes
-      ) {
-        const end = start + durationMinutes;
+  const slots =
+    BOOKING_SCHEDULE.workingIntervals.flatMap(
+      (workingInterval) => {
+        const intervalStart = timeToMinutes(
+          workingInterval.startTime
+        );
 
-        const hasConflict = reservations.some((reservation) => {
-          return intervalsOverlap(
-            start,
-            end,
-            timeToMinutes(reservation.startTime),
-            timeToMinutes(reservation.endTime)
+        const intervalEnd = timeToMinutes(
+          workingInterval.endTime
+        );
+
+        const availableSlots: BookingTimeSlot[] = [];
+
+        for (
+          let start = intervalStart;
+          start + durationMinutes <= intervalEnd;
+          start += BOOKING_SCHEDULE.slotStepMinutes
+        ) {
+          const end = start + durationMinutes;
+
+          if (isToday && start <= currentMinutes) {
+            continue;
+          }
+
+          const hasConflict = reservations.some(
+            (reservation) =>
+              intervalsOverlap(
+                start,
+                end,
+                timeToMinutes(
+                  reservation.startTime
+                ),
+                timeToMinutes(
+                  reservation.endTime
+                )
+              )
           );
-        });
 
-        if (!hasConflict) {
-          availableSlots.push({
-            startTime: minutesToTime(start),
-            endTime: minutesToTime(end),
-          });
+          if (!hasConflict) {
+            availableSlots.push({
+              startTime: minutesToTime(start),
+              endTime: minutesToTime(end),
+            });
+          }
         }
-      }
 
-      return availableSlots;
-    }
-  );
+        return availableSlots;
+      }
+    );
 
   return {
-    catalogItemId,
+    bookableItemId,
     date,
     durationMinutes,
     slots,

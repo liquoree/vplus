@@ -283,18 +283,14 @@ export function useBookingForm({
     );
 
     try {
-      const result =
+        const result =
         await getBookingAvailability({
-          /*
-           * Временное название поля API.
-           * Позже заменим на bookableItemId.
-           */
-          catalogItemId:
+            bookableItemId:
             line.bookableItemId,
 
-          date: line.date,
+            date: line.date,
 
-          durationMinutes:
+            durationMinutes:
             selectedOption.durationMinutes,
         });
 
