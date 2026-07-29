@@ -49,6 +49,18 @@ function formatDuration(
   return `${minutes} мин.`;
 }
 
+const createdAtFormatter =
+  new Intl.DateTimeFormat('ru-RU', {
+    day: '2-digit',
+    month: '2-digit',
+    year: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+    second: '2-digit',
+    hour12: false,
+    timeZone: 'Europe/Moscow',
+  });
+
 function formatPrice(price: number) {
   return `${price.toLocaleString(
     'ru-RU'
@@ -64,6 +76,10 @@ function getStatusText(
 
   if (status === 'rejected') {
     return 'Отклонено';
+  }
+
+  if (status === 'cancelled') {
+    return 'Отменено';
   }
 
   return 'Ожидает решения';
@@ -89,6 +105,7 @@ function BookingItemFields({
       <div className="admin-booking-request-card__fields">
         <div className="admin-booking-request-card__field">
           <span>Услуга</span>
+
           <strong>
             {item.serviceTitle ??
               'Готовая программа'}
@@ -97,6 +114,7 @@ function BookingItemFields({
 
         <div className="admin-booking-request-card__field">
           <span>Техника или пакет</span>
+
           <strong>
             {item.bookableItemTitle}
           </strong>
@@ -104,6 +122,7 @@ function BookingItemFields({
 
         <div className="admin-booking-request-card__field admin-booking-request-card__field--wide">
           <span>Опция</span>
+
           <strong>
             {item.bookingOptionTitle}
           </strong>
@@ -111,6 +130,7 @@ function BookingItemFields({
 
         <div className="admin-booking-request-card__field">
           <span>Дата</span>
+
           <strong>
             {formatDate(item.date)}
           </strong>
@@ -118,11 +138,13 @@ function BookingItemFields({
 
         <div className="admin-booking-request-card__field">
           <span>Время</span>
+
           <strong>{item.time}</strong>
         </div>
 
         <div className="admin-booking-request-card__field">
           <span>Продолжительность</span>
+
           <strong>
             {formatDuration(
               item.durationMinutes
@@ -132,6 +154,7 @@ function BookingItemFields({
 
         <div className="admin-booking-request-card__field">
           <span>Стоимость</span>
+
           <strong>
             {formatPrice(item.price)}
           </strong>
@@ -148,6 +171,9 @@ export function AdminBookingRequestCard({
 }: AdminBookingRequestCardProps) {
   const isPending =
     request.status === 'pending';
+
+  const canCancel =
+    request.status === 'approved';
 
   const phoneHref = `tel:${request.customer.phone.replace(
     /[^\d+]/g,
@@ -174,14 +200,14 @@ export function AdminBookingRequestCard({
             </a>
           </div>
 
-          <time
-            className="admin-booking-request-card__created"
-            dateTime={request.createdAt}
-          >
-            {new Date(
-              request.createdAt
-            ).toLocaleString('ru-RU')}
-          </time>
+            <time
+                className="admin-booking-request-card__created"
+                dateTime={request.createdAt}
+            >
+                {createdAtFormatter.format(
+                new Date(request.createdAt)
+                )}
+            </time>
         </header>
 
         <div className="admin-booking-request-card__items">
@@ -260,14 +286,34 @@ export function AdminBookingRequestCard({
             </button>
           </>
         ) : (
-          <span
-            className={[
-              'admin-booking-request-card__status',
-              `admin-booking-request-card__status--${request.status}`,
-            ].join(' ')}
-          >
-            {getStatusText(request.status)}
-          </span>
+          <>
+            <span
+              className={[
+                'admin-booking-request-card__status',
+                `admin-booking-request-card__status--${request.status}`,
+              ].join(' ')}
+            >
+              {getStatusText(request.status)}
+            </span>
+
+            {canCancel && (
+              <button
+                className="admin-booking-request-card__action admin-booking-request-card__action--cancel"
+                type="button"
+                disabled={isUpdating}
+                onClick={() =>
+                  onChangeStatus(
+                    request.id,
+                    'cancelled'
+                  )
+                }
+              >
+                {isUpdating
+                  ? 'Обработка...'
+                  : 'Отменить'}
+              </button>
+            )}
+          </>
         )}
       </div>
     </article>

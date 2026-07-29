@@ -43,7 +43,6 @@ export const catalogItems: CatalogItem[] = [
       },
     ],
     isAvailable: true,
-    isPopular: true,
     season: 'summer',
   },
   {
@@ -86,7 +85,6 @@ export const catalogItems: CatalogItem[] = [
       },
     ],
     isAvailable: true,
-    isPopular: true,
     season: 'winter',
   },
   {
@@ -122,7 +120,6 @@ export const catalogItems: CatalogItem[] = [
       },
     ],
     isAvailable: true,
-    isPopular: true,
     season: 'summer',
   },
   {
@@ -158,7 +155,6 @@ export const catalogItems: CatalogItem[] = [
       },
     ],
     isAvailable: true,
-    isPopular: true,
     includedVehicleIds: [
       'quad-bike',
       'snowmobile',
@@ -197,8 +193,6 @@ export const catalogItems: CatalogItem[] = [
       },
     ],
     isAvailable: true,
-    isPopular: false,
-    bookingMode: 'requires_bookable_item',
   },
   {
     id: 'fishing',
@@ -229,8 +223,6 @@ export const catalogItems: CatalogItem[] = [
       },
     ],
     isAvailable: true,
-    isPopular: false,
-    bookingMode: 'requires_bookable_item',
   },
   {
     id: 'quest',
@@ -261,8 +253,6 @@ export const catalogItems: CatalogItem[] = [
       },
     ],
     isAvailable: true,
-    isPopular: false,
-    bookingMode: 'requires_bookable_item',
   },
   {
     id: 'winter-route',
@@ -293,8 +283,6 @@ export const catalogItems: CatalogItem[] = [
       },
     ],
     isAvailable: true,
-    isPopular: false,
-    bookingMode: 'requires_bookable_item',
   },
   {
     id: 'water-route',
@@ -325,7 +313,5 @@ export const catalogItems: CatalogItem[] = [
       },
     ],
     isAvailable: true,
-    isPopular: false,
-    bookingMode: 'requires_bookable_item',
   },
 ];

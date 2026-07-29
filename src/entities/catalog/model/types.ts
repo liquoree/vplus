@@ -4,10 +4,6 @@ export type Season = 'summer' | 'winter' | 'all_season';
 
 export type PriceUnit = 'hour' | 'fixed';
 
-export type ServiceBookingMode =
-  | 'requires_bookable_item'
-  | 'standalone';
-
 export type CatalogCharacteristic = {
   name: string;
   value: string;
@@ -28,13 +24,6 @@ export type CatalogItemBase = {
   title: string;
   description: string;
 
-  /**
-   * Минимальная цена для отображения карточки:
-   * «от 3 500 ₽/ч».
-   *
-   * Точная стоимость бронирования хранится
-   * в CatalogBookingOption.
-   */
   price: number;
   priceUnit: PriceUnit;
 
@@ -42,7 +31,6 @@ export type CatalogItemBase = {
   characteristics: CatalogCharacteristic[];
 
   isAvailable: boolean;
-  isPopular: boolean;
 };
 
 export type VehicleItem = CatalogItemBase & {
@@ -50,9 +38,9 @@ export type VehicleItem = CatalogItemBase & {
   season: Season;
 };
 
-export type ServiceItem = CatalogItemBase & {
+export type ServiceItem =
+CatalogItemBase & {
   kind: 'service';
-  bookingMode: ServiceBookingMode;
 };
 
 export type PackageItem = CatalogItemBase & {

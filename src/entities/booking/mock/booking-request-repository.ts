@@ -1,5 +1,6 @@
 import type {
   BookingCustomer,
+  BookingRequestDecision,
   BookingRequestItem,
   BookingRequestRecord,
   BookingRequestStatus,
@@ -13,6 +14,8 @@ const INITIAL_SNAPSHOT = JSON.stringify(
   initialBookingRequests
 );
 
+const SERVER_SNAPSHOT = '[]';
+
 const subscribers = new Set<() => void>();
 
 function isBrowser() {
@@ -25,7 +28,8 @@ function isBookingRequestStatus(
   return (
     value === 'pending' ||
     value === 'approved' ||
-    value === 'rejected'
+    value === 'rejected' ||
+    value === 'cancelled'
   );
 }
 
@@ -85,13 +89,10 @@ function isBookingRequestRecord(
   return (
     typeof request.id === 'string' &&
     Array.isArray(request.items) &&
-    request.items.every(
-      isBookingRequestItem
-    ) &&
+    request.items.every(isBookingRequestItem) &&
     isBookingCustomer(request.customer) &&
     typeof request.totalPrice === 'number' &&
-    typeof request.prepaymentPrice ===
-      'number' &&
+    typeof request.prepaymentPrice === 'number' &&
     isBookingRequestStatus(request.status) &&
     typeof request.createdAt === 'string' &&
     (typeof request.reviewedAt === 'string' ||
@@ -110,6 +111,22 @@ function isValidSnapshot(snapshot: string) {
   } catch {
     return false;
   }
+}
+
+function cloneInitialRequests() {
+  return initialBookingRequests.map(
+    (request) => ({
+      ...request,
+
+      customer: {
+        ...request.customer,
+      },
+
+      items: request.items.map((item) => ({
+        ...item,
+      })),
+    })
+  );
 }
 
 function emitChange() {
@@ -149,17 +166,7 @@ export function parseBookingRequestsSnapshot(
     // Возвращаем начальные данные ниже.
   }
 
-  return initialBookingRequests.map(
-    (request) => ({
-      ...request,
-      customer: {
-        ...request.customer,
-      },
-      items: request.items.map((item) => ({
-        ...item,
-      })),
-    })
-  );
+  return cloneInitialRequests();
 }
 
 export function getBookingRequestsSnapshot() {
@@ -181,7 +188,7 @@ export function getBookingRequestsSnapshot() {
 }
 
 export function getBookingRequestsServerSnapshot() {
-  return INITIAL_SNAPSHOT;
+  return SERVER_SNAPSHOT;
 }
 
 export function subscribeBookingRequests(
@@ -236,10 +243,7 @@ export function addMockBookingRequest(
 
 export function updateMockBookingRequestStatus(
   requestId: string,
-  status: Exclude<
-    BookingRequestStatus,
-    'pending'
-  >
+  status: BookingRequestDecision
 ) {
   const currentRequests =
     getMockBookingRequests();

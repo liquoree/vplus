@@ -72,9 +72,14 @@
         color: var(--color-success);
         font-size: 14px;
         font-weight: 700;
+
+        &--unavailable {
+            color: var(--color-accent);
+        }
     }
 
     &__status-dot {
+        flex-shrink: 0;
         width: 8px;
         height: 8px;
         border-radius: 50%;

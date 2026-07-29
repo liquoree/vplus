@@ -2,15 +2,15 @@
     display: flex;
     flex-direction: column;
     align-items: flex-start;
-    max-width: 760px;
+    width: 100%;
+    max-width: 860px;
 
     &__back {
         display: inline-flex;
         align-items: center;
         gap: 6px;
         margin-bottom: 18px;
-        color: var(--color-accent,
-                #ec0b22);
+        color: var(--color-accent);
         font-size: 14px;
         text-decoration: none;
 
@@ -26,41 +26,34 @@
 
     &__title {
         margin: 0;
+        color: var(--color-text-primary);
         font-size: 28px;
         font-weight: 700;
         line-height: 1.2;
     }
 
-    &__placeholder {
-        display: flex;
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 8px;
+    &__form {
         width: 100%;
-        margin-top: 20px;
-        padding: 24px;
-        border: 1px dashed #c7c7c7;
-        border-radius: 12px;
-        background: #ffffff;
+        margin-top: 22px;
+    }
 
-        strong {
-            font-size: 16px;
-            line-height: 1.3;
+    &__not-found {
+        width: 100%;
+        padding: 24px;
+        border: 1px dashed var(--color-line);
+        border-radius: 12px;
+        background: var(--color-white);
+
+        h2 {
+            margin: 0;
+            font-size: 22px;
         }
 
         p {
-            max-width: 620px;
-            margin: 0;
-            color: #747474;
+            margin: 8px 0 0;
+            color: var(--color-text-secondary);
             font-size: 14px;
-            line-height: 1.45;
         }
-    }
-
-    &__id {
-        margin-top: 6px;
-        color: #969696;
-        font-size: 12px;
     }
 }
 
@@ -76,18 +69,8 @@
             font-size: 22px;
         }
 
-        &__placeholder {
-            margin-top: 16px;
-            padding: 18px;
-            border-radius: 10px;
-
-            strong {
-                font-size: 15px;
-            }
-
-            p {
-                font-size: 13px;
-            }
+        &__form {
+            margin-top: 18px;
         }
     }
 }

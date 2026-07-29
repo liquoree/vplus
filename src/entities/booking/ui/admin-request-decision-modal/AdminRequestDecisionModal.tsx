@@ -1,7 +1,7 @@
 'use client';
 
-import { useEffect } from 'react';
 import Image from 'next/image';
+import { useEffect } from 'react';
 
 import type {
   BookingRequestDecision,
@@ -19,6 +19,47 @@ type AdminRequestDecisionModalProps = {
   onClose: () => void;
 };
 
+function getModalContent(
+  decision: BookingRequestDecision
+) {
+  if (decision === 'approved') {
+    return {
+      title: 'Одобрить заявку?',
+      description:
+        'После подтверждения выбранное время останется занятым.',
+      confirmText: 'Да, одобрить',
+      icon:
+        '/images/icons/application-approved.svg',
+      confirmModifier:
+        'admin-request-decision-modal__confirm--approve',
+    };
+  }
+
+  if (decision === 'cancelled') {
+    return {
+      title: 'Отменить одобренную заявку?',
+      description:
+        'После подтверждения выбранное время снова станет доступно для бронирования.',
+      confirmText: 'Да, отменить',
+      icon:
+        '/images/icons/application-rejected.svg',
+      confirmModifier:
+        'admin-request-decision-modal__confirm--reject',
+    };
+  }
+
+  return {
+    title: 'Отклонить заявку?',
+    description:
+      'После подтверждения выбранное время снова станет доступно для бронирования.',
+    confirmText: 'Да, отклонить',
+    icon:
+      '/images/icons/application-rejected.svg',
+    confirmModifier:
+      'admin-request-decision-modal__confirm--reject',
+  };
+}
+
 export function AdminRequestDecisionModal({
   request,
   decision,
@@ -26,7 +67,7 @@ export function AdminRequestDecisionModal({
   onConfirm,
   onClose,
 }: AdminRequestDecisionModalProps) {
-  const isApprove = decision === 'approved';
+  const content = getModalContent(decision);
 
   useEffect(() => {
     const previousOverflow =
@@ -68,10 +109,7 @@ export function AdminRequestDecisionModal({
   };
 
   return (
-    <div
-      className="admin-request-decision-modal"
-      role="presentation"
-    >
+    <div className="admin-request-decision-modal">
       <button
         className="admin-request-decision-modal__overlay"
         type="button"
@@ -102,11 +140,7 @@ export function AdminRequestDecisionModal({
           aria-hidden="true"
         >
           <Image
-            src={
-              isApprove
-                ? '/images/icons/application-approved.svg'
-                : '/images/icons/application-rejected.svg'
-            }
+            src={content.icon}
             alt=""
             width={52}
             height={52}
@@ -117,18 +151,14 @@ export function AdminRequestDecisionModal({
           className="admin-request-decision-modal__title"
           id="request-decision-title"
         >
-          {isApprove
-            ? 'Одобрить заявку?'
-            : 'Отклонить заявку?'}
+          {content.title}
         </h2>
 
         <p
           className="admin-request-decision-modal__description"
           id="request-decision-description"
         >
-          {isApprove
-            ? 'После подтверждения выбранное время останется занятым.'
-            : 'После подтверждения выбранное время снова станет доступно для бронирования.'}
+          {content.description}
         </p>
 
         <div className="admin-request-decision-modal__customer">
@@ -169,15 +199,13 @@ export function AdminRequestDecisionModal({
             disabled={isSubmitting}
             onClick={onClose}
           >
-            Отмена
+            Назад
           </button>
 
           <button
             className={[
               'admin-request-decision-modal__confirm',
-              isApprove
-                ? 'admin-request-decision-modal__confirm--approve'
-                : 'admin-request-decision-modal__confirm--reject',
+              content.confirmModifier,
             ].join(' ')}
             type="button"
             disabled={isSubmitting}
@@ -185,9 +213,7 @@ export function AdminRequestDecisionModal({
           >
             {isSubmitting
               ? 'Обработка...'
-              : isApprove
-                ? 'Да, одобрить'
-                : 'Да, отклонить'}
+              : content.confirmText}
           </button>
         </div>
       </section>

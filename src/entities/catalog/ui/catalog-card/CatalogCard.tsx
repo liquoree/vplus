@@ -4,6 +4,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import type { MouseEvent } from 'react';
 import type { CatalogItem } from '../../model/types';
+import { cn } from '@/shared/lib/cn';
 
 type CatalogCardProps = {
   item: CatalogItem;
@@ -70,9 +71,18 @@ export function CatalogCard({ item, onOpen }: CatalogCardProps) {
 
         <div className="catalog-card__price">{getPriceLabel(item)}</div>
 
-        <div className="catalog-card__status">
+        <div
+          className={cn(
+            'catalog-card__status',
+            !item.isAvailable &&
+              'catalog-card__status--unavailable'
+          )}
+        >
           <span className="catalog-card__status-dot" />
-          {item.isAvailable ? 'В наличии' : 'Нет в наличии'}
+
+          {item.isAvailable
+            ? 'В наличии'
+            : 'Нет в наличии'}
         </div>
       </div>
 

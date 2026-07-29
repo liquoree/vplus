@@ -210,7 +210,7 @@ export function BookingModal({
             <p className="booking-modal__hint">
               *если вы ошиблись при выборе,
               свяжитесь с нашим менеджером:
-              +7 (911) 423-86-00
+              +7 (911) 404-73-03
             </p>
           )}
         </div>

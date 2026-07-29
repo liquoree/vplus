@@ -4,8 +4,10 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useState } from 'react';
+
 import { cn } from '@/shared/lib/cn';
 import { Button } from '@/shared/ui';
+
 import './Header.scss';
 
 const navItems = [
@@ -15,14 +17,25 @@ const navItems = [
   { href: '/about', label: 'О нас' },
 ];
 
-export function Header() {
+type HeaderProps = {
+  mobileTitle?: string;
+};
+
+export function Header({
+  mobileTitle,
+}: HeaderProps) {
   const pathname = usePathname();
   const [isOpen, setIsOpen] = useState(false);
 
   const activeItem =
     navItems.find((item) =>
-      item.href === '/' ? pathname === '/' : pathname.startsWith(item.href)
+      item.href === '/'
+        ? pathname === '/'
+        : pathname.startsWith(item.href)
     ) ?? navItems[0];
+
+  const resolvedMobileTitle =
+    mobileTitle ?? activeItem.label;
 
   const closeMenu = () => {
     setIsOpen(false);
@@ -44,13 +57,19 @@ export function Header() {
         <nav className="header__nav">
           {navItems.map((item) => {
             const isActive =
-              item.href === '/' ? pathname === '/' : pathname.startsWith(item.href);
+              item.href === '/'
+                ? pathname === '/'
+                : pathname.startsWith(item.href);
 
             return (
               <Link
                 key={item.href}
                 href={item.href}
-                className={cn('header__link', isActive && 'header__link--active')}
+                className={cn(
+                  'header__link',
+                  isActive &&
+                    'header__link--active'
+                )}
               >
                 {item.label}
               </Link>
@@ -69,17 +88,28 @@ export function Header() {
 
       <div className="header__mobile">
         <Image
-          className={cn('header__burger', isOpen && 'header__burger--open')}
+          className={cn(
+            'header__burger',
+            isOpen && 'header__burger--open'
+          )}
           src="/images/menu.svg"
           alt="Меню"
           width={26}
           height={18}
-          onClick={() => setIsOpen((value) => !value)}
+          onClick={() =>
+            setIsOpen((value) => !value)
+          }
         />
 
-        <span className="header__mobile-title">{activeItem.label}</span>
+        <span className="header__mobile-title">
+          {resolvedMobileTitle}
+        </span>
 
-        <Link className="header__mobile-logo" href="/" onClick={closeMenu}>
+        <Link
+          className="header__mobile-logo"
+          href="/"
+          onClick={closeMenu}
+        >
           <Image
             src="/images/logo.svg"
             alt="ВЕЗДЕХОД+ Карелия"
@@ -90,11 +120,19 @@ export function Header() {
         </Link>
       </div>
 
-      <div className={cn('header__mobile-menu', isOpen && 'header__mobile-menu--open')}>
+      <div
+        className={cn(
+          'header__mobile-menu',
+          isOpen &&
+            'header__mobile-menu--open'
+        )}
+      >
         <nav className="header__mobile-nav">
           {navItems.map((item) => {
             const isActive =
-              item.href === '/' ? pathname === '/' : pathname.startsWith(item.href);
+              item.href === '/'
+                ? pathname === '/'
+                : pathname.startsWith(item.href);
 
             return (
               <Link
@@ -102,7 +140,8 @@ export function Header() {
                 href={item.href}
                 className={cn(
                   'header__mobile-link',
-                  isActive && 'header__mobile-link--active'
+                  isActive &&
+                    'header__mobile-link--active'
                 )}
                 onClick={closeMenu}
               >
@@ -113,7 +152,10 @@ export function Header() {
         </nav>
 
         <div className="header__mobile-actions">
-          <a className="header__call" href="tel:+79114238600">
+          <a
+            className="header__call"
+            href="tel:+79114238600"
+          >
             Позвонить
           </a>
 
@@ -123,6 +165,7 @@ export function Header() {
             text="Забронировать"
             variant="mid"
             className="header__booking header__booking--mobile"
+            onClick={closeMenu}
           />
         </div>
       </div>

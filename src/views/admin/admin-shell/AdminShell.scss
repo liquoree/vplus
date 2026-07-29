@@ -23,6 +23,15 @@
     }
 
     &__heading {
+        width: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 32px;
+    }
+
+    &__heading-content {
+        min-width: 0;
         display: flex;
         flex-direction: column;
         align-items: flex-start;
@@ -44,6 +53,20 @@
         line-height: 1.45;
     }
 
+    &__logout {
+        flex-shrink: 0;
+    }
+
+    &__navigation {
+        width: 100%;
+        margin-top: 28px;
+        margin-bottom: 28px;
+
+        >* {
+            margin: 0;
+        }
+    }
+
     &__content {
         width: 100%;
     }
@@ -56,6 +79,13 @@
             padding: 22px 14px 45px;
         }
 
+        &__heading {
+            flex-direction: column;
+            align-items: stretch;
+            justify-content: flex-start;
+            gap: 16px;
+        }
+
         &__title {
             font-size: 28px;
             line-height: 1.15;
@@ -66,6 +96,15 @@
             margin-top: 7px;
             font-size: 14px;
             line-height: 1.35;
+        }
+
+        &__logout {
+            width: 100%;
+        }
+
+        &__navigation {
+            margin-top: 14px;
+            margin-bottom: 20px;
         }
     }
 }

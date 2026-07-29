@@ -16,6 +16,11 @@ const reservationStatuses =
     'cancelled',
   ]);
 
+type ReservationDecisionStatus =
+  | 'approved'
+  | 'rejected'
+  | 'cancelled';
+
 function isBrowser() {
   return typeof window !== 'undefined';
 }
@@ -47,10 +52,8 @@ function isBookingReservation(
     typeof reservation.bookingOptionId ===
       'string' &&
     typeof reservation.date === 'string' &&
-    typeof reservation.startTime ===
-      'string' &&
-    typeof reservation.endTime ===
-      'string' &&
+    typeof reservation.startTime === 'string' &&
+    typeof reservation.endTime === 'string' &&
     typeof reservation.status === 'string' &&
     reservationStatuses.has(
       reservation.status as BookingReservationStatus
@@ -90,9 +93,7 @@ export function getMockReservations(): BookingReservation[] {
 
     if (
       !Array.isArray(parsedValue) ||
-      !parsedValue.every(
-        isBookingReservation
-      )
+      !parsedValue.every(isBookingReservation)
     ) {
       throw new Error(
         'Некорректная структура бронирований'
@@ -128,7 +129,7 @@ export function addMockReservations(
 
 export function updateMockReservationsStatusByRequestId(
   bookingRequestId: string,
-  status: 'approved' | 'rejected'
+  status: ReservationDecisionStatus
 ) {
   if (!isBrowser()) {
     return;

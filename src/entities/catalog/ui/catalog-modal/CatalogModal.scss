@@ -196,6 +196,10 @@
         transition: scale 0.2s ease;
         user-select: none;
 
+        &--unavailable {
+            background: var(--color-accent)
+        }
+
         &:hover {
             scale: 1.05;
         }
@@ -253,6 +257,14 @@
         justify-content: center;
         gap: 24px;
         margin-top: 22px;
+
+    &--single {
+            .catalog-modal__cancel {
+                width: 100%;
+                max-width: 190px;
+                flex: 1 1 100%;
+            }
+        }
     }
 
     &__booking {

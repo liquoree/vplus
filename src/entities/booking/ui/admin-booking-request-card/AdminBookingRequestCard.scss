@@ -149,12 +149,13 @@
     }
 
     &__action {
-        border: 0;
-        color: #ffffff;
         cursor: pointer;
         transition:
             opacity 0.2s ease,
-            transform 0.2s ease;
+            transform 0.2s ease,
+            background-color 0.2s ease,
+            border-color 0.2s ease,
+            color 0.2s ease;
 
         &:hover:not(:disabled) {
             opacity: 0.85;
@@ -170,11 +171,26 @@
         }
 
         &--approve {
+            border: 0;
             background: #18c900;
+            color: #ffffff;
         }
 
         &--reject {
+            border: 0;
             background: var(--color-accent);
+            color: #ffffff;
+        }
+
+        &--cancel {
+            border: 1px solid var(--color-accent);
+            background: transparent;
+            color: var(--color-accent);
+
+            &:hover:not(:disabled) {
+                background: rgb(236 11 34 / 7%);
+                opacity: 1;
+            }
         }
     }
 
@@ -189,6 +205,11 @@
         &--rejected {
             border: 1px solid var(--color-accent);
             color: var(--color-accent);
+        }
+
+        &--cancelled {
+            border: 1px solid #858585;
+            color: #747474;
         }
     }
 }

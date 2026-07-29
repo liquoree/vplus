@@ -5,16 +5,17 @@ import { Popular } from './popular/Popular';
 import { WhereUs } from './where-us/WhereUs';
 
 import { Footer, Header } from '@/widgets';
-import { getCatalogItems } from '@/entities/catalog';
+import { getCatalogItems, getSeasonalPopularItems } from '@/entities/catalog';
 
 import './HomePage.scss';
 
 export async function HomePage() {
   const catalogItems = await getCatalogItems();
 
-  const popularItems = catalogItems
-    .filter((item) => item.isPopular && item.kind !== 'service')
-    .slice(0, 4);
+  const popularItems =
+  getSeasonalPopularItems(
+    catalogItems
+  );
   return (
     <div className="home-page">
       <Header />

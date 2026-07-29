@@ -54,6 +54,24 @@ function sortByReviewedAt(
   );
 }
 
+function canApplyDecision(
+  request: BookingRequestRecord,
+  decision: BookingRequestDecision
+) {
+  if (request.status === 'pending') {
+    return (
+      decision === 'approved' ||
+      decision === 'rejected'
+    );
+  }
+
+  if (request.status === 'approved') {
+    return decision === 'cancelled';
+  }
+
+  return false;
+}
+
 export function AdminRequestsPage() {
   const snapshot = useSyncExternalStore(
     subscribeBookingRequests,
@@ -116,7 +134,10 @@ export function AdminRequestsPage() {
 
     if (
       !request ||
-      request.status !== 'pending'
+      !canApplyDecision(
+        request,
+        decision
+      )
     ) {
       return;
     }
@@ -240,6 +261,10 @@ export function AdminRequestsPage() {
                 (request) => (
                   <AdminBookingRequestCard
                     request={request}
+                    isUpdating={
+                      updatingRequestId ===
+                      request.id
+                    }
                     onChangeStatus={
                       handleRequestDecision
                     }

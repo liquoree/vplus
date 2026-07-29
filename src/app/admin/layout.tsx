@@ -1,7 +1,5 @@
 import type { ReactNode } from 'react';
 
-import { AdminShell } from '@/views/';
-
 type AdminLayoutProps = {
   children: ReactNode;
 };
@@ -9,5 +7,5 @@ type AdminLayoutProps = {
 export default function AdminLayout({
   children,
 }: AdminLayoutProps) {
-  return <AdminShell>{children}</AdminShell>;
+  return children;
 }

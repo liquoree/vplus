@@ -26,11 +26,6 @@ const companyLinks = [
 
 const contacts = [
   {
-    label: '+7 (911) 423-86-00',
-    href: 'tel:+79114238600',
-    icon: '/images/icons/phone.svg',
-  },
-  {
     label: '+7 (911) 404-73-03',
     href: 'tel:+79114047303',
     icon: '/images/icons/phone.svg',

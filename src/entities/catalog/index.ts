@@ -2,7 +2,6 @@ export type {
   CatalogItemKind,
   Season,
   PriceUnit,
-  ServiceBookingMode,
   CatalogCharacteristic,
   CatalogImage,
   CatalogItemBase,
@@ -30,9 +29,26 @@ export {
   getServiceCatalogItems,
 } from './lib/booking-options';
 
-export { getCatalogItems } from './api/get-catalog-items';
-export { getCatalogBookingOptions } from './api/get-catalog-booking-options';
+export {
+  getCatalogItems,
+} from './api/get-catalog-items';
 
-export { CatalogModalSkeleton } from './ui/catalog-modal/CatalogModalSkeleton';
+export {
+  getCatalogBookingOptions,
+} from './api/get-catalog-booking-options';
 
-export { CatalogCard } from './ui/catalog-card/CatalogCard';
+export {
+  CatalogModalSkeleton,
+} from './ui/catalog-modal/CatalogModalSkeleton';
+
+export {
+  CatalogCard,
+} from './ui/catalog-card/CatalogCard';
+
+export {
+  AdminCatalogCard,
+} from './ui/admin-catalog-card/AdminCatalogCard';
+
+export {
+  getSeasonalPopularItems,
+} from './lib/get-seasonal-popular-items';

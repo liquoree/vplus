@@ -33,7 +33,8 @@ export type BookingRequestPayload = {
 export type BookingRequestStatus =
   | 'pending'
   | 'approved'
-  | 'rejected';
+  | 'rejected'
+  | 'cancelled';
 
 export type BookingRequestDecision = Exclude<
   BookingRequestStatus,

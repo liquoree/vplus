@@ -1,0 +1,65 @@
+.admin-login-page {
+    min-height: 100svh;
+    padding: 24px;
+    display: grid;
+    place-items: center;
+    margin-top: -30px;
+    background: var(--color-page-bg);
+
+    &__card {
+        width: min(100%, 380px);
+        padding: 30px;
+        border: 1px solid var(--color-line);
+        border-radius: 16px;
+        background: var(--color-white);
+        box-shadow:
+            0 16px 40px rgb(0 0 0 / 12%);
+    }
+
+    &__logo {
+        width: 92px;
+        height: 64px;
+        margin: 0 auto 22px;
+        border-radius: 11px;
+        background: var(--color-black);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    &__heading {
+        margin-bottom: 24px;
+        text-align: center;
+
+        h1 {
+            margin: 0;
+            color: var(--color-text-primary);
+            font-size: 24px;
+            line-height: 1.2;
+        }
+
+        p {
+            margin: 8px 0 0;
+            color: var(--color-text-secondary);
+            font-size: 14px;
+            line-height: 1.4;
+        }
+    }
+}
+
+@media (max-width: 480px) {
+    .admin-login-page {
+        padding: 16px;
+
+        &__card {
+            padding: 24px 20px;
+            border-radius: 13px;
+        }
+
+        &__heading {
+            h1 {
+                font-size: 22px;
+            }
+        }
+    }
+}
