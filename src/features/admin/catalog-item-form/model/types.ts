@@ -36,6 +36,7 @@ export type CatalogItemFormValues = {
   description: string;
 
   price: string;
+  oldPrice: string;
   priceUnit: PriceUnit;
 
   characteristicsText: string;
@@ -56,6 +57,7 @@ export type CatalogItemFormValues = {
 export type CatalogItemFormErrors = {
   title?: string;
   price?: string;
+  oldPrice?: string;
   images?: string;
   packageItems?: string;
   bookingOptions?: string;

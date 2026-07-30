@@ -3,8 +3,10 @@
 import Image from 'next/image';
 import Link from 'next/link';
 import type { MouseEvent } from 'react';
-import type { CatalogItem } from '../../model/types';
+
 import { cn } from '@/shared/lib/cn';
+
+import type { CatalogItem } from '../../model/types';
 
 type CatalogCardProps = {
   item: CatalogItem;
@@ -23,20 +25,55 @@ function getBookingHref(item: CatalogItem) {
   return `/booking?vehicle=${item.slug}`;
 }
 
-function getPriceLabel(item: CatalogItem) {
-  const unit = item.priceUnit === 'hour' ? '/ч' : '';
+function getCurrentPriceLabel(
+  item: CatalogItem
+) {
+  const unit =
+    item.priceUnit === 'hour'
+      ? '/ч'
+      : '';
 
-  return `от ${item.price}₽${unit}`;
+  return `${item.price.toLocaleString(
+    'ru-RU'
+  )}₽${unit}`;
+}
+
+function getOldPriceLabel(
+  item: CatalogItem
+) {
+  const oldPrice = item.oldPrice;
+
+  if (
+    typeof oldPrice !== 'number' ||
+    !Number.isFinite(oldPrice) ||
+    oldPrice <= item.price
+  ) {
+    return null;
+  }
+
+  return oldPrice.toLocaleString('ru-RU');
 }
 
 function getMainImage(item: CatalogItem) {
-  return item.images.find((image) => image.isMain) ?? item.images[0];
+  return (
+    item.images.find(
+      (image) => image.isMain
+    ) ?? item.images[0]
+  );
 }
 
-export function CatalogCard({ item, onOpen }: CatalogCardProps) {
+export function CatalogCard({
+  item,
+  onOpen,
+}: CatalogCardProps) {
   const mainImage = getMainImage(item);
 
-  const handleImageClick = (event: MouseEvent<HTMLAnchorElement>) => {
+  const oldPriceLabel =
+    getOldPriceLabel(item);
+
+  const handleImageClick = (
+    event: MouseEvent<HTMLAnchorElement>
+  ) => {
     if (!onOpen) {
       return;
     }
@@ -57,7 +94,10 @@ export function CatalogCard({ item, onOpen }: CatalogCardProps) {
           <Image
             className="catalog-card__image"
             src={mainImage.url}
-            alt={mainImage.alt ?? item.title}
+            alt={
+              mainImage.alt ??
+              item.title
+            }
             fill
             sizes="(max-width: 768px) 50vw, 270px"
           />
@@ -65,11 +105,29 @@ export function CatalogCard({ item, onOpen }: CatalogCardProps) {
       )}
 
       <div className="catalog-card__body">
-        <h3 className="catalog-card__title">{item.title}</h3>
+        <h3 className="catalog-card__title">
+          {item.title}
+        </h3>
 
-        <p className="catalog-card__description">{item.description}</p>
+        <p className="catalog-card__description">
+          {item.description}
+        </p>
 
-        <div className="catalog-card__price">{getPriceLabel(item)}</div>
+        <div className="catalog-card__prices">
+          <span className="catalog-card__price-prefix">
+            от
+          </span>
+
+          {oldPriceLabel && (
+            <span className="catalog-card__old-price">
+              {oldPriceLabel}
+            </span>
+          )}
+
+          <span className="catalog-card__price">
+            {getCurrentPriceLabel(item)}
+          </span>
+        </div>
 
         <div
           className={cn(

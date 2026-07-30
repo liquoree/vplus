@@ -25,6 +25,7 @@ export type CatalogItemBase = {
   description: string;
 
   price: number;
+  oldPrice: number | null;
   priceUnit: PriceUnit;
 
   images: CatalogImage[];

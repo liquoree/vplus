@@ -83,13 +83,6 @@ const peopleOptions = [1, 2, 3, 4].map(
   })
 );
 
-const durationOptions = [
-  1, 2, 3, 4, 5, 6,
-].map((value) => ({
-  value: String(value),
-  label: `${value} ч.`,
-}));
-
 const seasonOptions = [
   {
     value: 'all_season',
@@ -201,6 +194,43 @@ export function CatalogItemForm({
           }
         />
 
+        <label className="catalog-item-form__old-price">
+          <span className="catalog-item-form__label">
+            Старая цена (до скидки)
+          </span>
+
+          <input
+            className="catalog-item-form__old-price-input"
+            type="number"
+            min="1"
+            step="1"
+            inputMode="numeric"
+            value={values.oldPrice}
+            placeholder="Например, 10 000"
+            aria-invalid={Boolean(
+              errors.oldPrice
+            )}
+            disabled={isSubmitting}
+            onChange={(event) => {
+              setField(
+                'oldPrice',
+                event.target.value
+              );
+            }}
+          />
+
+          <span className="catalog-item-form__old-price-hint">
+            Необязательное поле. Цена должна
+            быть больше текущей.
+          </span>
+
+          {errors.oldPrice && (
+            <span className="catalog-item-form__error">
+              {errors.oldPrice}
+            </span>
+          )}
+        </label>
+
         <fieldset className="catalog-item-form__radio-fieldset">
           <legend>Единица цены*</legend>
 
@@ -309,22 +339,22 @@ export function CatalogItemForm({
         />
       </label>
 
-        {values.kind === 'vehicle' && (
+      {values.kind === 'vehicle' && (
         <SelectField
-            className="catalog-item-form__season"
-            label="Сезон"
-            value={values.season}
-            placeholder="Выберите сезон"
-            options={seasonOptions}
-            required
-            onChange={(value) =>
+          className="catalog-item-form__season"
+          label="Сезон"
+          value={values.season}
+          placeholder="Выберите сезон"
+          options={seasonOptions}
+          required
+          onChange={(value) =>
             setField(
-                'season',
-                value as typeof values.season
+              'season',
+              value as typeof values.season
             )
-            }
+          }
         />
-        )}
+      )}
 
       {values.kind === 'package' && (
         <section className="catalog-item-form__section">
@@ -415,7 +445,8 @@ export function CatalogItemForm({
             <p>
               Для техники выбирается услуга,
               количество человек,
-              продолжительность и точная цена.
+              продолжительность в часах и
+              точная цена.
             </p>
           </div>
 
@@ -485,22 +516,23 @@ export function CatalogItemForm({
                       }
                     />
 
-                    <SelectField
-                      label="Время"
+                    <TextField
+                      label="Время, ч."
+                      type="number"
+                      min="0.5"
+                      max="6"
+                      step="0.5"
                       value={
                         option.durationHours
                       }
-                      placeholder="Часы"
-                      options={
-                        durationOptions
-                      }
-                      required
-                      onChange={(value) =>
+                      placeholder="1,5"
+                      onChange={(event) =>
                         updateBookingOption(
                           option.id,
                           {
                             durationHours:
-                              value,
+                              event.target
+                                .value,
                           }
                         )
                       }
@@ -666,22 +698,22 @@ export function CatalogItemForm({
         )}
       </section>
 
-        <div className="catalog-item-form__flags">
+      <div className="catalog-item-form__flags">
         <label className="catalog-item-form__checkbox">
-            <input
+          <input
             type="checkbox"
             checked={values.isAvailable}
             onChange={(event) =>
-                setField(
+              setField(
                 'isAvailable',
                 event.target.checked
-                )
+              )
             }
-            />
+          />
 
-            <span>В наличии</span>
+          <span>В наличии</span>
         </label>
-        </div>
+      </div>
 
       {errors.submit && (
         <p

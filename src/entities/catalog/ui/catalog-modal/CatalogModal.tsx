@@ -14,6 +14,7 @@ import {
   SwiperSlide,
 } from 'swiper/react';
 
+import { cn } from '@/shared/lib/cn';
 import { Button } from '@/shared/ui';
 
 import {
@@ -25,7 +26,6 @@ import type { CatalogBookingOption } from '../../model/booking-option-types';
 import type { CatalogItem } from '../../model/types';
 
 import './CatalogModal.scss';
-import { cn } from '@/shared/lib/cn';
 
 type CatalogModalProps = {
   item: CatalogItem;
@@ -61,7 +61,7 @@ function getBookingHref(
   return `/booking?vehicle=${item.slug}`;
 }
 
-function getPriceLabel(
+function getCurrentPriceLabel(
   item: CatalogItem
 ) {
   const unit =
@@ -69,9 +69,25 @@ function getPriceLabel(
       ? '/ч'
       : '';
 
-  return `от ${item.price.toLocaleString(
+  return `${item.price.toLocaleString(
     'ru-RU'
   )}₽${unit}`;
+}
+
+function getOldPriceLabel(
+  item: CatalogItem
+) {
+  const oldPrice = item.oldPrice;
+
+  if (
+    typeof oldPrice !== 'number' ||
+    !Number.isFinite(oldPrice) ||
+    oldPrice <= item.price
+  ) {
+    return null;
+  }
+
+  return oldPrice.toLocaleString('ru-RU');
 }
 
 function getSeasonLabel(
@@ -122,7 +138,8 @@ function getRelatedItemNames(
     .map((serviceId) => {
       return items.find(
         (catalogItem) =>
-          catalogItem.kind === 'service' &&
+          catalogItem.kind ===
+            'service' &&
           catalogItem.id === serviceId
       )?.title;
     })
@@ -163,6 +180,9 @@ export function CatalogModal({
       items,
       bookingOptions
     );
+
+  const oldPriceLabel =
+    getOldPriceLabel(item);
 
   const handleCloseClick = (
     event: MouseEvent<HTMLAnchorElement>
@@ -256,9 +276,23 @@ export function CatalogModal({
           </div>
 
           <div className="catalog-modal__price-row">
-            <p className="catalog-modal__price">
-              {getPriceLabel(item)}
-            </p>
+            <div className="catalog-modal__prices">
+              <span className="catalog-modal__price-prefix">
+                от
+              </span>
+
+              {oldPriceLabel && (
+                <span className="catalog-modal__old-price">
+                  {oldPriceLabel}
+                </span>
+              )}
+
+              <span className="catalog-modal__price">
+                {getCurrentPriceLabel(
+                  item
+                )}
+              </span>
+            </div>
 
             <span
               className={cn(

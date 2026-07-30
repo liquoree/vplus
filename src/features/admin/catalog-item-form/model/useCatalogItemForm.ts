@@ -213,6 +213,11 @@ function createInitialValues(
         ? String(item.price)
         : '',
 
+    oldPrice:
+    typeof item?.oldPrice === 'number'
+      ? String(item.oldPrice)
+      : '',
+
     priceUnit:
       item?.priceUnit ?? 'hour',
 
@@ -301,6 +306,29 @@ function validateValues(
       'Укажите цену больше нуля';
   }
 
+  const oldPrice =
+    values.oldPrice.trim() === ''
+      ? null
+      : Number(values.oldPrice);
+
+  if (
+    oldPrice !== null &&
+    (!Number.isFinite(oldPrice) ||
+      oldPrice <= 0)
+  ) {
+    errors.oldPrice =
+      'Укажите корректную старую цену';
+  }
+
+  if (
+    oldPrice !== null &&
+    Number.isFinite(price) &&
+    oldPrice <= price
+  ) {
+    errors.oldPrice =
+      'Старая цена должна быть больше текущей';
+  }
+
   if (values.images.length === 0) {
     errors.images =
       'Добавьте хотя бы одно изображение';
@@ -369,13 +397,17 @@ function validateValues(
         return;
       }
 
-      if (
-        !Number.isInteger(durationHours) ||
-        durationHours < 1 ||
-        durationHours > 6
-      ) {
+      const isValidDuration =
+        Number.isFinite(durationHours) &&
+        durationHours >= 0.5 &&
+        durationHours <= 6 &&
+        Number.isInteger(
+          durationHours * 2
+        );
+
+      if (!isValidDuration) {
         errors.optionRows[option.id] =
-          'Выберите продолжительность';
+          'Укажите время от 0,5 до 6 часов с шагом 0,5';
 
         return;
       }
@@ -418,6 +450,7 @@ function hasErrors(
   return Boolean(
     errors.title ||
       errors.price ||
+      errors.oldPrice ||
       errors.images ||
       errors.packageItems ||
       errors.bookingOptions ||
@@ -782,6 +815,12 @@ export function useCatalogItemForm({
           values.description.trim(),
 
         price: Number(values.price),
+
+        oldPrice:
+        values.oldPrice.trim() === ''
+          ? null
+          : Number(values.oldPrice),
+          
         priceUnit: values.priceUnit,
 
         images,

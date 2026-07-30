@@ -26,6 +26,7 @@ export const catalogItems: CatalogItem[] = [
     description:
       'Почувствуйте мощь бездорожья за рулём четырёхколёсного монстра.',
     price: 3500,
+    oldPrice: 4200,
     priceUnit: 'hour',
     images: quadBikeImages,
     characteristics: [
@@ -53,6 +54,7 @@ export const catalogItems: CatalogItem[] = [
     description:
       'Мощная техника для зимних маршрутов и активного отдыха.',
     price: 4500,
+    oldPrice: null,
     priceUnit: 'hour',
     images: [
       {
@@ -95,6 +97,7 @@ export const catalogItems: CatalogItem[] = [
     description:
       'Спокойные прогулки по воде и красивые маршруты Карелии.',
     price: 1200,
+    oldPrice: null,
     priceUnit: 'hour',
     images: [
       {
@@ -130,6 +133,7 @@ export const catalogItems: CatalogItem[] = [
     description:
       'Готовая программа с техникой, маршрутом и сопровождением.',
     price: 12000,
+    oldPrice: 15000,
     priceUnit: 'fixed',
     images: [
       {
@@ -172,6 +176,7 @@ export const catalogItems: CatalogItem[] = [
     description:
       'Самостоятельная прогулка на выбранной технике по согласованному маршруту.',
     price: 1200,
+    oldPrice: null,
     priceUnit: 'hour',
     images: [
       {
@@ -202,6 +207,7 @@ export const catalogItems: CatalogItem[] = [
     description:
       'Выездная программа с техникой и маршрутом.',
     price: 9500,
+    oldPrice: 11000,
     priceUnit: 'fixed',
     images: [
       {
@@ -232,6 +238,7 @@ export const catalogItems: CatalogItem[] = [
     description:
       'Маршрут с заданиями, сопровождением и активной программой.',
     price: 8500,
+    oldPrice: 10000,
     priceUnit: 'fixed',
     images: [
       {
@@ -262,6 +269,7 @@ export const catalogItems: CatalogItem[] = [
     description:
       'Зимняя прогулка на снегоходах по подготовленному маршруту.',
     price: 12500,
+    oldPrice: null,
     priceUnit: 'fixed',
     images: [
       {
@@ -292,6 +300,7 @@ export const catalogItems: CatalogItem[] = [
     description:
       'Маршрут по воде на SUP-бордах с сопровождением.',
     price: 3200,
+    oldPrice: null,
     priceUnit: 'fixed',
     images: [
       {
