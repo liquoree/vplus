@@ -1,5 +1,18 @@
-import { AdminRequestsPage } from '@/views/';
+import {
+  getAdminBookingRequests,
+} from '@/entities/booking/server';
 
-export default function Page() {
-  return <AdminRequestsPage />;
+import {
+  AdminRequestsPage,
+} from '@/views/';
+
+export default async function Page() {
+  const requests =
+    await getAdminBookingRequests();
+
+  return (
+    <AdminRequestsPage
+      initialRequests={requests}
+    />
+  );
 }

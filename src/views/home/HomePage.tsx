@@ -5,7 +5,8 @@ import { Popular } from './popular/Popular';
 import { WhereUs } from './where-us/WhereUs';
 
 import { Footer, Header } from '@/widgets';
-import { getCatalogItems, getSeasonalPopularItems } from '@/entities/catalog';
+import { getSeasonalPopularItems } from '@/entities/catalog';
+import { getCatalogItems } from '@/entities/catalog/server';
 
 import './HomePage.scss';
 

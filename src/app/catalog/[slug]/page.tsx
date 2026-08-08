@@ -3,7 +3,7 @@ import { notFound } from 'next/navigation';
 import {
   getCatalogBookingOptions,
   getCatalogItems,
-} from '@/entities/catalog';
+} from '@/entities/catalog/server';
 import { CatalogPage } from '@/views';
 
 type PageProps = {

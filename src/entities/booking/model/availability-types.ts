@@ -15,23 +15,3 @@ export type BookingAvailabilityResult = {
   durationMinutes: number;
   slots: BookingTimeSlot[];
 };
-
-export type BookingReservationStatus =
-  | 'pending'
-  | 'approved'
-  | 'rejected'
-  | 'cancelled';
-
-export type BookingReservation = {
-  id: string;
-  bookingRequestId: string;
-
-  bookableItemId: string;
-  bookingOptionId: string;
-
-  date: string;
-  startTime: string;
-  endTime: string;
-
-  status: BookingReservationStatus;
-};

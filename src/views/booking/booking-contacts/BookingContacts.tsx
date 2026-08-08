@@ -1,23 +1,42 @@
 import { Button, TextField } from '@/shared/ui';
+
 import type {
   ContactErrors,
   ContactValues,
 } from '../model/types';
 
+import {
+  SmartCaptcha,
+} from '@/widgets';
+
 type BookingContactsProps = {
   values: ContactValues;
   errors: ContactErrors;
   isSubmitting: boolean;
-  onChange: <Key extends keyof ContactValues>(
+
+  onChange: <
+    Key extends keyof ContactValues,
+  >(
     key: Key,
     value: ContactValues[Key]
   ) => void;
+
+  onCaptchaSuccess: (
+    token: string
+  ) => void;
+  captchaError?: string;
+  captchaResetKey: number;
+  onCaptchaExpired: () => void;
 };
 
 export function BookingContacts({
   values,
   errors,
   isSubmitting,
+  onCaptchaSuccess,
+  captchaError,
+  captchaResetKey,
+  onCaptchaExpired,
   onChange,
 }: BookingContactsProps) {
   return (
@@ -34,7 +53,10 @@ export function BookingContacts({
             value={values.name}
             error={errors.name}
             onChange={(event) =>
-              onChange('name', event.target.value)
+              onChange(
+                'name',
+                event.target.value
+              )
             }
           />
 
@@ -45,7 +67,10 @@ export function BookingContacts({
             value={values.email}
             error={errors.email}
             onChange={(event) =>
-              onChange('email', event.target.value)
+              onChange(
+                'email',
+                event.target.value
+              )
             }
           />
 
@@ -56,7 +81,10 @@ export function BookingContacts({
             value={values.phone}
             error={errors.phone}
             onChange={(event) =>
-              onChange('phone', event.target.value)
+              onChange(
+                'phone',
+                event.target.value
+              )
             }
           />
         </div>
@@ -64,35 +92,52 @@ export function BookingContacts({
         <div className="booking-page__verification">
           <div className="booking-page__agreements">
             <div className="booking-page__agreement-item">
-              <label className="booking-page__agreement">
+              <div className="booking-page__agreement">
                 <input
+                  id="booking-terms"
                   type="checkbox"
-                  checked={values.privacy}
+                  checked={
+                    values.bookingTerms
+                  }
                   onChange={(event) =>
-                    onChange('privacy', event.target.checked)
+                    onChange(
+                      'bookingTerms',
+                      event.target.checked
+                    )
                   }
                 />
 
                 <span>
-                  Согласен с{' '}
-                  <a href="/privacy">
-                    политикой конфиденциальности
+                  <label htmlFor="booking-terms">
+                    Ознакомлен и согласен с{' '}
+                  </label>
+
+                  <a
+                    href="/booking-terms"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    Условиями бронирования
+                    и аренды
                   </a>
                 </span>
-              </label>
+              </div>
 
-              {errors.privacy && (
+              {errors.bookingTerms && (
                 <span className="booking-page__agreement-error">
-                  {errors.privacy}
+                  {errors.bookingTerms}
                 </span>
               )}
             </div>
 
             <div className="booking-page__agreement-item">
-              <label className="booking-page__agreement">
+              <div className="booking-page__agreement">
                 <input
+                  id="personal-data-consent"
                   type="checkbox"
-                  checked={values.personalData}
+                  checked={
+                    values.personalData
+                  }
                   onChange={(event) =>
                     onChange(
                       'personalData',
@@ -102,12 +147,20 @@ export function BookingContacts({
                 />
 
                 <span>
-                  Согласен на{' '}
-                  <a href="/personal-data">
-                    обработку персональных данных
+                  <label htmlFor="personal-data-consent">
+                    Даю согласие на{' '}
+                  </label>
+
+                  <a
+                    href="/personal-data-consent"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    обработку персональных
+                    данных
                   </a>
                 </span>
-              </label>
+              </div>
 
               {errors.personalData && (
                 <span className="booking-page__agreement-error">
@@ -117,8 +170,26 @@ export function BookingContacts({
             </div>
           </div>
 
-          <div className="booking-page__captcha">
-            Заглушка SmartCaptcha
+          <div className="booking-page__captcha-wrapper">
+            <div className="booking-page__captcha">
+              <SmartCaptcha
+                resetKey={
+                  captchaResetKey
+                }
+                onSuccess={
+                  onCaptchaSuccess
+                }
+                onTokenExpired={
+                  onCaptchaExpired
+                }
+              />
+            </div>
+
+            {captchaError && (
+              <span className="booking-page__captcha-error">
+                {captchaError}
+              </span>
+            )}
           </div>
         </div>
 
@@ -131,7 +202,8 @@ export function BookingContacts({
         />
 
         <p className="booking-page__note">
-          После одобрения заявки на указанный email придёт письмо
+          После одобрения заявки на
+          указанный email придёт письмо
           со ссылкой на предоплату
         </p>
       </div>

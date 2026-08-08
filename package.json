@@ -9,12 +9,17 @@
     "lint": "eslint"
   },
   "dependencies": {
+    "@yandex/smart-captcha": "2.9.1",
+    "axios": "^1.19.0",
     "next": "16.2.9",
     "react": "19.2.4",
     "react-dom": "19.2.4",
+    "react-markdown": "^10.1.0",
+    "remark-gfm": "^4.0.1",
     "swiper": "^14.0.1"
   },
   "devDependencies": {
+    "@types/estree": "^1.0.9",
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",

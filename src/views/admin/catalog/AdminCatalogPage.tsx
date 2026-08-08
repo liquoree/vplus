@@ -16,8 +16,6 @@ import {
   type CatalogItem,
 } from '@/entities/catalog';
 
-import { useAdminCatalogStore } from '@/entities/catalog/lib/use-admin-catalog-store';
-
 import { CatalogModal } from '@/entities/catalog/ui/catalog-modal/CatalogModal';
 
 import { cn } from '@/shared/lib/cn';
@@ -97,33 +95,27 @@ export function AdminCatalogPage({
   const [, startTransition] =
     useTransition();
 
-  const catalog =
-    useAdminCatalogStore(
-      initialItems,
-      initialBookingOptions
-    );
-
   const [activeFilter, setActiveFilter] =
     useState<CatalogFilter>('all');
 
   const filteredItems = useMemo(
     () =>
       filterCatalogItems(
-        catalog.items,
+        initialItems,
         activeFilter
       ),
-    [catalog.items, activeFilter]
+    [initialItems, activeFilter]
   );
 
   const selectedItem = useMemo(
     () =>
       selectedItemId
-        ? catalog.items.find(
+        ? initialItems.find(
             (item) =>
               item.id === selectedItemId
           )
         : undefined,
-    [catalog.items, selectedItemId]
+    [initialItems, selectedItemId]
   );
 
   const openItem = (
@@ -150,10 +142,10 @@ export function AdminCatalogPage({
   return (
     <section className="admin-catalog-page">
       <div className="admin-catalog-page__header">
-        <div className="admin-catalog-page__heading">
-          <h2 className="admin-catalog-page__title">
+        <div>
+          <h1 className="admin-catalog-page__title">
             Каталог
-          </h2>
+          </h1>
 
           <p className="admin-catalog-page__description">
             Управление техникой, услугами и
@@ -177,7 +169,8 @@ export function AdminCatalogPage({
           <button
             className={cn(
               'admin-catalog-page__filter',
-              activeFilter === filter.value &&
+              activeFilter ===
+                filter.value &&
                 'admin-catalog-page__filter--active'
             )}
             type="button"
@@ -186,7 +179,9 @@ export function AdminCatalogPage({
             }
             key={filter.value}
             onClick={() =>
-              setActiveFilter(filter.value)
+              setActiveFilter(
+                filter.value
+              )
             }
           >
             {filter.label}
@@ -196,18 +191,21 @@ export function AdminCatalogPage({
 
       {filteredItems.length > 0 ? (
         <div className="admin-catalog-page__grid">
-          {filteredItems.map((item) => (
-            <AdminCatalogCard
-              item={item}
-              onOpen={openItem}
-              key={item.id}
-            />
-          ))}
+          {filteredItems.map(
+            (item) => (
+              <AdminCatalogCard
+                item={item}
+                onOpen={openItem}
+                key={item.id}
+              />
+            )
+          )}
         </div>
       ) : (
         <div className="admin-catalog-page__empty">
           <strong>
-            В этом разделе пока нет позиций
+            В этом разделе пока нет
+            позиций
           </strong>
 
           <p>
@@ -220,9 +218,9 @@ export function AdminCatalogPage({
       {selectedItem && (
         <CatalogModal
           item={selectedItem}
-          items={catalog.items}
+          items={initialItems}
           bookingOptions={
-            catalog.bookingOptions
+            initialBookingOptions
           }
           closeHref="/admin/catalog"
           showBookingAction={false}

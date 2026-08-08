@@ -18,10 +18,22 @@ const techniqueLinks = [
 ];
 
 const companyLinks = [
-  { label: 'О нас', href: '/about' },
-  { label: 'Условия аренды', href: '/booking-terms' },
-  { label: 'Политика конфиденциальности', href: '/privacy' },
-  { label: 'Пользовательское соглашение', href: '/agreement' },
+  {
+    label: 'Условия бронирования и аренды',
+    href: '/booking-terms',
+  },
+  {
+    label: 'Политика обработки персональных данных',
+    href: '/privacy',
+  },
+  {
+    label: 'Согласие на обработку персональных данных',
+    href: '/personal-data-consent',
+  },
+  {
+    label: 'Реквизиты',
+    href: '/requisites',
+  },
 ];
 
 const contacts = [

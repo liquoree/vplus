@@ -1,13 +1,18 @@
-import type { ReactNode } from 'react';
-import { cookies } from 'next/headers';
-import { redirect } from 'next/navigation';
+import type {
+  ReactNode,
+} from 'react';
 
 import {
-  ADMIN_SESSION_COOKIE,
-  verifyAdminSessionToken,
-} from '@/shared/lib/auth/admin-session';
+  redirect,
+} from 'next/navigation';
 
-import { AdminShell } from '@/views/admin/admin-shell/AdminShell';
+import {
+  getCurrentAdmin,
+} from '@/features/admin/auth/api/get-current-admin';
+
+import {
+  AdminShell,
+} from '@/views/admin/admin-shell/AdminShell';
 
 type AdminPanelLayoutProps = {
   children: ReactNode;
@@ -16,16 +21,10 @@ type AdminPanelLayoutProps = {
 export default async function AdminPanelLayout({
   children,
 }: AdminPanelLayoutProps) {
-  const cookieStore = await cookies();
+  const admin =
+    await getCurrentAdmin();
 
-  const sessionToken = cookieStore.get(
-    ADMIN_SESSION_COOKIE
-  )?.value;
-
-  const session =
-    verifyAdminSessionToken(sessionToken);
-
-  if (!session) {
+  if (!admin) {
     redirect('/admin');
   }
 

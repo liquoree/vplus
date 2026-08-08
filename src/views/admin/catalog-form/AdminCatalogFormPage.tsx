@@ -1,20 +1,29 @@
 'use client';
 
 import Link from 'next/link';
-import { useCallback, useMemo, useState } from 'react';
-import { useRouter } from 'next/navigation';
-
-import type {
-  CatalogBookingOption,
-  CatalogItem,
-} from '@/entities/catalog';
-
-import { useAdminCatalogStore } from '@/entities/catalog/lib/use-admin-catalog-store';
 
 import {
-  deleteAdminCatalogItem,
-  upsertAdminCatalogItem,
-} from '@/entities/catalog/mock/admin-catalog-store';
+  useCallback,
+  useMemo,
+  useState,
+} from 'react';
+
+import type {
+  AdminCatalogItem,
+  CatalogBookingOption,
+} from '@/entities/catalog';
+
+import {
+  createCatalogItem,
+} from '@/features/admin/catalog-item-form/api/create-catalog-item';
+
+import {
+  deleteCatalogItem,
+} from '@/features/admin/catalog-item-form/api/delete-catalog-item';
+
+import {
+  updateCatalogItem,
+} from '@/features/admin/catalog-item-form/api/update-catalog-item';
 
 import {
   CatalogItemDeleteModal,
@@ -29,7 +38,8 @@ type AdminCatalogFormPageProps = {
 
   itemId?: string;
 
-  initialItems: CatalogItem[];
+  initialItems:
+    AdminCatalogItem[];
 
   initialBookingOptions:
     CatalogBookingOption[];
@@ -41,138 +51,180 @@ export function AdminCatalogFormPage({
   initialItems,
   initialBookingOptions,
 }: AdminCatalogFormPageProps) {
-  const router = useRouter();
+  const [
+    deleteTarget,
+    setDeleteTarget,
+  ] =
+    useState<AdminCatalogItem | null>(
+      null
+    );
 
-  const catalog = useAdminCatalogStore(
-    initialItems,
-    initialBookingOptions
-  );
+  const [
+    isDeleting,
+    setIsDeleting,
+  ] = useState(false);
 
-  const [deleteTarget, setDeleteTarget] =
-    useState<CatalogItem | null>(null);
-
-  const [isDeleting, setIsDeleting] =
-    useState(false);
-
-  const [deleteError, setDeleteError] =
-    useState('');
+  const [
+    deleteError,
+    setDeleteError,
+  ] = useState('');
 
   const item = useMemo(
     () =>
       mode === 'edit'
-        ? catalog.items.find(
+        ? initialItems.find(
             (catalogItem) =>
               catalogItem.id === itemId
           )
         : undefined,
-    [catalog.items, itemId, mode]
+    [
+      initialItems,
+      itemId,
+      mode,
+    ]
   );
 
-  /**
-   * После синхронного удаления store сразу
-   * уведомляет подписчиков. Сохраняем удаляемый
-   * объект в deleteTarget, чтобы текущая страница
-   * не перешла в состояние «не найдено» раньше,
-   * чем завершится router.replace().
-   */
-  const formItem = item ?? deleteTarget ?? undefined;
-
-  const itemBookingOptions = useMemo(() => {
-    if (
-      !formItem ||
-      formItem.kind === 'service'
-    ) {
-      return [];
-    }
-
-    return catalog.bookingOptions.filter(
-      (option) =>
-        option.bookableItemId ===
-        formItem.id
-    );
-  }, [catalog.bookingOptions, formItem]);
-
-  const handleSubmit = async (
-    payload: CatalogItemFormSubmitPayload
-  ) => {
-    upsertAdminCatalogItem(
-      payload.item,
-      payload.bookingOptions
-    );
-
-    router.push('/admin/catalog');
-  };
-
-  const openDeleteModal = useCallback(() => {
-    if (!item || isDeleting) {
-      return;
-    }
-
-    setDeleteError('');
-    setDeleteTarget(item);
-  }, [isDeleting, item]);
-
-  const closeDeleteModal = useCallback(() => {
-    if (isDeleting) {
-      return;
-    }
-
-    setDeleteError('');
-    setDeleteTarget(null);
-  }, [isDeleting]);
-
-  const confirmDelete = useCallback(() => {
-    if (!deleteTarget || isDeleting) {
-      return;
-    }
-
-    setDeleteError('');
-    setIsDeleting(true);
-
-    try {
-      const wasDeleted =
-        deleteAdminCatalogItem(
-          deleteTarget.id
-        );
-
-      if (!wasDeleted) {
-        throw new Error(
-          'Позиция уже удалена'
-        );
+  const itemBookingOptions =
+    useMemo(() => {
+      if (
+        !item ||
+        item.kind === 'service'
+      ) {
+        return [];
       }
 
-      /**
-       * replace удаляет страницу редактирования
-       * из истории браузера. После удаления
-       * кнопка «Назад» не вернёт пользователя
-       * на несуществующий маршрут.
-       */
-      router.replace('/admin/catalog');
-    } catch {
-      setDeleteError(
-        'Не удалось удалить товар'
+      return initialBookingOptions.filter(
+        (option) =>
+          option.bookableItemId ===
+          item.id
       );
-      setIsDeleting(false);
-    }
-  }, [deleteTarget, isDeleting, router]);
+    }, [
+      initialBookingOptions,
+      item,
+    ]);
 
-  if (mode === 'edit' && !formItem) {
+  const handleSubmit = async (
+    payload:
+      CatalogItemFormSubmitPayload
+  ) => {
+    if (mode === 'create') {
+      await createCatalogItem(
+        payload
+      );
+
+      window.location.replace(
+        '/admin/catalog'
+      );
+
+      return;
+    }
+
+    if (!item) {
+      throw new Error(
+        'Позиция не найдена.'
+      );
+    }
+
+    await updateCatalogItem(
+      item.id,
+      payload,
+      item.version
+    );
+
+    window.location.replace(
+      '/admin/catalog'
+    );
+  };
+
+  const openDeleteModal =
+    useCallback(() => {
+      if (
+        !item ||
+        isDeleting
+      ) {
+        return;
+      }
+
+      setDeleteError('');
+      setDeleteTarget(item);
+    }, [
+      isDeleting,
+      item,
+    ]);
+
+  const closeDeleteModal =
+    useCallback(() => {
+      if (isDeleting) {
+        return;
+      }
+
+      setDeleteError('');
+      setDeleteTarget(null);
+    }, [isDeleting]);
+
+  const confirmDelete =
+    useCallback(async () => {
+      if (
+        !deleteTarget ||
+        isDeleting
+      ) {
+        return;
+      }
+
+      setDeleteError('');
+      setIsDeleting(true);
+
+      try {
+        const result =
+          await deleteCatalogItem(
+            deleteTarget.id,
+            deleteTarget.version
+          );
+
+        if (!result.success) {
+          throw new Error(
+            'Не удалось удалить позицию.'
+          );
+        }
+
+        window.location.replace(
+          '/admin/catalog'
+        );
+      } catch (error) {
+        setDeleteError(
+          error instanceof Error
+            ? error.message
+            : 'Не удалось удалить товар'
+        );
+
+        setIsDeleting(false);
+      }
+    }, [
+      deleteTarget,
+      isDeleting,
+    ]);
+
+  if (
+    mode === 'edit' &&
+    !item
+  ) {
     return (
       <section className="admin-catalog-form-page">
         <Link
-          className="admin-catalog-form-page__back"
           href="/admin/catalog"
+          className="admin-catalog-form-page__back"
         >
-          <span aria-hidden="true">‹</span>
-          Назад
+          ‹ Назад
         </Link>
 
         <div className="admin-catalog-form-page__not-found">
-          <h2>Позиция не найдена</h2>
+          <h2>
+            Позиция не найдена
+          </h2>
 
           <p>
-            Возможно, позиция была удалена
-            или ссылка устарела.
+            Возможно, позиция была
+            удалена или ссылка устарела.
           </p>
         </div>
       </section>
@@ -183,11 +235,10 @@ export function AdminCatalogFormPage({
     <>
       <section className="admin-catalog-form-page">
         <Link
-          className="admin-catalog-form-page__back"
           href="/admin/catalog"
+          className="admin-catalog-form-page__back"
         >
-          <span aria-hidden="true">‹</span>
-          Назад
+          ‹ Назад
         </Link>
 
         <h2 className="admin-catalog-form-page__title">
@@ -199,29 +250,43 @@ export function AdminCatalogFormPage({
         <div className="admin-catalog-form-page__form">
           <CatalogItemForm
             mode={mode}
-            item={formItem}
+            item={item}
             initialBookingOptions={
               itemBookingOptions
             }
-            catalogItems={catalog.items}
-            onSubmit={handleSubmit}
+            catalogItems={
+              initialItems
+            }
+            onSubmit={
+              handleSubmit
+            }
             onDelete={
               mode === 'edit'
                 ? openDeleteModal
                 : undefined
             }
-            isDeleting={isDeleting}
+            isDeleting={
+              isDeleting
+            }
           />
         </div>
       </section>
 
       {deleteTarget && (
         <CatalogItemDeleteModal
-          itemTitle={deleteTarget.title}
-          isDeleting={isDeleting}
+          itemTitle={
+            deleteTarget.title
+          }
+          isDeleting={
+            isDeleting
+          }
           error={deleteError}
-          onConfirm={confirmDelete}
-          onClose={closeDeleteModal}
+          onConfirm={
+            confirmDelete
+          }
+          onClose={
+            closeDeleteModal
+          }
         />
       )}
     </>

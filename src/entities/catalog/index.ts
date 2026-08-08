@@ -14,9 +14,11 @@ export type {
 
 export type {
   CatalogBookingOption,
-  CreateCatalogBookingOptionInput,
-  UpdateCatalogBookingOptionInput,
 } from './model/booking-option-types';
+
+export type {
+  AdminCatalogItem,
+} from './model/admin-types';
 
 export {
   getBookingOptionById,
@@ -28,14 +30,6 @@ export {
   getBookableCatalogItems,
   getServiceCatalogItems,
 } from './lib/booking-options';
-
-export {
-  getCatalogItems,
-} from './api/get-catalog-items';
-
-export {
-  getCatalogBookingOptions,
-} from './api/get-catalog-booking-options';
 
 export {
   CatalogModalSkeleton,

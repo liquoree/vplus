@@ -1,18 +1,26 @@
 import {
-  getCatalogBookingOptions,
-  getCatalogItems,
-} from '@/entities/catalog';
+  getAdminCatalog,
+} from '@/entities/catalog/server';
 
-import { AdminCatalogPage } from '@/views/';
+import {
+  AdminCatalogPage,
+} from '@/views/';
 
-export default async function Page() {
-  const [
+type AdminCatalogItemPageProps = {
+  params: Promise<{
+    id: string;
+  }>;
+};
+
+export default async function AdminCatalogItemPage({
+  params,
+}: AdminCatalogItemPageProps) {
+  const { id } = await params;
+
+  const {
     items,
     bookingOptions,
-  ] = await Promise.all([
-    getCatalogItems(),
-    getCatalogBookingOptions(),
-  ]);
+  } = await getAdminCatalog();
 
   return (
     <AdminCatalogPage
@@ -20,6 +28,7 @@ export default async function Page() {
       initialBookingOptions={
         bookingOptions
       }
+      selectedItemId={id}
     />
   );
 }

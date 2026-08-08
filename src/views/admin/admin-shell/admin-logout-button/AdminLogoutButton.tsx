@@ -1,6 +1,9 @@
 'use client';
 
 import { useState } from 'react';
+import {
+  logoutAdmin,
+} from '@/features/admin/auth/api/logout-admin';
 
 import './AdminLogoutButton.scss';
 
@@ -20,26 +23,8 @@ export function AdminLogoutButton() {
     setError(null);
 
     try {
-      const response = await fetch(
-        '/api/admin/auth/logout',
-        {
-          method: 'POST',
-          credentials: 'include',
-        }
-      );
+      await logoutAdmin();
 
-      if (!response.ok) {
-        throw new Error(
-          'Не удалось завершить сессию'
-        );
-      }
-
-      /*
-       * Полная навигация гарантирует, что:
-       * 1. сервер заново проверит cookie;
-       * 2. клиентское состояние админки очистится;
-       * 3. пользователь попадёт на страницу входа.
-       */
       window.location.replace('/admin');
     } catch {
       setError(

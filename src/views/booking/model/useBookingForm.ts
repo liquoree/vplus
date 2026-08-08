@@ -48,7 +48,7 @@ const initialContacts: ContactValues = {
   name: '',
   email: '',
   phone: '',
-  privacy: false,
+  bookingTerms: false,
   personalData: false,
 };
 
@@ -80,6 +80,23 @@ export function useBookingForm({
   >({});
 
   const [
+    captchaToken,
+    setCaptchaToken,
+  ] = useState<string | null>(
+    null
+  );
+
+  const [
+    captchaResetKey,
+    setCaptchaResetKey,
+  ] = useState(0);
+
+  const [
+    captchaError,
+    setCaptchaError,
+  ] = useState('');
+
+  const [
     availabilityByLine,
     setAvailabilityByLine,
   ] = useState<
@@ -99,6 +116,13 @@ export function useBookingForm({
     useState<
       'success' | 'error' | null
     >(null);
+
+  const [
+    modalErrorMessage,
+    setModalErrorMessage,
+  ] = useState<string | null>(
+    null
+  );
 
   const [
     submittedBookingItems,
@@ -122,7 +146,7 @@ export function useBookingForm({
   }, [bookingLines, bookingOptions]);
 
   const prepaymentPrice =
-    Math.ceil(totalPrice / 2);
+    Math.ceil(totalPrice * 0.2);
 
   const minDate = getTodayDateValue();
   const maxDate = getMaxBookingDateValue();
@@ -534,6 +558,30 @@ export function useBookingForm({
     });
   };
 
+  const handleCaptchaSuccess = (
+    token: string
+  ) => {
+    setCaptchaToken(token);
+    setCaptchaError('');
+  };
+
+  const handleCaptchaExpired = () => {
+    setCaptchaToken(null);
+
+    setCaptchaError(
+      'Проверка CAPTCHA истекла. Пройдите её ещё раз'
+    );
+  };
+
+  const resetCaptcha = () => {
+    setCaptchaToken(null);
+
+    setCaptchaResetKey(
+      (currentKey) =>
+        currentKey + 1
+    );
+  };
+
   const addBookingLine = () => {
     setBookingLines((currentLines) => [
       ...currentLines,
@@ -657,6 +705,14 @@ export function useBookingForm({
       return;
     }
 
+    if (!captchaToken) {
+      setCaptchaError(
+        'Подтвердите, что вы не робот'
+      );
+
+      return;
+    }
+
     const bookingItems =
       buildBookingItems(
         bookingLines,
@@ -672,34 +728,56 @@ export function useBookingForm({
 
     try {
       const result =
-        await submitBookingRequest({
-          items: bookingItems,
+        await submitBookingRequest(
+          {
+            items: bookingItems,
 
-          customer: {
-            name: contacts.name.trim(),
-            email: contacts.email.trim(),
-            phone: contacts.phone.trim(),
+            customer: {
+              name:
+                contacts.name.trim(),
+
+              email:
+                contacts.email.trim(),
+
+              phone:
+                contacts.phone.trim(),
+            },
+
+            totalPrice,
+            prepaymentPrice,
           },
-
-          totalPrice,
-          prepaymentPrice,
-        });
+          captchaToken
+        );
 
       if (!result.success) {
+        setModalErrorMessage(
+          result.message ??
+            'Не удалось отправить заявку'
+        );
+
         setModalStatus('error');
+
         return;
       }
 
+      setModalErrorMessage(null);
       setModalStatus('success');
     } catch {
+      setModalErrorMessage(
+        'Не удалось отправить заявку. Попробуйте ещё раз.'
+      );
+
       setModalStatus('error');
     } finally {
       setIsSubmitting(false);
+
+      resetCaptcha();
     }
   };
 
   const closeModal = () => {
     setModalStatus(null);
+    setModalErrorMessage(null);
   };
 
   return {
@@ -718,6 +796,7 @@ export function useBookingForm({
 
     isSubmitting,
     modalStatus,
+    modalErrorMessage,
     submittedBookingItems,
 
     getLineServiceOptions,
@@ -731,6 +810,11 @@ export function useBookingForm({
     handleDateChange,
     handleTimeChange,
 
+    captchaError,
+    captchaResetKey,
+    handleCaptchaSuccess,
+    handleCaptchaExpired,
+  
     addBookingLine,
     removeBookingLine,
 

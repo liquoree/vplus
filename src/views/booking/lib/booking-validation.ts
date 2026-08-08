@@ -131,8 +131,8 @@ export function validateContacts(
     errors.phone = 'Введите телефон';
   }
 
-  if (!values.privacy) {
-    errors.privacy = 'Нужно согласие';
+  if (!values.bookingTerms) {
+    errors.bookingTerms = 'Нужно согласие';
   }
 
   if (!values.personalData) {

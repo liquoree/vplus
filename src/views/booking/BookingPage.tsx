@@ -1,25 +1,46 @@
 'use client';
 
-import { BookingModal } from '@/entities/booking';
-import { Button } from '@/shared/ui';
+import {
+  BookingModal,
+} from '@/entities/booking';
+
+import {
+  Button,
+} from '@/shared/ui';
+
 import {
   Footer,
   Header,
   TemplateInfoPage,
 } from '@/widgets';
 
-import { BookingContacts } from './booking-contacts/BookingContacts';
-import { BookingSummary } from './booking-summary/BookingSummary';
-import { BookingUnitCard } from './booking-unit-card/BookingUnitCard';
-import type { BookingPageProps } from './model/types';
-import { useBookingForm } from './model/useBookingForm';
+import {
+  BookingContacts,
+} from './booking-contacts/BookingContacts';
+
+import {
+  BookingSummary,
+} from './booking-summary/BookingSummary';
+
+import {
+  BookingUnitCard,
+} from './booking-unit-card/BookingUnitCard';
+
+import type {
+  BookingPageProps,
+} from './model/types';
+
+import {
+  useBookingForm,
+} from './model/useBookingForm';
 
 import './BookingPage.scss';
 
 export function BookingPage(
   props: BookingPageProps
 ) {
-  const form = useBookingForm(props);
+  const form =
+    useBookingForm(props);
 
   return (
     <div className="booking-page">
@@ -32,7 +53,9 @@ export function BookingPage(
         >
           <form
             className="booking-page__form"
-            onSubmit={form.handleSubmit}
+            onSubmit={
+              form.handleSubmit
+            }
             noValidate
           >
             <div className="booking-page__panel">
@@ -45,15 +68,17 @@ export function BookingPage(
                       ];
 
                     const isPackage =
-                      form.isLinePackage(line);
+                      form.isLinePackage(
+                        line
+                      );
 
                     return (
                       <BookingUnitCard
                         key={line.id}
                         index={index}
                         canRemove={
-                          form.bookingLines.length >
-                          1
+                          form.bookingLines
+                            .length > 1
                         }
                         serviceValue={
                           line.serviceId
@@ -64,24 +89,38 @@ export function BookingPage(
                         bookingOptionValue={
                           line.bookingOptionId
                         }
-                        dateValue={line.date}
-                        timeValue={line.time}
-                        serviceOptions={form.getLineServiceOptions(
-                          line
-                        )}
-                        bookableItemOptions={form.getLineBookableOptions(
-                          line
-                        )}
-                        bookingOptionOptions={form.getLineProgramOptions(
-                          line
-                        )}
+                        dateValue={
+                          line.date
+                        }
+                        timeValue={
+                          line.time
+                        }
+                        serviceOptions={
+                          form.getLineServiceOptions(
+                            line
+                          )
+                        }
+                        bookableItemOptions={
+                          form.getLineBookableOptions(
+                            line
+                          )
+                        }
+                        bookingOptionOptions={
+                          form.getLineProgramOptions(
+                            line
+                          )
+                        }
                         timeOptions={
-                          availability?.timeOptions ??
+                          availability
+                            ?.timeOptions ??
                           []
                         }
-                        isPackage={isPackage}
+                        isPackage={
+                          isPackage
+                        }
                         isTimeLoading={
-                          availability?.isLoading ??
+                          availability
+                            ?.isLoading ??
                           false
                         }
                         errors={
@@ -89,9 +128,15 @@ export function BookingPage(
                             line.id
                           ]
                         }
-                        minDate={form.minDate}
-                        maxDate={form.maxDate}
-                        onChangeService={(value) =>
+                        minDate={
+                          form.minDate
+                        }
+                        maxDate={
+                          form.maxDate
+                        }
+                        onChangeService={(
+                          value
+                        ) =>
                           form.handleServiceChange(
                             line,
                             value
@@ -113,13 +158,17 @@ export function BookingPage(
                             value
                           )
                         }
-                        onChangeDate={(value) =>
+                        onChangeDate={(
+                          value
+                        ) =>
                           form.handleDateChange(
                             line,
                             value
                           )
                         }
-                        onChangeTime={(value) =>
+                        onChangeTime={(
+                          value
+                        ) =>
                           form.handleTimeChange(
                             line.id,
                             value
@@ -137,7 +186,9 @@ export function BookingPage(
               </div>
 
               <BookingSummary
-                totalPrice={form.totalPrice}
+                totalPrice={
+                  form.totalPrice
+                }
                 prepaymentPrice={
                   form.prepaymentPrice
                 }
@@ -148,18 +199,38 @@ export function BookingPage(
                 text="Добавить ещё"
                 variant="mid"
                 className="booking-page__add"
-                onClick={form.addBookingLine}
+                onClick={
+                  form.addBookingLine
+                }
               />
 
               <div className="booking-page__divider" />
 
               <BookingContacts
-                values={form.contacts}
-                errors={form.contactErrors}
+                values={
+                  form.contacts
+                }
+                errors={
+                  form.contactErrors
+                }
                 isSubmitting={
                   form.isSubmitting
                 }
-                onChange={form.updateContact}
+                onChange={
+                  form.updateContact
+                }
+                onCaptchaSuccess={
+                  form.handleCaptchaSuccess
+                }
+                captchaError={
+                  form.captchaError
+                }
+                captchaResetKey={
+                  form.captchaResetKey
+                }
+                onCaptchaExpired={
+                  form.handleCaptchaExpired
+                }
               />
             </div>
           </form>
@@ -170,15 +241,24 @@ export function BookingPage(
 
       {form.modalStatus && (
         <BookingModal
-          status={form.modalStatus}
+          status={
+            form.modalStatus
+          }
           bookingItems={
             form.submittedBookingItems
           }
-          totalPrice={form.totalPrice}
+          totalPrice={
+            form.totalPrice
+          }
           prepaymentPrice={
             form.prepaymentPrice
           }
-          onClose={form.closeModal}
+          errorMessage={
+            form.modalErrorMessage
+          }
+          onClose={
+            form.closeModal
+          }
         />
       )}
     </div>

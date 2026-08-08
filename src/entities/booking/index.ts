@@ -3,6 +3,7 @@ export type {
   BookingRequestItem,
   BookingCustomer,
   BookingRequestRecord,
+  AdminBookingRequestRecord,
   BookingRequestStatus,
   BookingRequestDecision,
   BookingSubmitResult,
@@ -13,8 +14,6 @@ export type {
   BookingAvailabilityQuery,
   BookingAvailabilityResult,
   BookingTimeSlot,
-  BookingReservation,
-  BookingReservationStatus,
 } from './model/availability-types';
 
 export {
@@ -29,12 +28,6 @@ export {
   updateBookingRequestStatus,
 } from './api/update-booking-request-status';
 
-export {
-  getBookingRequestsSnapshot,
-  getBookingRequestsServerSnapshot,
-  parseBookingRequestsSnapshot,
-  subscribeBookingRequests,
-} from './mock/booking-request-repository';
 
 export {
   BookingModal,

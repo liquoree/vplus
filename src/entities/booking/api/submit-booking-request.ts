@@ -1,56 +1,168 @@
+import axios from 'axios';
+
+import {
+  apiClient,
+} from '@/shared/api/client';
+
 import type {
   BookingRequestPayload,
+  BookingRequestStatus,
   BookingSubmitResult,
 } from '../model/types';
 
-import type { BookingReservation } from '../model/availability-types';
+type BookingCreateRequest = {
+  items: {
+    bookingOptionId: string;
+    bookableItemId: string;
+    date: string;
+    time: string;
+  }[];
 
-import {
-  intervalsOverlap,
-  minutesToTime,
-  timeToMinutes,
-} from '../lib/time';
+  customer: {
+    name: string;
+    email: string;
+    phone: string;
+  };
 
-import { addMockBookingRequest } from '../mock/booking-request-repository';
+  captchaToken: string;
+};
 
-import { addMockReservations } from '../mock/booking-reservation-repository';
+type BookingCreateResponse = {
+  success?: true;
 
-import { getBookingAvailability } from './get-booking-availability';
+  bookingId: string;
+  publicNumber: string;
 
-function getEndTime(
-  startTime: string,
-  durationMinutes: number
-) {
-  const startMinutes =
-    timeToMinutes(startTime);
+  totalPrice: number;
+  prepaymentPrice: number;
 
-  return minutesToTime(
-    startMinutes + durationMinutes
-  );
+  status: BookingRequestStatus;
+
+  message: string;
+};
+
+type ApiErrorResponse = {
+  error?: {
+    code?: string;
+    message?: string;
+
+    fields?: Record<
+      string,
+      string
+    > | null;
+
+    requestId?: string;
+  };
+};
+
+function prepareBookingRequest(
+  payload: BookingRequestPayload,
+  captchaToken: string
+): BookingCreateRequest {
+  return {
+    items: payload.items.map(
+      (item) => ({
+        bookingOptionId:
+          item.bookingOptionId,
+
+        bookableItemId:
+          item.bookableItemId,
+
+        date: item.date,
+        time: item.time,
+      })
+    ),
+
+    customer: {
+      name:
+        payload.customer.name.trim(),
+
+      email:
+        payload.customer.email.trim(),
+
+      phone:
+        payload.customer.phone.trim(),
+    },
+
+    captchaToken,
+  };
 }
 
-function isValidTime(time: string) {
-  const minutes = timeToMinutes(time);
+function getSubmitErrorCode(
+  backendCode: string | undefined,
+  status: number | undefined
+): NonNullable<
+  BookingSubmitResult['code']
+> {
+  if (
+    backendCode ===
+    'BOOKING_CONFLICT'
+  ) {
+    return 'BOOKING_CONFLICT';
+  }
 
-  return (
-    Number.isFinite(minutes) &&
-    minutes >= 0 &&
-    minutes < 24 * 60
-  );
+  if (
+    backendCode ===
+    'BOOKING_OUTSIDE_SEASON'
+  ) {
+    return 'BOOKING_OUTSIDE_SEASON';
+  }
+
+  if (
+    backendCode ===
+    'CAPTCHA_FAILED'
+  ) {
+    return 'CAPTCHA_FAILED';
+  }
+
+  if (
+    backendCode ===
+    'CAPTCHA_UNAVAILABLE'
+  ) {
+    return 'CAPTCHA_UNAVAILABLE';
+  }
+
+  if (
+    backendCode ===
+      'VALIDATION_ERROR' ||
+    status === 422
+  ) {
+    return 'VALIDATION_ERROR';
+  }
+
+  return 'UNKNOWN_ERROR';
+}
+
+function getFirstFieldError(
+  fields:
+    | Record<string, string>
+    | null
+    | undefined
+) {
+  if (!fields) {
+    return null;
+  }
+
+  const message =
+    Object.values(fields).find(
+      (value) =>
+        typeof value === 'string' &&
+        value.trim().length > 0
+    );
+
+  return message ?? null;
 }
 
 export async function submitBookingRequest(
-  payload: BookingRequestPayload
+  payload: BookingRequestPayload,
+  captchaToken: string
 ): Promise<BookingSubmitResult> {
-  await new Promise((resolve) => {
-    setTimeout(resolve, 400);
-  });
-
   if (
     payload.items.length === 0 ||
     !payload.customer.name.trim() ||
     !payload.customer.email.trim() ||
-    !payload.customer.phone.trim()
+    !payload.customer.phone.trim() ||
+    !captchaToken.trim()
   ) {
     return {
       success: false,
@@ -60,139 +172,85 @@ export async function submitBookingRequest(
     };
   }
 
-  const bookingId = crypto.randomUUID();
+  const request =
+    prepareBookingRequest(
+      payload,
+      captchaToken
+    );
 
-  const preparedReservations: BookingReservation[] =
-    [];
+  const idempotencyKey =
+    crypto.randomUUID();
 
-  for (const item of payload.items) {
+  try {
+    const response =
+      await apiClient.post<
+        BookingCreateResponse
+      >(
+        '/bookings',
+        request,
+        {
+          headers: {
+            'Idempotency-Key':
+              idempotencyKey,
+          },
+        }
+      );
+
+    return {
+      success: true,
+
+      bookingId:
+        response.data.bookingId,
+
+      publicNumber:
+        response.data.publicNumber,
+
+      totalPrice:
+        response.data.totalPrice,
+
+      prepaymentPrice:
+        response.data.prepaymentPrice,
+
+      status:
+        response.data.status,
+
+      message:
+        response.data.message,
+    };
+  } catch (error) {
     if (
-      !item.bookingOptionId ||
-      !item.bookableItemId ||
-      !item.date ||
-      !isValidTime(item.time) ||
-      !Number.isFinite(
-        item.durationMinutes
-      ) ||
-      item.durationMinutes <= 0
+      !axios.isAxiosError<ApiErrorResponse>(
+        error
+      )
     ) {
       return {
         success: false,
-        code: 'VALIDATION_ERROR',
+        code: 'UNKNOWN_ERROR',
         message:
-          'Одна или несколько позиций заявки заполнены некорректно',
+          'Не удалось отправить заявку',
       };
     }
 
-    const availability =
-      await getBookingAvailability({
-        bookableItemId:
-          item.bookableItemId,
+    const status =
+      error.response?.status;
 
-        date: item.date,
+    const backendError =
+      error.response?.data?.error;
 
-        durationMinutes:
-          item.durationMinutes,
-      });
+    return {
+      success: false,
 
-    const selectedSlot =
-      availability.slots.find(
-        (slot) =>
-          slot.startTime === item.time
-      );
-
-    if (!selectedSlot) {
-      return {
-        success: false,
-        code: 'BOOKING_CONFLICT',
-        message: `Время ${item.time} для «${item.bookableItemTitle}» уже недоступно`,
-      };
-    }
-
-    const startMinutes = timeToMinutes(
-      selectedSlot.startTime
-    );
-
-    const endMinutes = timeToMinutes(
-      selectedSlot.endTime
-    );
-
-    const hasConflictInsideRequest =
-      preparedReservations.some(
-        (reservation) =>
-          reservation.bookableItemId ===
-            item.bookableItemId &&
-          reservation.date === item.date &&
-          intervalsOverlap(
-            startMinutes,
-            endMinutes,
-            timeToMinutes(
-              reservation.startTime
-            ),
-            timeToMinutes(
-              reservation.endTime
-            )
-          )
-      );
-
-    if (hasConflictInsideRequest) {
-      return {
-        success: false,
-        code: 'BOOKING_CONFLICT',
-        message: `В заявке пересекается время бронирования для «${item.bookableItemTitle}»`,
-      };
-    }
-
-    preparedReservations.push({
-      id: crypto.randomUUID(),
-      bookingRequestId: bookingId,
-
-      bookableItemId:
-        item.bookableItemId,
-
-      bookingOptionId:
-        item.bookingOptionId,
-
-      date: item.date,
-      startTime: item.time,
-
-      endTime: getEndTime(
-        item.time,
-        item.durationMinutes
+      code: getSubmitErrorCode(
+        backendError?.code,
+        status
       ),
 
-      status: 'pending',
-    });
+      message:
+        getFirstFieldError(
+          backendError?.fields
+        ) ??
+        backendError?.message ??
+        'Не удалось отправить заявку',
+    };
   }
-
-  addMockBookingRequest({
-    id: bookingId,
-
-    items: payload.items.map((item) => ({
-      ...item,
-    })),
-
-    customer: {
-      ...payload.customer,
-    },
-
-    totalPrice: payload.totalPrice,
-
-    prepaymentPrice:
-      payload.prepaymentPrice,
-
-    status: 'pending',
-
-    createdAt: new Date().toISOString(),
-    reviewedAt: null,
-  });
-
-  addMockReservations(
-    preparedReservations
-  );
-
-  return {
-    success: true,
-    bookingId,
-  };
 }

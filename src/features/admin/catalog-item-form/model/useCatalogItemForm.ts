@@ -341,11 +341,10 @@ function validateValues(
 
   if (
     values.kind === 'package' &&
-    values.includedVehicleIds.length === 0 &&
-    values.includedServiceIds.length === 0
+    values.includedVehicleIds.length === 0
   ) {
     errors.packageItems =
-      'Добавьте в пакет технику или услугу';
+      'Добавьте в пакет хотя бы одну технику';
   }
 
   if (
@@ -935,12 +934,14 @@ export function useCatalogItemForm({
       await onSubmit(payload);
 
       preserveObjectUrlsRef.current = true;
-    } catch {
+    } catch (error) {
       setErrors({
         optionRows: {},
 
         submit:
-          'Не удалось сохранить позицию',
+          error instanceof Error
+            ? error.message
+            : 'Не удалось сохранить позицию',
       });
     } finally {
       setIsSubmitting(false);

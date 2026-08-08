@@ -1,8 +1,11 @@
 import {
-  getCatalogBookingOptions,
-  getCatalogItems,
 } from '@/entities/catalog';
 import { BookingPage } from '@/views';
+
+import {
+  getCatalogItems,
+  getCatalogBookingOptions,
+} from '@/entities/catalog/server';
 
 type BookingRouteProps = {
   searchParams: Promise<{

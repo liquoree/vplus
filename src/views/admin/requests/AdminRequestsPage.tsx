@@ -3,34 +3,33 @@
 import {
   useMemo,
   useState,
-  useSyncExternalStore,
 } from 'react';
 
 import {
   AdminBookingRequestCard,
   AdminRequestDecisionModal,
-  getBookingRequestsServerSnapshot,
-  getBookingRequestsSnapshot,
-  parseBookingRequestsSnapshot,
-  subscribeBookingRequests,
   updateBookingRequestStatus,
 } from '@/entities/booking';
 
 import type {
+  AdminBookingRequestRecord,
   BookingRequestDecision,
-  BookingRequestRecord,
 } from '@/entities/booking';
 
 import './AdminRequestsPage.scss';
 
+type AdminRequestsPageProps = {
+  initialRequests: AdminBookingRequestRecord[];
+};
+
 type PendingDecision = {
-  request: BookingRequestRecord;
+  request: AdminBookingRequestRecord;
   decision: BookingRequestDecision;
 };
 
 function sortByCreatedAt(
-  first: BookingRequestRecord,
-  second: BookingRequestRecord
+  first: AdminBookingRequestRecord,
+  second: AdminBookingRequestRecord
 ) {
   return (
     new Date(second.createdAt).getTime() -
@@ -39,8 +38,8 @@ function sortByCreatedAt(
 }
 
 function sortByReviewedAt(
-  first: BookingRequestRecord,
-  second: BookingRequestRecord
+  first: AdminBookingRequestRecord,
+  second: AdminBookingRequestRecord
 ) {
   const firstDate =
     first.reviewedAt ?? first.createdAt;
@@ -55,7 +54,7 @@ function sortByReviewedAt(
 }
 
 function canApplyDecision(
-  request: BookingRequestRecord,
+  request: AdminBookingRequestRecord,
   decision: BookingRequestDecision
 ) {
   if (request.status === 'pending') {
@@ -72,20 +71,15 @@ function canApplyDecision(
   return false;
 }
 
-export function AdminRequestsPage() {
-  const snapshot = useSyncExternalStore(
-    subscribeBookingRequests,
-    getBookingRequestsSnapshot,
-    getBookingRequestsServerSnapshot
-  );
-
-  const requests = useMemo(
-    () =>
-      parseBookingRequestsSnapshot(
-        snapshot
-      ),
-    [snapshot]
-  );
+export function AdminRequestsPage({
+  initialRequests,
+}: AdminRequestsPageProps) {
+  const [
+    requests,
+    setRequests,
+  ] = useState<
+    AdminBookingRequestRecord[]
+  >(initialRequests);
 
   const [
     pendingDecision,
@@ -99,7 +93,8 @@ export function AdminRequestsPage() {
     setUpdatingRequestId,
   ] = useState<string | null>(null);
 
-  const [error, setError] = useState('');
+  const [error, setError] =
+    useState('');
 
   const pendingRequests = useMemo(
     () =>
@@ -127,10 +122,11 @@ export function AdminRequestsPage() {
     requestId: string,
     decision: BookingRequestDecision
   ) => {
-    const request = requests.find(
-      (currentRequest) =>
-        currentRequest.id === requestId
-    );
+    const request =
+      requests.find(
+        (currentRequest) =>
+          currentRequest.id === requestId
+      );
 
     if (
       !request ||
@@ -172,16 +168,25 @@ export function AdminRequestsPage() {
     } = pendingDecision;
 
     setError('');
-    setUpdatingRequestId(request.id);
+    setUpdatingRequestId(
+      request.id
+    );
 
     try {
       const result =
         await updateBookingRequestStatus(
           request.id,
-          decision
+          decision,
+          request.version
         );
 
-      if (!result.success) {
+      const updatedRequest =
+        result.request;
+
+      if (
+        !result.success ||
+        !updatedRequest
+      ) {
         setError(
           result.message ??
             'Не удалось изменить статус заявки'
@@ -189,6 +194,17 @@ export function AdminRequestsPage() {
 
         return;
       }
+
+      setRequests(
+        (currentRequests) =>
+          currentRequests.map(
+            (currentRequest) =>
+              currentRequest.id ===
+              updatedRequest.id
+                ? updatedRequest
+                : currentRequest
+          )
+      );
 
       setPendingDecision(null);
     } catch {
@@ -283,7 +299,9 @@ export function AdminRequestsPage() {
 
       {pendingDecision && (
         <AdminRequestDecisionModal
-          request={pendingDecision.request}
+          request={
+            pendingDecision.request
+          }
           decision={
             pendingDecision.decision
           }
@@ -291,8 +309,12 @@ export function AdminRequestsPage() {
             updatingRequestId ===
             pendingDecision.request.id
           }
-          onConfirm={confirmDecision}
-          onClose={closeDecisionModal}
+          onConfirm={
+            confirmDecision
+          }
+          onClose={
+            closeDecisionModal
+          }
         />
       )}
     </>

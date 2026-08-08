@@ -103,11 +103,12 @@
     }
 
     &__agreements {
-        width: min(100%, 400px);
+        width: min(100%, 430px);
         justify-self: center;
+
         display: flex;
         flex-direction: column;
-        gap: 12px;
+        gap: 14px;
     }
 
     &__agreement-item {
@@ -116,38 +117,64 @@
 
     &__agreement {
         display: flex;
-        align-items: center;
+        align-items: flex-start;
         gap: 12px;
+
         color: var(--color-black);
+
         font-size: 16px;
-        line-height: 1.25;
+        line-height: 1.35;
 
         input {
             position: relative;
+
             width: 23px;
             height: 23px;
+
             margin: 0;
             flex: 0 0 23px;
+
             appearance: none;
-            border: 2px solid var(--color-accent);
+
+            border: 2px solid
+                var(--color-accent);
+
             border-radius: 5px;
-            background: var(--color-white);
+
+            background:
+                var(--color-white);
+
             cursor: pointer;
 
             &:checked::after {
                 content: '';
+
                 position: absolute;
                 top: 2px;
                 left: 7px;
+
                 width: 6px;
                 height: 12px;
-                border: solid var(--color-accent);
-                border-width: 0 2px 2px 0;
-                transform: rotate(45deg);
+
+                border: solid
+                    var(--color-accent);
+
+                border-width:
+                    0 2px 2px 0;
+
+                transform:
+                    rotate(45deg);
             }
 
             &:focus-visible {
-                outline: 2px solid rgba(235, 0, 30, 0.25);
+                outline: 2px solid
+                    rgba(
+                        235,
+                        0,
+                        30,
+                        0.25
+                    );
+
                 outline-offset: 2px;
             }
         }
@@ -156,34 +183,68 @@
             min-width: 0;
         }
 
+        label {
+            cursor: pointer;
+        }
+
         a {
-            color: var(--color-accent);
+            color:
+                var(--color-accent);
+
             text-decoration: underline;
+
             text-underline-offset: 2px;
+
+            &:hover {
+                text-decoration-thickness:
+                    2px;
+            }
+
+            &:focus-visible {
+                outline: 2px solid
+                    rgba(
+                        235,
+                        0,
+                        30,
+                        0.25
+                    );
+
+                outline-offset: 2px;
+                border-radius: 2px;
+            }
         }
     }
 
     &__agreement-error {
         display: block;
-        margin: 4px 0 0 35px;
-        color: var(--color-accent);
+
+        margin:
+            4px 0 0 35px;
+
+        color:
+            var(--color-accent);
+
         font-size: 11px;
-        line-height: 1.1;
+        line-height: 1.2;
+    }
+
+    &__captcha-wrapper {
+        width: 284px;
+        max-width: 100%;
     }
 
     &__captcha {
-        width: 284px;
-        height: 96px;
-        border: 1px solid var(--color-line);
-        border-radius: 8px;
-        background: var(--color-white);
-        color: var(--color-text-secondary);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 13px;
+        width: 100%;
+    }
+
+    &__captcha-error {
+        display: block;
+        margin-top: 5px;
+
+        color: var(--color-accent);
+
+        font-size: 11px;
         line-height: 1.2;
-        text-align: center;
     }
 
     &__submit {
@@ -333,11 +394,14 @@
             font-size: 10px;
         }
 
-        &__captcha {
+        &__captcha-wrapper {
             width: 100%;
             max-width: 360px;
-            height: 96px;
             margin: 0 auto;
+            scale: 0.8;
+            display: flex;
+            justify-content: center;
+            align-items: center;
         }
 
         &__submit {

@@ -33,13 +33,3 @@ export type CatalogBookingOption = {
   isActive: boolean;
   sortOrder: number;
 };
-
-export type CreateCatalogBookingOptionInput = Omit<
-  CatalogBookingOption,
-  'id'
->;
-
-export type UpdateCatalogBookingOptionInput =
-  Partial<CreateCatalogBookingOptionInput> & {
-    id: string;
-  };

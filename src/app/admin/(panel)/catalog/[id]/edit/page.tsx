@@ -1,9 +1,10 @@
 import {
-  getCatalogBookingOptions,
-  getCatalogItems,
-} from '@/entities/catalog';
+  getAdminCatalog,
+} from '@/entities/catalog/server';
 
-import { AdminCatalogFormPage } from '@/views/';
+import {
+  AdminCatalogFormPage,
+} from '@/views/';
 
 type AdminCatalogEditPageProps = {
   params: Promise<{
@@ -16,13 +17,10 @@ export default async function AdminCatalogEditPage({
 }: AdminCatalogEditPageProps) {
   const { id } = await params;
 
-  const [
+  const {
     items,
     bookingOptions,
-  ] = await Promise.all([
-    getCatalogItems(),
-    getCatalogBookingOptions(),
-  ]);
+  } = await getAdminCatalog();
 
   return (
     <AdminCatalogFormPage

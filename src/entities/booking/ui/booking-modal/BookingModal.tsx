@@ -12,6 +12,8 @@ type BookingModalProps = {
   totalPrice: number;
   prepaymentPrice: number;
 
+  errorMessage?: string | null;
+
   onClose: () => void;
 };
 
@@ -97,6 +99,7 @@ export function BookingModal({
   bookingItems,
   totalPrice,
   prepaymentPrice,
+  errorMessage,
   onClose,
 }: BookingModalProps) {
   const isSuccess =
@@ -193,8 +196,8 @@ export function BookingModal({
             </>
           ) : (
             <p className="booking-modal__error-text">
-              Попробуйте отправить заявку ещё
-              раз или свяжитесь с менеджером.
+              {errorMessage ??
+                'Попробуйте отправить заявку ещё раз или свяжитесь с менеджером.'}
             </p>
           )}
 

@@ -1,10 +1,10 @@
-import { cookies } from 'next/headers';
-import { redirect } from 'next/navigation';
+import {
+  redirect,
+} from 'next/navigation';
 
 import {
-  ADMIN_SESSION_COOKIE,
-  verifyAdminSessionToken,
-} from '@/shared/lib/auth/admin-session';
+  getCurrentAdmin,
+} from '@/features/admin/auth/api/get-current-admin';
 
 import {
   AdminLoginPage,
@@ -38,20 +38,15 @@ function getSafeRedirectPath(
 export default async function Page({
   searchParams,
 }: AdminPageProps) {
-  const cookieStore = await cookies();
+  const admin =
+    await getCurrentAdmin();
 
-  const sessionToken = cookieStore.get(
-    ADMIN_SESSION_COOKIE
-  )?.value;
-
-  const session =
-    verifyAdminSessionToken(sessionToken);
-
-  if (session) {
+  if (admin) {
     redirect('/admin/requests');
   }
 
-  const params = await searchParams;
+  const params =
+    await searchParams;
 
   return (
     <AdminLoginPage

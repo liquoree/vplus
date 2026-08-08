@@ -1,89 +1,92 @@
+import axios from 'axios';
+
+import {
+  apiClient,
+} from '@/shared/api/client';
+
 import type {
+  AdminBookingRequestRecord,
   BookingRequestDecision,
-  BookingRequestRecord,
   BookingRequestStatusUpdateResult,
 } from '../model/types';
 
-import {
-  getMockBookingRequests,
-  updateMockBookingRequestStatus,
-} from '../mock/booking-request-repository';
+type ApiErrorResponse = {
+  error?: {
+    code?: string;
+    message?: string;
+    fields?: Record<
+      string,
+      string
+    > | null;
+    requestId?: string;
+  };
+};
 
-import { updateMockReservationsStatusByRequestId } from '../mock/booking-reservation-repository';
-
-function canChangeStatus(
-  request: BookingRequestRecord,
-  nextStatus: BookingRequestDecision
+function getFirstFieldError(
+  fields:
+    | Record<string, string>
+    | null
+    | undefined
 ) {
-  if (request.status === 'pending') {
-    return (
-      nextStatus === 'approved' ||
-      nextStatus === 'rejected'
-    );
+  if (!fields) {
+    return null;
   }
 
-  if (request.status === 'approved') {
-    return nextStatus === 'cancelled';
-  }
-
-  return false;
+  return (
+    Object.values(fields).find(
+      (message) =>
+        typeof message === 'string' &&
+        message.trim().length > 0
+    ) ?? null
+  );
 }
 
 export async function updateBookingRequestStatus(
   bookingRequestId: string,
-  status: BookingRequestDecision
+  decision: BookingRequestDecision,
+  version: number
 ): Promise<BookingRequestStatusUpdateResult> {
-  await new Promise((resolve) => {
-    setTimeout(resolve, 250);
-  });
+  try {
+    const response =
+      await apiClient.patch<
+        AdminBookingRequestRecord
+      >(
+        `/admin/bookings/${bookingRequestId}/status`,
+        {
+          decision,
+          version,
+        }
+      );
 
-  const currentRequest =
-    getMockBookingRequests().find(
-      (request) =>
-        request.id === bookingRequestId
-    );
-
-  if (!currentRequest) {
     return {
-      success: false,
-      message: 'Заявка не найдена',
+      success: true,
+      request: response.data,
     };
-  }
+  } catch (error) {
+    if (
+      !axios.isAxiosError<ApiErrorResponse>(
+        error
+      )
+    ) {
+      return {
+        success: false,
+        message:
+          'Не удалось изменить статус заявки',
+      };
+    }
 
-  if (
-    !canChangeStatus(
-      currentRequest,
-      status
-    )
-  ) {
+    const backendError =
+      error.response?.data?.error;
+
     return {
       success: false,
-      message:
-        'Для заявки недоступно выбранное изменение статуса',
-    };
-  }
 
-  const updatedRequest =
-    updateMockBookingRequestStatus(
-      bookingRequestId,
-      status
-    );
-
-  if (!updatedRequest) {
-    return {
-      success: false,
       message:
+        getFirstFieldError(
+          backendError?.fields
+        ) ??
+        backendError?.message ??
         'Не удалось изменить статус заявки',
     };
   }
-
-  updateMockReservationsStatusByRequestId(
-    bookingRequestId,
-    status
-  );
-
-  return {
-    success: true,
-    request: updatedRequest,
-  };
 }

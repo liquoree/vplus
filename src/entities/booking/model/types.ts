@@ -5,7 +5,7 @@ export type BookingRequestItem = {
   bookableItemTitle: string;
 
   serviceId: string | null;
-  serviceTitle?: string;
+  serviceTitle?: string | null;
 
   bookingOptionTitle: string;
 
@@ -56,19 +56,36 @@ export type BookingRequestRecord = {
   reviewedAt: string | null;
 };
 
-export type BookingSubmitResult = {
+export type AdminBookingRequestRecord =
+  BookingRequestRecord & {
+    publicNumber: string;
+    version: number;
+  };
+
+  export type BookingSubmitResult = {
   success: boolean;
+
   bookingId?: string;
+  publicNumber?: string;
+
+  totalPrice?: number;
+  prepaymentPrice?: number;
+
+  status?: BookingRequestStatus;
+
   message?: string;
 
   code?:
     | 'BOOKING_CONFLICT'
+    | 'BOOKING_OUTSIDE_SEASON'
+    | 'CAPTCHA_FAILED'
+    | 'CAPTCHA_UNAVAILABLE'
     | 'VALIDATION_ERROR'
     | 'UNKNOWN_ERROR';
 };
 
 export type BookingRequestStatusUpdateResult = {
   success: boolean;
-  request?: BookingRequestRecord;
+  request?: AdminBookingRequestRecord;
   message?: string;
 };

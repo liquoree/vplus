@@ -1,7 +1,8 @@
 import {
   getCatalogBookingOptions,
   getCatalogItems,
-} from '@/entities/catalog';
+} from '@/entities/catalog/server';
+
 import { CatalogPage } from '@/views';
 
 export default async function Page() {
