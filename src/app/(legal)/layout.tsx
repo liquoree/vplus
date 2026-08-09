@@ -3,6 +3,7 @@ import type {
 } from 'react';
 
 import {
+  Footer,
   Header,
 } from '@/widgets';
 
@@ -40,6 +41,8 @@ export default function LegalLayout({
           </div>
         </div>
       </main>
+
+      <Footer />
     </div>
   );
 }

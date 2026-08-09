@@ -1,11 +1,13 @@
 import {
-} from '@/entities/catalog';
-import { BookingPage } from '@/views';
+  getCatalogBookingOptions,
+  getCatalogItems,
+} from '@/entities/catalog/server';
 
 import {
-  getCatalogItems,
-  getCatalogBookingOptions,
-} from '@/entities/catalog/server';
+  ErrorPage,
+} from '@/views/error/ErrorPage';
+
+import { BookingPage } from '@/views';
 
 type BookingRouteProps = {
   searchParams: Promise<{
@@ -20,18 +22,39 @@ export default async function Page({
 }: BookingRouteProps) {
   const params = await searchParams;
 
-  const [items, bookingOptions] = await Promise.all([
-    getCatalogItems(),
-    getCatalogBookingOptions(),
-  ]);
+  try {
+    const [
+      items,
+      bookingOptions,
+    ] = await Promise.all([
+      getCatalogItems(),
+      getCatalogBookingOptions(),
+    ]);
 
-  return (
-    <BookingPage
-      items={items}
-      bookingOptions={bookingOptions}
-      initialVehicleSlug={params.vehicle}
-      initialServiceSlug={params.service}
-      initialPackageSlug={params.package}
-    />
-  );
+    return (
+      <BookingPage
+        items={items}
+        bookingOptions={bookingOptions}
+        initialVehicleSlug={
+          params.vehicle
+        }
+        initialServiceSlug={
+          params.service
+        }
+        initialPackageSlug={
+          params.package
+        }
+      />
+    );
+  } catch {
+    return (
+      <ErrorPage
+        code="503"
+        title="Бронирование временно недоступно"
+        description={
+          'Не удалось связаться с сервером бронирования. Попробуйте обновить страницу немного позже.'
+        }
+      />
+    );
+  }
 }

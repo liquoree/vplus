@@ -8,3 +8,4 @@ export { AdminCatalogPage } from './admin/catalog/AdminCatalogPage';
 export { AdminCatalogFormPage } from './admin/catalog-form/AdminCatalogFormPage';
 export { AdminShell } from './admin/admin-shell/AdminShell';
 export { AdminLoginPage } from './admin/login/AdminLoginPage';
+export { ErrorPage } from './error/ErrorPage';
