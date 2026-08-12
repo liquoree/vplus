@@ -17,36 +17,28 @@ type BookingRouteProps = {
   }>;
 };
 
+export const dynamic =
+  'force-dynamic';
+
 export default async function Page({
   searchParams,
 }: BookingRouteProps) {
   const params = await searchParams;
 
-  try {
-    const [
-      items,
-      bookingOptions,
-    ] = await Promise.all([
-      getCatalogItems(),
-      getCatalogBookingOptions(),
-    ]);
+  const [
+    itemsResult,
+    bookingOptionsResult,
+  ] = await Promise.allSettled([
+    getCatalogItems(),
+    getCatalogBookingOptions(),
+  ]);
 
-    return (
-      <BookingPage
-        items={items}
-        bookingOptions={bookingOptions}
-        initialVehicleSlug={
-          params.vehicle
-        }
-        initialServiceSlug={
-          params.service
-        }
-        initialPackageSlug={
-          params.package
-        }
-      />
-    );
-  } catch {
+  if (
+    itemsResult.status ===
+      'rejected' ||
+    bookingOptionsResult.status ===
+      'rejected'
+  ) {
     return (
       <ErrorPage
         code="503"
@@ -57,4 +49,26 @@ export default async function Page({
       />
     );
   }
+
+  const items =
+    itemsResult.value;
+
+  const bookingOptions =
+    bookingOptionsResult.value;
+
+  return (
+    <BookingPage
+      items={items}
+      bookingOptions={bookingOptions}
+      initialVehicleSlug={
+        params.vehicle
+      }
+      initialServiceSlug={
+        params.service
+      }
+      initialPackageSlug={
+        params.package
+      }
+    />
+  );
 }

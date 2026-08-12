@@ -4,9 +4,16 @@ import type {
 
 const backendUrl =
   process.env.BACKEND_URL ??
-  'http://127.0.0.1:8000';
+  (
+    process.env.NODE_ENV ===
+    'production'
+      ? 'http://api:8000'
+      : 'http://127.0.0.1:8000'
+  );
 
 const nextConfig: NextConfig = {
+  output: 'standalone',
+
   sassOptions: {
     loadPaths: ['./src'],
     resolveUrlLoader: false,
