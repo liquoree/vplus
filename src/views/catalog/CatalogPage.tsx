@@ -153,7 +153,7 @@ export function CatalogPage({
               title="Не знаете, что выбрать?"
               description="Мы поможем подобрать технику под ваши желания и подскажем лучшую программу"
               buttonText="Связаться с менеджером"
-              href="/contacts"
+              href="/about"
             />
           </div>
         </TemplateInfoPage>

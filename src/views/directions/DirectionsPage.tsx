@@ -104,7 +104,7 @@ export function DirectionsPage() {
               description={`Телефон 1: +7 (911) 423-86-00
             Телефон 2: +7 (911) 404-73-03`}
               buttonText="Связаться с менеджером"
-              href="/contacts"
+              href="/about"
             />
           </div>
         </TemplateInfoPage>
