@@ -56,6 +56,10 @@
 
         &__field {
             grid-column: auto;
+
+            &--time {
+                margin-top: -12px;
+            }
         }
     }
 }
