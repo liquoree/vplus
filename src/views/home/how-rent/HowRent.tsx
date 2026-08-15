@@ -19,7 +19,7 @@ const rentSteps = [
     icon: 'payment.svg',
     title: 'Внесите онлайн-\nпредоплату',
     mobileTitle: 'Внесите онлайн-\nпредоплату',
-    description: 'Оплатите половину стоимости\nпо ссылке на вашем email',
+    description: 'Внесите предоплату\nпо ссылке на вашем email',
   },
   {
     icon: 'confirm.svg',
