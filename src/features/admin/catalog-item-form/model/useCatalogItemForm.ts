@@ -193,6 +193,63 @@ function parseCharacteristics(
     );
 }
 
+function getDurationFormValue(
+  durationMinutes: number
+): {
+  durationValue: string;
+  durationUnit: 'minutes' | 'hours';
+} {
+  if (
+    durationMinutes >= 60 &&
+    durationMinutes % 60 === 0
+  ) {
+    return {
+      durationValue: String(
+        durationMinutes / 60
+      ),
+      durationUnit: 'hours',
+    };
+  }
+
+  return {
+    durationValue: String(
+      durationMinutes
+    ),
+    durationUnit: 'minutes',
+  };
+}
+
+function convertDurationToMinutes(
+  durationValue: string,
+  durationUnit: 'minutes' | 'hours'
+) {
+  const normalizedValue =
+    durationValue.replace(',', '.');
+
+  const numericValue = Number(
+    normalizedValue
+  );
+
+  if (!Number.isFinite(numericValue)) {
+    return null;
+  }
+
+  const durationMinutes =
+    durationUnit === 'hours'
+      ? numericValue * 60
+      : numericValue;
+
+  if (
+    !Number.isInteger(durationMinutes) ||
+    durationMinutes <= 0
+  ) {
+    return null;
+  }
+
+  return durationMinutes;
+}
+
+
 function createInitialValues(
   item: CatalogItem | undefined,
   bookingOptions: CatalogBookingOption[]
@@ -264,23 +321,31 @@ function createInitialValues(
             first.sortOrder -
             second.sortOrder
         )
-        .map((option) => ({
-          id: option.id,
-          serviceId:
-            option.serviceId ?? '',
+        .map((option) => {
+          const duration =
+            getDurationFormValue(
+              option.durationMinutes
+            );
 
-          peopleCount: String(
-            option.peopleCount
-          ),
+          return {
+            id: option.id,
+            serviceId:
+              option.serviceId ?? '',
 
-          durationHours: String(
-            option.durationMinutes / 60
-          ),
+            peopleCount: String(
+              option.peopleCount
+            ),
 
-          price: String(option.price),
+            durationValue:
+              duration.durationValue,
 
-          isActive: option.isActive,
-        })),
+            durationUnit:
+              duration.durationUnit,
+
+            price: String(option.price),
+            isActive: option.isActive,
+          };
+        })
   };
 }
 
@@ -367,9 +432,11 @@ function validateValues(
         option.peopleCount
       );
 
-      const durationHours = Number(
-        option.durationHours
-      );
+      const durationMinutes =
+        convertDurationToMinutes(
+          option.durationValue,
+          option.durationUnit
+        );
 
       const optionPrice = Number(
         option.price
@@ -396,17 +463,11 @@ function validateValues(
         return;
       }
 
-      const isValidDuration =
-        Number.isFinite(durationHours) &&
-        durationHours >= 0.5 &&
-        durationHours <= 6 &&
-        Number.isInteger(
-          durationHours * 2
-        );
-
-      if (!isValidDuration) {
+      if (durationMinutes === null) {
         errors.optionRows[option.id] =
-          'Укажите время от 0,5 до 6 часов с шагом 0,5';
+          option.durationUnit === 'hours'
+            ? 'Укажите корректное количество часов'
+            : 'Укажите целое количество минут';
 
         return;
       }
@@ -426,7 +487,7 @@ function validateValues(
           ? 'package'
           : option.serviceId,
         peopleCount,
-        durationHours,
+        durationMinutes,
       ].join('-');
 
       if (optionKeys.has(uniqueKey)) {
@@ -585,7 +646,8 @@ export function useCatalogItemForm({
           id: createId('booking-option'),
           serviceId: '',
           peopleCount: '1',
-          durationHours: '1',
+          durationValue: '1',
+          durationUnit: 'hours',
           price: '',
           isActive: true,
         },
@@ -882,9 +944,10 @@ export function useCatalogItemForm({
                 ),
 
                 durationMinutes:
-                  Number(
-                    option.durationHours
-                  ) * 60,
+                  convertDurationToMinutes(
+                    option.durationValue,
+                    option.durationUnit
+                  ) as number,
 
                 price: Number(option.price),
 

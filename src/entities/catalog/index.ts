@@ -2,6 +2,7 @@ export type {
   CatalogItemKind,
   Season,
   PriceUnit,
+  DurationUnit,
   CatalogCharacteristic,
   CatalogImage,
   CatalogItemBase,

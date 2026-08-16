@@ -5,32 +5,16 @@ import type {
   CatalogItem,
 } from '@/entities/catalog';
 
+import {
+  formatDurationMinutes,
+} from '@/shared/lib/format-duration-minutes';
+
 import type {
   BookingLine,
   BookingSelectOption,
   InitialBookingParams,
 } from '../model/types';
 
-function formatDuration(
-  durationMinutes: number
-) {
-  const hours = Math.floor(
-    durationMinutes / 60
-  );
-
-  const minutes =
-    durationMinutes % 60;
-
-  if (hours > 0 && minutes > 0) {
-    return `${hours} ч. ${minutes} мин.`;
-  }
-
-  if (hours > 0) {
-    return `${hours} ч.`;
-  }
-
-  return `${minutes} мин.`;
-}
 
 function formatPeopleCount(count: number) {
   const lastDigit = count % 10;
@@ -87,9 +71,10 @@ export function getBookingOptionLabel(
     option.peopleCount
   );
 
-  const duration = formatDuration(
-    option.durationMinutes
-  );
+  const duration =
+    formatDurationMinutes(
+      option.durationMinutes
+    );
 
   const price =
     option.price.toLocaleString('ru-RU');

@@ -3,6 +3,7 @@ import type {
   CatalogItem,
   CatalogItemKind,
   PriceUnit,
+  DurationUnit,
   Season,
 } from '@/entities/catalog';
 
@@ -21,7 +22,10 @@ export type CatalogBookingOptionFormValue = {
   id: string;
   serviceId: string;
   peopleCount: string;
-  durationHours: string;
+
+  durationValue: string;
+  durationUnit: DurationUnit;
+
   price: string;
   isActive: boolean;
 };

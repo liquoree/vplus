@@ -98,6 +98,17 @@ const seasonOptions = [
   },
 ];
 
+const durationUnitOptions = [
+  {
+    value: 'minutes',
+    label: 'Минуты',
+  },
+  {
+    value: 'hours',
+    label: 'Часы',
+  },
+];
+
 export function CatalogItemForm({
   mode,
   item,
@@ -444,9 +455,7 @@ export function CatalogItemForm({
 
             <p>
               Для техники выбирается услуга,
-              количество человек,
-              продолжительность в часах и
-              точная цена.
+              количество человек, время и точная цена.
             </p>
           </div>
 
@@ -516,27 +525,54 @@ export function CatalogItemForm({
                       }
                     />
 
-                    <TextField
-                      label="Время, ч."
-                      type="number"
-                      min="0.5"
-                      max="6"
-                      step="0.5"
-                      value={
-                        option.durationHours
-                      }
-                      placeholder="1,5"
-                      onChange={(event) =>
-                        updateBookingOption(
-                          option.id,
-                          {
-                            durationHours:
-                              event.target
-                                .value,
-                          }
-                        )
-                      }
-                    />
+                    <div className="catalog-item-form__duration">
+                      <TextField
+                        label="Время"
+                        type="number"
+                        min="1"
+                        step={
+                          option.durationUnit ===
+                          'minutes'
+                            ? '1'
+                            : '0.5'
+                        }
+                        value={option.durationValue}
+                        placeholder={
+                          option.durationUnit ===
+                          'minutes'
+                            ? 'Например, 10'
+                            : 'Например, 1,5'
+                        }
+                        onChange={(event) =>
+                          updateBookingOption(
+                            option.id,
+                            {
+                              durationValue:
+                                event.target.value,
+                            }
+                          )
+                        }
+                      />
+
+                      <SelectField
+                        label="Единица"
+                        value={option.durationUnit}
+                        options={durationUnitOptions}
+                        required
+                        onChange={(value) =>
+                          updateBookingOption(
+                            option.id,
+                            {
+                              durationUnit:
+                                value as
+                                  | 'minutes'
+                                  | 'hours',
+                            }
+                          )
+                        }
+                        placeholder="Выберите единицу"
+                      />
+                    </div>
 
                     <TextField
                       label="Цена"

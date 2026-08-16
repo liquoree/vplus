@@ -4,6 +4,10 @@ export type Season = 'summer' | 'winter' | 'all_season';
 
 export type PriceUnit = 'hour' | 'fixed';
 
+export type DurationUnit =
+  | 'minutes'
+  | 'hours';
+
 export type CatalogCharacteristic = {
   name: string;
   value: string;
