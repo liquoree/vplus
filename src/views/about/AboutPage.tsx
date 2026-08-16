@@ -1,7 +1,6 @@
 import Image from 'next/image';
 import { Footer, Header, TemplateInfoPage } from '@/widgets';
 import './AboutPage.scss';
-import { isExternal } from 'util/types';
 
 const advantages = [
   'Отличная техника',
