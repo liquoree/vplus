@@ -6,7 +6,7 @@ const infoCards = [
   {
     icon: 'snowmobile.svg',
     title: 'Отличная\nнадёжная техника',
-    mobileTitle: 'Отличная надёжная\nтехника',
+    mobileTitle: 'Надёжная\nтехника',
     description: 'Современная и регулярно обслуживаемая',
   },
   {
