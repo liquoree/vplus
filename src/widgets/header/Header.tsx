@@ -51,6 +51,7 @@ export function Header({
             width={65}
             height={43}
             priority
+            className="header__logo-image"
           />
         </Link>
 

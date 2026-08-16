@@ -56,13 +56,19 @@ export function WhereUs() {
             })}
           </div>
 
-        <YandexMap
-          className="where-us__map"
-          center={COMPANY_LOCATION.coordinates}
-          markerCoordinates={COMPANY_LOCATION.coordinates}
-          zoom={15}
-          title={COMPANY_LOCATION.title}
-        />
+          <div className="where-us__map-column">
+            <YandexMap
+              className="where-us__map"
+              center={COMPANY_LOCATION.coordinates}
+              markerCoordinates={COMPANY_LOCATION.coordinates}
+              zoom={15}
+              title={COMPANY_LOCATION.title}
+            />
+
+            <p className="where-us__partners">
+              Наши партнёры — турбаза «Мы-съ Онего»
+            </p>
+          </div>
 
           <div className="where-us__info">
             <div className="where-us__advantages">
