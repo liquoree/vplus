@@ -1,6 +1,7 @@
 import Image from 'next/image';
 import { Footer, Header, TemplateInfoPage } from '@/widgets';
 import './AboutPage.scss';
+import { isExternal } from 'util/types';
 
 const advantages = [
   'Отличная техника',
@@ -20,6 +21,12 @@ const contacts = [
     href: 'https://vk.com/vezdehodptz',
     isExternal: true,
   },
+  {
+    icon: '/images/icons/email.svg',
+    text: 'Vezdehodplus@yandex.ru',
+    href: 'mailto:Vezdehodplus@yandex.ru',
+    isExternal: true,
+  }
 ];
 
 export function AboutPage() {
