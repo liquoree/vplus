@@ -155,7 +155,7 @@ export function Header({
         <div className="header__mobile-actions">
           <a
             className="header__call"
-            href="tel:+79114238600"
+            href="tel:+79114047303"
           >
             Позвонить
           </a>

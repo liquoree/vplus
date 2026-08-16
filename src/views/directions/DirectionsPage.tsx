@@ -101,7 +101,7 @@ export function DirectionsPage() {
               title={`Хотите заказать трансфер?
             Звоните!`}
               mobileTitle="Хотите заказать трансфер?"
-              description={`Телефон 1: +7 (911) 423-86-00
+              description={`Телефон 1: +7 (911) 404-73-03
             Телефон 2: +7 (911) 404-73-03`}
               buttonText="Связаться с менеджером"
               href="/about"
