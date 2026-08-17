@@ -25,9 +25,7 @@
          * 3 товара — 3 колонки,
          * 4 товара — 4 колонки.
          */
-        grid-template-columns:
-            repeat(auto-fit,
-                minmax(240px, 270px));
+        grid-template-columns: repeat(auto-fit, minmax(240px, 270px));
 
         justify-content: center;
         gap: 40px;
@@ -59,9 +57,7 @@
         }
 
         &__grid {
-            grid-template-columns:
-                repeat(2,
-                    minmax(0, 1fr));
+            grid-template-columns: repeat(2, minmax(0, 1fr));
 
             gap: 12px 10px;
         }
@@ -79,8 +75,7 @@
 @media (max-width: 360px) {
     .popular-section {
         &__grid {
-            grid-template-columns:
-                minmax(0, 270px);
+            grid-template-columns: minmax(0, 270px);
         }
     }
 }

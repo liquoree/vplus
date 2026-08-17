@@ -4,61 +4,53 @@ export type Season = 'summer' | 'winter' | 'all_season';
 
 export type PriceUnit = 'hour' | 'fixed';
 
-export type DurationUnit =
-  | 'minutes'
-  | 'hours';
+export type DurationUnit = 'minutes' | 'hours';
 
 export type CatalogCharacteristic = {
-  name: string;
-  value: string;
+    name: string;
+    value: string;
 };
 
 export type CatalogImage = {
-  id: string;
-  url: string;
-  alt?: string;
-  sortOrder: number;
-  isMain: boolean;
+    id: string;
+    url: string;
+    alt?: string;
+    sortOrder: number;
+    isMain: boolean;
 };
 
 export type CatalogItemBase = {
-  id: string;
-  slug: string;
-  kind: CatalogItemKind;
-  title: string;
-  description: string;
+    id: string;
+    slug: string;
+    kind: CatalogItemKind;
+    title: string;
+    description: string;
 
-  price: number;
-  oldPrice: number | null;
-  priceUnit: PriceUnit;
+    price: number;
+    oldPrice: number | null;
+    priceUnit: PriceUnit;
 
-  images: CatalogImage[];
-  characteristics: CatalogCharacteristic[];
+    images: CatalogImage[];
+    characteristics: CatalogCharacteristic[];
 
-  isAvailable: boolean;
+    isAvailable: boolean;
 };
 
 export type VehicleItem = CatalogItemBase & {
-  kind: 'vehicle';
-  season: Season;
+    kind: 'vehicle';
+    season: Season;
 };
 
-export type ServiceItem =
-CatalogItemBase & {
-  kind: 'service';
+export type ServiceItem = CatalogItemBase & {
+    kind: 'service';
 };
 
 export type PackageItem = CatalogItemBase & {
-  kind: 'package';
-  includedVehicleIds: string[];
-  includedServiceIds: string[];
+    kind: 'package';
+    includedVehicleIds: string[];
+    includedServiceIds: string[];
 };
 
-export type CatalogItem =
-  | VehicleItem
-  | ServiceItem
-  | PackageItem;
+export type CatalogItem = VehicleItem | ServiceItem | PackageItem;
 
-export type BookableCatalogItem =
-  | VehicleItem
-  | PackageItem;
+export type BookableCatalogItem = VehicleItem | PackageItem;

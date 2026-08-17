@@ -115,8 +115,7 @@
 
     &__grid {
         display: grid;
-        grid-template-columns:
-            repeat(4, minmax(0, 270px));
+        grid-template-columns: repeat(4, minmax(0, 270px));
         justify-content: start;
         gap: 45px 40px;
         width: 100%;
@@ -154,8 +153,7 @@
 @media (max-width: 1240px) {
     .admin-catalog-page {
         &__grid {
-            grid-template-columns:
-                repeat(3, minmax(0, 270px));
+            grid-template-columns: repeat(3, minmax(0, 270px));
         }
     }
 }
@@ -163,8 +161,7 @@
 @media (max-width: 940px) {
     .admin-catalog-page {
         &__grid {
-            grid-template-columns:
-                repeat(2, minmax(0, 270px));
+            grid-template-columns: repeat(2, minmax(0, 270px));
         }
     }
 }
@@ -204,8 +201,7 @@
         }
 
         &__grid {
-            grid-template-columns:
-                repeat(2, minmax(0, 1fr));
+            grid-template-columns: repeat(2, minmax(0, 1fr));
             gap: 12px 10px;
         }
 
@@ -227,8 +223,7 @@
 @media (max-width: 420px) {
     .admin-catalog-page {
         &__grid {
-            grid-template-columns:
-                minmax(0, 1fr);
+            grid-template-columns: minmax(0, 1fr);
         }
     }
 }

@@ -6,8 +6,7 @@
 
     &__price-row {
         display: grid;
-        grid-template-columns:
-            minmax(0, 240px) minmax(0, 1fr);
+        grid-template-columns: minmax(0, 240px) minmax(0, 1fr);
         align-items: flex-start;
         gap: 22px;
     }
@@ -199,8 +198,7 @@
 
     &__package-columns {
         display: grid;
-        grid-template-columns:
-            repeat(2, minmax(0, 1fr));
+        grid-template-columns: repeat(2, minmax(0, 1fr));
         gap: 18px;
     }
 
@@ -235,8 +233,7 @@
     &__duration {
         min-width: 0;
         display: grid;
-        grid-template-columns:
-            minmax(90px, 0.8fr) minmax(110px, 1fr);
+        grid-template-columns: minmax(90px, 0.8fr) minmax(110px, 1fr);
         align-items: end;
         gap: 8px;
     }
@@ -250,12 +247,14 @@
 
     &__option-fields {
         display: grid;
-        grid-template-columns:
-            minmax(170px, 220px) minmax(100px, 0.65fr) minmax(220px, 1.25fr) minmax(120px, 0.8fr) auto;
+        grid-template-columns: minmax(170px, 220px) minmax(100px, 0.65fr) minmax(
+                220px,
+                1.25fr
+            ) minmax(120px, 0.8fr) auto;
         align-items: end;
         gap: 12px;
 
-        >* {
+        > * {
             min-width: 0;
         }
 
@@ -351,8 +350,7 @@
 
     &__images {
         display: grid;
-        grid-template-columns:
-            repeat(3, minmax(0, 1fr));
+        grid-template-columns: repeat(3, minmax(0, 1fr));
         gap: 12px;
     }
 
@@ -498,8 +496,7 @@
 @media (max-width: 1100px) {
     .catalog-item-form {
         &__option-fields {
-            grid-template-columns:
-                repeat(2, minmax(0, 1fr));
+            grid-template-columns: repeat(2, minmax(0, 1fr));
         }
 
         &__remove-option {
@@ -515,8 +512,7 @@
 
         &__price-row,
         &__package-columns {
-            grid-template-columns:
-                minmax(0, 1fr);
+            grid-template-columns: minmax(0, 1fr);
             gap: 14px;
         }
 
@@ -543,13 +539,11 @@
         }
 
         &__option-fields {
-            grid-template-columns:
-                minmax(0, 1fr);
+            grid-template-columns: minmax(0, 1fr);
         }
 
         &__duration {
-            grid-template-columns:
-                minmax(0, 1fr);
+            grid-template-columns: minmax(0, 1fr);
         }
 
         &__remove-option {
@@ -559,8 +553,7 @@
         }
 
         &__images {
-            grid-template-columns:
-                minmax(0, 1fr);
+            grid-template-columns: minmax(0, 1fr);
         }
 
         &__actions {

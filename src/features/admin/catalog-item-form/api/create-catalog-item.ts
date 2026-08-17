@@ -1,256 +1,178 @@
 import axios from 'axios';
 
-import {
-  apiClient,
-} from '@/shared/api/client';
+import { apiClient } from '@/shared/api/client';
 
-import type {
-  CatalogItemFormSubmitPayload,
-} from '../model/types';
+import type { CatalogItemFormSubmitPayload } from '../model/types';
 
 export type CatalogAdminMutationResponse = {
-  id: string;
-  slug: string;
-  version: number;
+    id: string;
+    slug: string;
+    version: number;
 };
 
 type ApiErrorResponse = {
-  error?: {
-    code?: string;
-    message?: string;
-    fields?: Record<
-      string,
-      string
-    > | null;
-    requestId?: string;
-  };
+    error?: {
+        code?: string;
+        message?: string;
+        fields?: Record<string, string> | null;
+        requestId?: string;
+    };
 };
 
-export class CatalogMutationError
-  extends Error {
-  status: number;
+export class CatalogMutationError extends Error {
+    status: number;
 
-  constructor(
-    message: string,
-    status: number
-  ) {
-    super(message);
+    constructor(message: string, status: number) {
+        super(message);
 
-    this.name =
-      'CatalogMutationError';
+        this.name = 'CatalogMutationError';
 
-    this.status = status;
-  }
+        this.status = status;
+    }
 }
 
-function getFirstFieldError(
-  fields:
-    | Record<string, string>
-    | null
-    | undefined
-) {
-  if (!fields) {
-    return null;
-  }
+function getFirstFieldError(fields: Record<string, string> | null | undefined) {
+    if (!fields) {
+        return null;
+    }
 
-  return (
-    Object.values(fields).find(
-      (message) =>
-        typeof message === 'string' &&
-        message.trim().length > 0
-    ) ?? null
-  );
-}
-
-function buildCreateRequest(
-  payload: CatalogItemFormSubmitPayload
-) {
-  const {
-    item,
-    bookingOptions,
-    imageFiles,
-  } = payload;
-
-  if (
-    item.images.length !==
-    imageFiles.length
-  ) {
-    throw new CatalogMutationError(
-      'Не удалось подготовить изображения к загрузке.',
-      0
+    return (
+        Object.values(fields).find(
+            (message) => typeof message === 'string' && message.trim().length > 0,
+        ) ?? null
     );
-  }
+}
 
-  const images =
-    item.images.map(
-      (image, index) => ({
+function buildCreateRequest(payload: CatalogItemFormSubmitPayload) {
+    const { item, bookingOptions, imageFiles } = payload;
+
+    if (item.images.length !== imageFiles.length) {
+        throw new CatalogMutationError('Не удалось подготовить изображения к загрузке.', 0);
+    }
+
+    const images = item.images.map((image, index) => ({
         fileIndex: index,
 
-        alt:
-          image.alt ?? null,
+        alt: image.alt ?? null,
 
-        sortOrder:
-          image.sortOrder,
+        sortOrder: image.sortOrder,
 
-        isMain:
-          image.isMain,
-      })
-    );
+        isMain: image.isMain,
+    }));
 
-  const commonItem = {
-    slug: item.slug || null,
+    const commonItem = {
+        slug: item.slug || null,
 
-    kind: item.kind,
+        kind: item.kind,
 
-    title: item.title,
-    description: item.description,
+        title: item.title,
+        description: item.description,
 
-    price: item.price,
-    oldPrice: item.oldPrice,
+        price: item.price,
+        oldPrice: item.oldPrice,
 
-    priceUnit: item.priceUnit,
+        priceUnit: item.priceUnit,
 
-    characteristics:
-      item.characteristics,
+        characteristics: item.characteristics,
 
-    isAvailable:
-      item.isAvailable,
+        isAvailable: item.isAvailable,
 
-    images,
-  };
+        images,
+    };
 
-  const requestItem =
-    item.kind === 'vehicle'
-      ? {
-          ...commonItem,
+    const requestItem =
+        item.kind === 'vehicle'
+            ? {
+                  ...commonItem,
 
-          season:
-            item.season,
+                  season: item.season,
 
-          includedVehicleIds: [],
-          includedServiceIds: [],
-        }
-      : item.kind === 'package'
-        ? {
-            ...commonItem,
+                  includedVehicleIds: [],
+                  includedServiceIds: [],
+              }
+            : item.kind === 'package'
+              ? {
+                    ...commonItem,
 
-            season: null,
+                    season: null,
 
-            includedVehicleIds:
-              item.includedVehicleIds,
+                    includedVehicleIds: item.includedVehicleIds,
 
-            includedServiceIds:
-              item.includedServiceIds,
-          }
-        : {
-            ...commonItem,
+                    includedServiceIds: item.includedServiceIds,
+                }
+              : {
+                    ...commonItem,
 
-            season: null,
+                    season: null,
 
-            includedVehicleIds: [],
-            includedServiceIds: [],
-          };
+                    includedVehicleIds: [],
+                    includedServiceIds: [],
+                };
 
-  const requestBookingOptions =
-    item.kind === 'service'
-      ? []
-      : bookingOptions.map(
-          (option) => ({
-            serviceId:
-              item.kind === 'package'
-                ? null
-                : option.serviceId,
+    const requestBookingOptions =
+        item.kind === 'service'
+            ? []
+            : bookingOptions.map((option) => ({
+                  serviceId: item.kind === 'package' ? null : option.serviceId,
 
-            peopleCount:
-              option.peopleCount,
+                  peopleCount: option.peopleCount,
 
-            durationMinutes:
-              option.durationMinutes,
+                  durationMinutes: option.durationMinutes,
 
-            price: option.price,
+                  price: option.price,
 
-            isActive:
-              option.isActive,
+                  isActive: option.isActive,
 
-            sortOrder:
-              option.sortOrder,
-          })
-        );
+                  sortOrder: option.sortOrder,
+              }));
 
-  return {
-    request: {
-      item: requestItem,
+    return {
+        request: {
+            item: requestItem,
 
-      bookingOptions:
-        requestBookingOptions,
-    },
+            bookingOptions: requestBookingOptions,
+        },
 
-    files: imageFiles,
-  };
+        files: imageFiles,
+    };
 }
 
 export async function createCatalogItem(
-  payload: CatalogItemFormSubmitPayload
+    payload: CatalogItemFormSubmitPayload,
 ): Promise<CatalogAdminMutationResponse> {
-  const {
-    request,
-    files,
-  } = buildCreateRequest(payload);
+    const { request, files } = buildCreateRequest(payload);
 
-  const formData =
-    new FormData();
+    const formData = new FormData();
 
-  formData.append(
-    'payload',
-    JSON.stringify(request)
-  );
+    formData.append('payload', JSON.stringify(request));
 
-  files.forEach((file) => {
-    formData.append(
-      'files',
-      file
-    );
-  });
+    files.forEach((file) => {
+        formData.append('files', file);
+    });
 
-  try {
-    const response =
-      await apiClient.post<
-        CatalogAdminMutationResponse
-      >(
-        '/admin/catalog',
-        formData
-      );
+    try {
+        const response = await apiClient.post<CatalogAdminMutationResponse>(
+            '/admin/catalog',
+            formData,
+        );
 
-    return response.data;
-  } catch (error) {
-    if (
-      error instanceof
-      CatalogMutationError
-    ) {
-      throw error;
+        return response.data;
+    } catch (error) {
+        if (error instanceof CatalogMutationError) {
+            throw error;
+        }
+
+        if (!axios.isAxiosError<ApiErrorResponse>(error)) {
+            throw new CatalogMutationError('Не удалось сохранить позицию.', 0);
+        }
+
+        const backendError = error.response?.data?.error;
+
+        throw new CatalogMutationError(
+            getFirstFieldError(backendError?.fields) ??
+                backendError?.message ??
+                'Не удалось сохранить позицию.',
+            error.response?.status ?? 0,
+        );
     }
-
-    if (
-      !axios.isAxiosError<ApiErrorResponse>(
-        error
-      )
-    ) {
-      throw new CatalogMutationError(
-        'Не удалось сохранить позицию.',
-        0
-      );
-    }
-
-    const backendError =
-      error.response?.data?.error;
-
-    throw new CatalogMutationError(
-      getFirstFieldError(
-        backendError?.fields
-      ) ??
-        backendError?.message ??
-        'Не удалось сохранить позицию.',
-      error.response?.status ?? 0
-    );
-  }
 }

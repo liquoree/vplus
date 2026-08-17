@@ -1,29 +1,15 @@
-import type {
-  Metadata,
-} from 'next';
+import type { Metadata } from 'next';
 
-import {
-  getLegalDocument,
-} from '@/shared/lib/legal/get-legal-document';
+import { getLegalDocument } from '@/shared/lib/legal/get-legal-document';
 
-import {
-  LegalDocument,
-} from '@/shared/ui/legal-document/LegalDocument';
+import { LegalDocument } from '@/shared/ui/legal-document/LegalDocument';
 
 export const metadata: Metadata = {
-  title:
-    'Согласие на обработку персональных данных',
+    title: 'Согласие на обработку персональных данных',
 };
 
 export default async function PersonalDataConsentPage() {
-  const content =
-    await getLegalDocument(
-      'personal-data-consent.md'
-    );
+    const content = await getLegalDocument('personal-data-consent.md');
 
-  return (
-    <LegalDocument
-      content={content}
-    />
-  );
+    return <LegalDocument content={content} />;
 }

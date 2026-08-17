@@ -1,34 +1,23 @@
-import {
-  getAdminCatalog,
-} from '@/entities/catalog/server';
+import { getAdminCatalog } from '@/entities/catalog/server';
 
-import {
-  AdminCatalogPage,
-} from '@/views/';
+import { AdminCatalogPage } from '@/views/';
 
 type AdminCatalogItemPageProps = {
-  params: Promise<{
-    id: string;
-  }>;
+    params: Promise<{
+        id: string;
+    }>;
 };
 
-export default async function AdminCatalogItemPage({
-  params,
-}: AdminCatalogItemPageProps) {
-  const { id } = await params;
+export default async function AdminCatalogItemPage({ params }: AdminCatalogItemPageProps) {
+    const { id } = await params;
 
-  const {
-    items,
-    bookingOptions,
-  } = await getAdminCatalog();
+    const { items, bookingOptions } = await getAdminCatalog();
 
-  return (
-    <AdminCatalogPage
-      initialItems={items}
-      initialBookingOptions={
-        bookingOptions
-      }
-      selectedItemId={id}
-    />
-  );
+    return (
+        <AdminCatalogPage
+            initialItems={items}
+            initialBookingOptions={bookingOptions}
+            selectedItemId={id}
+        />
+    );
 }

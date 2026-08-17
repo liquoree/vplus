@@ -29,14 +29,14 @@
 
 @media (max-width: 1248px) {
     .why-choose-us {
-            &__container {
-                max-width: 680px;
-            }
-    
-            &__cards {
-                grid-template-columns: repeat(2, 270px);
-            }
+        &__container {
+            max-width: 680px;
         }
+
+        &__cards {
+            grid-template-columns: repeat(2, 270px);
+        }
+    }
 }
 
 @media (max-width: 767px) {

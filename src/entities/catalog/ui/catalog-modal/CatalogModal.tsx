@@ -4,23 +4,14 @@ import Image from 'next/image';
 import Link from 'next/link';
 import type { MouseEvent } from 'react';
 
-import {
-  Navigation,
-  Pagination,
-} from 'swiper/modules';
+import { Navigation, Pagination } from 'swiper/modules';
 
-import {
-  Swiper,
-  SwiperSlide,
-} from 'swiper/react';
+import { Swiper, SwiperSlide } from 'swiper/react';
 
 import { cn } from '@/shared/lib/cn';
 import { Button } from '@/shared/ui';
 
-import {
-  getAvailableBookableItems,
-  getAvailableServices,
-} from '../../lib/booking-options';
+import { getAvailableBookableItems, getAvailableServices } from '../../lib/booking-options';
 
 import type { CatalogBookingOption } from '../../model/booking-option-types';
 import type { CatalogItem } from '../../model/types';
@@ -28,366 +19,273 @@ import type { CatalogItem } from '../../model/types';
 import './CatalogModal.scss';
 
 type CatalogModalProps = {
-  item: CatalogItem;
-  items: CatalogItem[];
-  bookingOptions: CatalogBookingOption[];
+    item: CatalogItem;
+    items: CatalogItem[];
+    bookingOptions: CatalogBookingOption[];
 
-  onClose?: () => void;
+    onClose?: () => void;
 
-  /**
-   * В публичном каталоге показываем кнопку
-   * бронирования. В административном — скрываем.
-   */
-  showBookingAction?: boolean;
+    /**
+     * В публичном каталоге показываем кнопку
+     * бронирования. В административном — скрываем.
+     */
+    showBookingAction?: boolean;
 
-  /**
-   * Маршрут, на который ведут крестик
-   * и кнопка закрытия.
-   */
-  closeHref?: string;
+    /**
+     * Маршрут, на который ведут крестик
+     * и кнопка закрытия.
+     */
+    closeHref?: string;
 };
 
-function getBookingHref(
-  item: CatalogItem
-) {
-  if (item.kind === 'package') {
-    return `/booking?package=${item.slug}`;
-  }
+function getBookingHref(item: CatalogItem) {
+    if (item.kind === 'package') {
+        return `/booking?package=${item.slug}`;
+    }
 
-  if (item.kind === 'service') {
-    return `/booking?service=${item.slug}`;
-  }
+    if (item.kind === 'service') {
+        return `/booking?service=${item.slug}`;
+    }
 
-  return `/booking?vehicle=${item.slug}`;
+    return `/booking?vehicle=${item.slug}`;
 }
 
-function getCurrentPriceLabel(
-  item: CatalogItem
-) {
-  const unit =
-    item.priceUnit === 'hour'
-      ? '/ч'
-      : '';
+function getCurrentPriceLabel(item: CatalogItem) {
+    const unit = item.priceUnit === 'hour' ? '/ч' : '';
 
-  return `${item.price.toLocaleString(
-    'ru-RU'
-  )}₽${unit}`;
+    return `${item.price.toLocaleString('ru-RU')}₽${unit}`;
 }
 
-function getOldPriceLabel(
-  item: CatalogItem
-) {
-  const oldPrice = item.oldPrice;
+function getOldPriceLabel(item: CatalogItem) {
+    const oldPrice = item.oldPrice;
 
-  if (
-    typeof oldPrice !== 'number' ||
-    !Number.isFinite(oldPrice) ||
-    oldPrice <= item.price
-  ) {
-    return null;
-  }
+    if (typeof oldPrice !== 'number' || !Number.isFinite(oldPrice) || oldPrice <= item.price) {
+        return null;
+    }
 
-  return oldPrice.toLocaleString('ru-RU');
+    return oldPrice.toLocaleString('ru-RU');
 }
 
-function getSeasonLabel(
-  item: CatalogItem
-) {
-  if (item.kind === 'package') {
-    return 'Пакет';
-  }
+function getSeasonLabel(item: CatalogItem) {
+    if (item.kind === 'package') {
+        return 'Пакет';
+    }
 
-  if (item.kind === 'service') {
-    return 'Услуга';
-  }
+    if (item.kind === 'service') {
+        return 'Услуга';
+    }
 
-  const seasonLabels = {
-    summer: 'Лето',
-    winter: 'Зима',
-    all_season: 'Всесезонный',
-  };
+    const seasonLabels = {
+        summer: 'Лето',
+        winter: 'Зима',
+        all_season: 'Всесезонный',
+    };
 
-  return seasonLabels[item.season];
+    return seasonLabels[item.season];
 }
 
 function getRelatedItemNames(
-  item: CatalogItem,
-  items: CatalogItem[],
-  bookingOptions: CatalogBookingOption[]
+    item: CatalogItem,
+    items: CatalogItem[],
+    bookingOptions: CatalogBookingOption[],
 ) {
-  if (item.kind === 'vehicle') {
-    return getAvailableServices(
-      items,
-      bookingOptions,
-      item.id
-    ).map((service) => service.title);
-  }
+    if (item.kind === 'vehicle') {
+        return getAvailableServices(items, bookingOptions, item.id).map((service) => service.title);
+    }
 
-  if (item.kind === 'service') {
-    return getAvailableBookableItems(
-      items,
-      bookingOptions,
-      item.id
-    ).map(
-      (bookableItem) =>
-        bookableItem.title
-    );
-  }
+    if (item.kind === 'service') {
+        return getAvailableBookableItems(items, bookingOptions, item.id).map(
+            (bookableItem) => bookableItem.title,
+        );
+    }
 
-  return item.includedServiceIds
-    .map((serviceId) => {
-      return items.find(
-        (catalogItem) =>
-          catalogItem.kind ===
-            'service' &&
-          catalogItem.id === serviceId
-      )?.title;
-    })
-    .filter(
-      (title): title is string =>
-        Boolean(title)
-    );
+    return item.includedServiceIds
+        .map((serviceId) => {
+            return items.find(
+                (catalogItem) => catalogItem.kind === 'service' && catalogItem.id === serviceId,
+            )?.title;
+        })
+        .filter((title): title is string => Boolean(title));
 }
 
-function getRelatedItemsTitle(
-  item: CatalogItem
-) {
-  if (item.kind === 'service') {
-    return 'Доступная техника';
-  }
+function getRelatedItemsTitle(item: CatalogItem) {
+    if (item.kind === 'service') {
+        return 'Доступная техника';
+    }
 
-  return 'Доступные программы';
+    return 'Доступные программы';
 }
 
 export function CatalogModal({
-  item,
-  items,
-  bookingOptions,
-  onClose,
+    item,
+    items,
+    bookingOptions,
+    onClose,
 
-  showBookingAction = true,
-  closeHref = '/catalog',
+    showBookingAction = true,
+    closeHref = '/catalog',
 }: CatalogModalProps) {
-  const images = [...item.images].sort(
-    (first, second) =>
-      first.sortOrder -
-      second.sortOrder
-  );
+    const images = [...item.images].sort((first, second) => first.sortOrder - second.sortOrder);
 
-  const relatedItemNames =
-    getRelatedItemNames(
-      item,
-      items,
-      bookingOptions
-    );
+    const relatedItemNames = getRelatedItemNames(item, items, bookingOptions);
 
-  const oldPriceLabel =
-    getOldPriceLabel(item);
+    const oldPriceLabel = getOldPriceLabel(item);
 
-  const handleCloseClick = (
-    event: MouseEvent<HTMLAnchorElement>
-  ) => {
-    if (!onClose) {
-      return;
-    }
+    const handleCloseClick = (event: MouseEvent<HTMLAnchorElement>) => {
+        if (!onClose) {
+            return;
+        }
 
-    event.preventDefault();
-    onClose();
-  };
+        event.preventDefault();
+        onClose();
+    };
 
-  const actionsClassName =
-    showBookingAction
-      ? 'catalog-modal__actions'
-      : [
-          'catalog-modal__actions',
-          'catalog-modal__actions--single',
-        ].join(' ');
+    const actionsClassName = showBookingAction
+        ? 'catalog-modal__actions'
+        : ['catalog-modal__actions', 'catalog-modal__actions--single'].join(' ');
 
-  return (
-    <div className="catalog-modal">
-      <div className="catalog-modal__overlay" />
+    return (
+        <div className="catalog-modal">
+            <div className="catalog-modal__overlay" />
 
-      <article className="catalog-modal__dialog">
-        <Link
-          className="catalog-modal__close"
-          href={closeHref}
-          aria-label="Закрыть"
-          onClick={handleCloseClick}
-        >
-          <Image
-            className="catalog-modal__close-icon"
-            src="/images/close.svg"
-            alt=""
-            width={20}
-            height={20}
-          />
-        </Link>
+            <article className="catalog-modal__dialog">
+                <Link
+                    className="catalog-modal__close"
+                    href={closeHref}
+                    aria-label="Закрыть"
+                    onClick={handleCloseClick}
+                >
+                    <Image
+                        className="catalog-modal__close-icon"
+                        src="/images/close.svg"
+                        alt=""
+                        width={20}
+                        height={20}
+                    />
+                </Link>
 
-        <div className="catalog-modal__gallery">
-          <Swiper
-            className="catalog-modal__swiper"
-            modules={[
-              Navigation,
-              Pagination,
-            ]}
-            navigation={images.length > 1}
-            pagination={
-              images.length > 1
-                ? {
-                    clickable: true,
-                  }
-                : false
-            }
-            slidesPerView={1}
-            loop={images.length > 1}
-          >
-            {images.map((image) => (
-              <SwiperSlide
-                className="catalog-modal__slide"
-                key={image.id}
-              >
-                <div className="catalog-modal__image-wrap">
-                  <Image
-                    className="catalog-modal__image"
-                    src={image.url}
-                    alt={
-                      image.alt ??
-                      item.title
-                    }
-                    fill
-                    sizes="(max-width: 768px) 100vw, 560px"
-                    priority
-                  />
+                <div className="catalog-modal__gallery">
+                    <Swiper
+                        className="catalog-modal__swiper"
+                        modules={[Navigation, Pagination]}
+                        navigation={images.length > 1}
+                        pagination={
+                            images.length > 1
+                                ? {
+                                      clickable: true,
+                                  }
+                                : false
+                        }
+                        slidesPerView={1}
+                        loop={images.length > 1}
+                    >
+                        {images.map((image) => (
+                            <SwiperSlide className="catalog-modal__slide" key={image.id}>
+                                <div className="catalog-modal__image-wrap">
+                                    <Image
+                                        className="catalog-modal__image"
+                                        src={image.url}
+                                        alt={image.alt ?? item.title}
+                                        fill
+                                        sizes="(max-width: 768px) 100vw, 560px"
+                                        priority
+                                    />
+                                </div>
+                            </SwiperSlide>
+                        ))}
+                    </Swiper>
                 </div>
-              </SwiperSlide>
-            ))}
-          </Swiper>
+
+                <div className="catalog-modal__body">
+                    <div className="catalog-modal__header">
+                        <h2 className="catalog-modal__title">{item.title}</h2>
+
+                        <span className="catalog-modal__season">{getSeasonLabel(item)}</span>
+                    </div>
+
+                    <div className="catalog-modal__price-row">
+                        <div className="catalog-modal__prices">
+                            <span className="catalog-modal__price-prefix">от</span>
+
+                            {oldPriceLabel && (
+                                <span className="catalog-modal__old-price">{oldPriceLabel}</span>
+                            )}
+
+                            <span className="catalog-modal__price">
+                                {getCurrentPriceLabel(item)}
+                            </span>
+                        </div>
+
+                        <span
+                            className={cn(
+                                'catalog-modal__status',
+                                !item.isAvailable && 'catalog-modal__status--unavailable',
+                            )}
+                        >
+                            {item.isAvailable ? 'В наличии' : 'Нет в наличии'}
+                        </span>
+                    </div>
+
+                    <p className="catalog-modal__description">{item.description}</p>
+
+                    {item.characteristics.length > 0 && (
+                        <div className="catalog-modal__block">
+                            <h3 className="catalog-modal__subtitle">Характеристики</h3>
+
+                            <ul className="catalog-modal__list">
+                                {item.characteristics.map((characteristic) => (
+                                    <li
+                                        className="catalog-modal__list-item"
+                                        key={[characteristic.name, characteristic.value].join('-')}
+                                    >
+                                        <span>{characteristic.name}: </span>
+
+                                        {characteristic.value}
+                                    </li>
+                                ))}
+                            </ul>
+                        </div>
+                    )}
+
+                    {relatedItemNames.length > 0 && (
+                        <div className="catalog-modal__block">
+                            <h3 className="catalog-modal__subtitle">
+                                {getRelatedItemsTitle(item)}
+                            </h3>
+
+                            <ul className="catalog-modal__list">
+                                {relatedItemNames.map((name) => (
+                                    <li className="catalog-modal__list-item" key={name}>
+                                        {name}
+                                    </li>
+                                ))}
+                            </ul>
+                        </div>
+                    )}
+
+                    <div className={actionsClassName}>
+                        {showBookingAction && (
+                            <Button
+                                as="link"
+                                href={getBookingHref(item)}
+                                text="Забронировать"
+                                variant="hero"
+                                className="catalog-modal__booking"
+                                isDisabled={!item.isAvailable}
+                            />
+                        )}
+
+                        <Button
+                            as="link"
+                            href={closeHref}
+                            text="Закрыть"
+                            variant="hero"
+                            className="catalog-modal__cancel"
+                            onClick={onClose}
+                        />
+                    </div>
+                </div>
+            </article>
         </div>
-
-        <div className="catalog-modal__body">
-          <div className="catalog-modal__header">
-            <h2 className="catalog-modal__title">
-              {item.title}
-            </h2>
-
-            <span className="catalog-modal__season">
-              {getSeasonLabel(item)}
-            </span>
-          </div>
-
-          <div className="catalog-modal__price-row">
-            <div className="catalog-modal__prices">
-              <span className="catalog-modal__price-prefix">
-                от
-              </span>
-
-              {oldPriceLabel && (
-                <span className="catalog-modal__old-price">
-                  {oldPriceLabel}
-                </span>
-              )}
-
-              <span className="catalog-modal__price">
-                {getCurrentPriceLabel(
-                  item
-                )}
-              </span>
-            </div>
-
-            <span
-              className={cn(
-                'catalog-modal__status',
-                !item.isAvailable &&
-                  'catalog-modal__status--unavailable'
-              )}
-            >
-              {item.isAvailable
-                ? 'В наличии'
-                : 'Нет в наличии'}
-            </span>
-          </div>
-
-          <p className="catalog-modal__description">
-            {item.description}
-          </p>
-
-          {item.characteristics.length >
-            0 && (
-            <div className="catalog-modal__block">
-              <h3 className="catalog-modal__subtitle">
-                Характеристики
-              </h3>
-
-              <ul className="catalog-modal__list">
-                {item.characteristics.map(
-                  (characteristic) => (
-                    <li
-                      className="catalog-modal__list-item"
-                      key={[
-                        characteristic.name,
-                        characteristic.value,
-                      ].join('-')}
-                    >
-                      <span>
-                        {characteristic.name}:{' '}
-                      </span>
-
-                      {characteristic.value}
-                    </li>
-                  )
-                )}
-              </ul>
-            </div>
-          )}
-
-          {relatedItemNames.length > 0 && (
-            <div className="catalog-modal__block">
-              <h3 className="catalog-modal__subtitle">
-                {getRelatedItemsTitle(
-                  item
-                )}
-              </h3>
-
-              <ul className="catalog-modal__list">
-                {relatedItemNames.map(
-                  (name) => (
-                    <li
-                      className="catalog-modal__list-item"
-                      key={name}
-                    >
-                      {name}
-                    </li>
-                  )
-                )}
-              </ul>
-            </div>
-          )}
-
-          <div className={actionsClassName}>
-            {showBookingAction && (
-              <Button
-                as="link"
-                href={getBookingHref(item)}
-                text="Забронировать"
-                variant="hero"
-                className="catalog-modal__booking"
-                isDisabled={
-                  !item.isAvailable
-                }
-              />
-            )}
-
-            <Button
-              as="link"
-              href={closeHref}
-              text="Закрыть"
-              variant="hero"
-              className="catalog-modal__cancel"
-              onClick={onClose}
-            />
-          </div>
-        </div>
-      </article>
-    </div>
-  );
+    );
 }

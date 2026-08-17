@@ -40,7 +40,6 @@
         font-size: 20px;
         line-height: 1.1;
         font-weight: 600;
-        
     }
 
     &__description {
@@ -69,7 +68,7 @@
         &__title-desktop {
             display: none;
         }
-    
+
         &__title-mobile {
             display: inline;
         }
@@ -78,8 +77,8 @@
             display: grid;
             grid-template-columns: 31px auto;
             grid-template-areas:
-                "icon title"
-                "description description";
+                'icon title'
+                'description description';
             justify-content: center;
             align-items: center;
             column-gap: 12px;

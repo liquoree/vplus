@@ -1,12 +1,12 @@
 export type CatalogBookingOption = {
-  id: string;
-  bookableItemId: string;
-  serviceId: string | null;
-  peopleCount: number;
+    id: string;
+    bookableItemId: string;
+    serviceId: string | null;
+    peopleCount: number;
 
-  durationMinutes: number;
+    durationMinutes: number;
 
-  price: number;
-  isActive: boolean;
-  sortOrder: number;
+    price: number;
+    isActive: boolean;
+    sortOrder: number;
 };

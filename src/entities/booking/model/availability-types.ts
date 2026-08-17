@@ -1,17 +1,17 @@
 export type BookingAvailabilityQuery = {
-  bookableItemId: string;
-  date: string;
-  durationMinutes: number;
+    bookableItemId: string;
+    date: string;
+    durationMinutes: number;
 };
 
 export type BookingTimeSlot = {
-  startTime: string;
-  endTime: string;
+    startTime: string;
+    endTime: string;
 };
 
 export type BookingAvailabilityResult = {
-  date: string;
-  bookableItemId: string;
-  durationMinutes: number;
-  slots: BookingTimeSlot[];
+    date: string;
+    bookableItemId: string;
+    durationMinutes: number;
+    slots: BookingTimeSlot[];
 };

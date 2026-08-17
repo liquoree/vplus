@@ -1,491 +1,304 @@
 import type { BookingRequestItem } from '@/entities/booking';
 
-import type {
-  CatalogBookingOption,
-  CatalogItem,
-} from '@/entities/catalog';
+import type { CatalogBookingOption, CatalogItem } from '@/entities/catalog';
 
-import {
-  formatDurationMinutes,
-} from '@/shared/lib/format-duration-minutes';
+import { formatDurationMinutes } from '@/shared/lib/format-duration-minutes';
 
-import type {
-  BookingLine,
-  BookingSelectOption,
-  InitialBookingParams,
-} from '../model/types';
-
+import type { BookingLine, BookingSelectOption, InitialBookingParams } from '../model/types';
 
 function formatPeopleCount(count: number) {
-  const lastDigit = count % 10;
-  const lastTwoDigits = count % 100;
+    const lastDigit = count % 10;
+    const lastTwoDigits = count % 100;
 
-  if (
-    lastDigit === 1 &&
-    lastTwoDigits !== 11
-  ) {
+    if (lastDigit === 1 && lastTwoDigits !== 11) {
+        return `${count} человек`;
+    }
+
+    if (lastDigit >= 2 && lastDigit <= 4 && (lastTwoDigits < 12 || lastTwoDigits > 14)) {
+        return `${count} человека`;
+    }
+
     return `${count} человек`;
-  }
-
-  if (
-    lastDigit >= 2 &&
-    lastDigit <= 4 &&
-    (lastTwoDigits < 12 ||
-      lastTwoDigits > 14)
-  ) {
-    return `${count} человека`;
-  }
-
-  return `${count} человек`;
 }
 
-function sortBookingOptions(
-  options: CatalogBookingOption[]
-) {
-  return [...options].sort(
-    (first, second) =>
-      first.sortOrder -
-      second.sortOrder
-  );
+function sortBookingOptions(options: CatalogBookingOption[]) {
+    return [...options].sort((first, second) => first.sortOrder - second.sortOrder);
 }
 
-function getServiceItem(
-  items: CatalogItem[],
-  serviceId: string | null
-) {
-  if (!serviceId) {
-    return undefined;
-  }
+function getServiceItem(items: CatalogItem[], serviceId: string | null) {
+    if (!serviceId) {
+        return undefined;
+    }
 
-  return items.find(
-    (item) =>
-      item.kind === 'service' &&
-      item.id === serviceId
-  );
+    return items.find((item) => item.kind === 'service' && item.id === serviceId);
 }
 
-export function getBookingOptionLabel(
-  option: CatalogBookingOption
-) {
-  const people = formatPeopleCount(
-    option.peopleCount
-  );
+export function getBookingOptionLabel(option: CatalogBookingOption) {
+    const people = formatPeopleCount(option.peopleCount);
 
-  const duration =
-    formatDurationMinutes(
-      option.durationMinutes
-    );
+    const duration = formatDurationMinutes(option.durationMinutes);
 
-  const price =
-    option.price.toLocaleString('ru-RU');
+    const price = option.price.toLocaleString('ru-RU');
 
-  return `${people}, ${duration} — ${price} ₽`;
+    return `${people}, ${duration} — ${price} ₽`;
 }
 
-export function getBookingOptionFullLabel(
-  option: CatalogBookingOption,
-  items: CatalogItem[]
-) {
-  const service = getServiceItem(
-    items,
-    option.serviceId
-  );
+export function getBookingOptionFullLabel(option: CatalogBookingOption, items: CatalogItem[]) {
+    const service = getServiceItem(items, option.serviceId);
 
-  const serviceTitle =
-    service?.title ??
-    'Готовая программа';
+    const serviceTitle = service?.title ?? 'Готовая программа';
 
-  return `${serviceTitle} — ${getBookingOptionLabel(
-    option
-  )}`;
+    return `${serviceTitle} — ${getBookingOptionLabel(option)}`;
 }
 
 export function createEmptyBookingLine(): BookingLine {
-  return {
-    id: crypto.randomUUID(),
+    return {
+        id: crypto.randomUUID(),
 
-    serviceId: '',
-    bookableItemId: '',
-    bookingOptionId: '',
+        serviceId: '',
+        bookableItemId: '',
+        bookingOptionId: '',
 
-    selectionSource: null,
+        selectionSource: null,
 
-    date: '',
-    time: '',
-  };
+        date: '',
+        time: '',
+    };
 }
 
 export function createInitialBookingLine(
-  items: CatalogItem[],
-  bookingOptions: CatalogBookingOption[],
-  params: InitialBookingParams
+    items: CatalogItem[],
+    bookingOptions: CatalogBookingOption[],
+    params: InitialBookingParams,
 ): BookingLine {
-  const selectedBookableItem =
-    items.find(
-      (item) =>
-        item.kind === 'vehicle' &&
-        item.slug ===
-          params.initialVehicleSlug
-    ) ??
-    items.find(
-      (item) =>
-        item.kind === 'package' &&
-        item.slug ===
-          params.initialPackageSlug
+    const selectedBookableItem =
+        items.find((item) => item.kind === 'vehicle' && item.slug === params.initialVehicleSlug) ??
+        items.find((item) => item.kind === 'package' && item.slug === params.initialPackageSlug);
+
+    const selectedService = items.find(
+        (item) => item.kind === 'service' && item.slug === params.initialServiceSlug,
     );
 
-  const selectedService = items.find(
-    (item) =>
-      item.kind === 'service' &&
-      item.slug ===
-        params.initialServiceSlug
-  );
+    const selectionsAreCompatible =
+        selectedBookableItem && selectedService
+            ? bookingOptions.some(
+                  (option) =>
+                      option.isActive &&
+                      option.bookableItemId === selectedBookableItem.id &&
+                      option.serviceId === selectedService.id,
+              )
+            : false;
 
-  const selectionsAreCompatible =
-    selectedBookableItem &&
-    selectedService
-      ? bookingOptions.some(
-          (option) =>
-            option.isActive &&
-            option.bookableItemId ===
-              selectedBookableItem.id &&
-            option.serviceId ===
-              selectedService.id
-        )
-      : false;
+    const bookableItemId =
+        selectedBookableItem && (!selectedService || selectionsAreCompatible)
+            ? selectedBookableItem.id
+            : '';
 
-  const bookableItemId =
-    selectedBookableItem &&
-    (!selectedService ||
-      selectionsAreCompatible)
-      ? selectedBookableItem.id
-      : '';
+    const selectionSource = selectedService ? 'service' : selectedBookableItem ? 'bookable' : null;
 
-  const selectionSource =
-    selectedService
-      ? 'service'
-      : selectedBookableItem
-        ? 'bookable'
-        : null;
+    return {
+        id: crypto.randomUUID(),
 
-  return {
-    id: crypto.randomUUID(),
+        serviceId: selectedService?.id ?? '',
 
-    serviceId:
-      selectedService?.id ?? '',
+        bookableItemId,
+        bookingOptionId: '',
 
-    bookableItemId,
-    bookingOptionId: '',
+        selectionSource,
 
-    selectionSource,
-
-    date: '',
-    time: '',
-  };
+        date: '',
+        time: '',
+    };
 }
 
-export function getCatalogItem(
-  items: CatalogItem[],
-  itemId: string
-) {
-  return items.find(
-    (item) => item.id === itemId
-  );
+export function getCatalogItem(items: CatalogItem[], itemId: string) {
+    return items.find((item) => item.id === itemId);
 }
 
-export function isPackageBookingLine(
-  line: BookingLine,
-  items: CatalogItem[]
-) {
-  const item = getCatalogItem(
-    items,
-    line.bookableItemId
-  );
+export function isPackageBookingLine(line: BookingLine, items: CatalogItem[]) {
+    const item = getCatalogItem(items, line.bookableItemId);
 
-  return item?.kind === 'package';
+    return item?.kind === 'package';
 }
 
 export function getBookableItemOptions(
-  line: BookingLine,
-  items: CatalogItem[],
-  bookingOptions: CatalogBookingOption[]
+    line: BookingLine,
+    items: CatalogItem[],
+    bookingOptions: CatalogBookingOption[],
 ): BookingSelectOption[] {
-  const shouldFilterByService =
-    line.selectionSource === 'service' &&
-    Boolean(line.serviceId);
+    const shouldFilterByService = line.selectionSource === 'service' && Boolean(line.serviceId);
 
-  const availableBookableItemIds =
-    new Set(
-      bookingOptions
-        .filter((option) => {
-          if (!option.isActive) {
-            return false;
-          }
+    const availableBookableItemIds = new Set(
+        bookingOptions
+            .filter((option) => {
+                if (!option.isActive) {
+                    return false;
+                }
 
-          if (
-            !shouldFilterByService
-          ) {
-            return true;
-          }
+                if (!shouldFilterByService) {
+                    return true;
+                }
 
-          return (
-            option.serviceId ===
-            line.serviceId
-          );
-        })
-        .map(
-          (option) =>
-            option.bookableItemId
-        )
+                return option.serviceId === line.serviceId;
+            })
+            .map((option) => option.bookableItemId),
     );
 
-  return items
-    .filter(
-      (item) =>
-        (item.kind === 'vehicle' ||
-          item.kind === 'package') &&
-        item.isAvailable &&
-        availableBookableItemIds.has(
-          item.id
+    return items
+        .filter(
+            (item) =>
+                (item.kind === 'vehicle' || item.kind === 'package') &&
+                item.isAvailable &&
+                availableBookableItemIds.has(item.id),
         )
-    )
-    .map((item) => ({
-      value: item.id,
-      label: item.title,
-    }));
+        .map((item) => ({
+            value: item.id,
+            label: item.title,
+        }));
 }
 
 export function getServiceOptions(
-  line: BookingLine,
-  items: CatalogItem[],
-  bookingOptions: CatalogBookingOption[]
+    line: BookingLine,
+    items: CatalogItem[],
+    bookingOptions: CatalogBookingOption[],
 ): BookingSelectOption[] {
-  const selectedBookableItem =
-    getCatalogItem(
-      items,
-      line.bookableItemId
+    const selectedBookableItem = getCatalogItem(items, line.bookableItemId);
+
+    if (selectedBookableItem?.kind === 'package') {
+        return [];
+    }
+
+    const shouldFilterByBookableItem =
+        line.selectionSource === 'bookable' && Boolean(line.bookableItemId);
+
+    const availableServiceIds = new Set(
+        bookingOptions
+            .filter((option) => {
+                if (!option.isActive || option.serviceId === null) {
+                    return false;
+                }
+
+                if (!shouldFilterByBookableItem) {
+                    return true;
+                }
+
+                return option.bookableItemId === line.bookableItemId;
+            })
+            .map((option) => option.serviceId),
     );
 
-  if (
-    selectedBookableItem?.kind ===
-    'package'
-  ) {
-    return [];
-  }
-
-  const shouldFilterByBookableItem =
-    line.selectionSource ===
-      'bookable' &&
-    Boolean(line.bookableItemId);
-
-  const availableServiceIds =
-    new Set(
-      bookingOptions
-        .filter((option) => {
-          if (
-            !option.isActive ||
-            option.serviceId === null
-          ) {
-            return false;
-          }
-
-          if (
-            !shouldFilterByBookableItem
-          ) {
-            return true;
-          }
-
-          return (
-            option.bookableItemId ===
-            line.bookableItemId
-          );
-        })
-        .map(
-          (option) =>
-            option.serviceId
+    return items
+        .filter(
+            (item) =>
+                item.kind === 'service' && item.isAvailable && availableServiceIds.has(item.id),
         )
-    );
-
-  return items
-    .filter(
-      (item) =>
-        item.kind === 'service' &&
-        item.isAvailable &&
-        availableServiceIds.has(
-          item.id
-        )
-    )
-    .map((service) => ({
-      value: service.id,
-      label: service.title,
-    }));
+        .map((service) => ({
+            value: service.id,
+            label: service.title,
+        }));
 }
 
 export function getProgramOptions(
-  line: BookingLine,
-  bookingOptions: CatalogBookingOption[]
+    line: BookingLine,
+    bookingOptions: CatalogBookingOption[],
 ): BookingSelectOption[] {
-  if (!line.bookableItemId) {
-    return [];
-  }
+    if (!line.bookableItemId) {
+        return [];
+    }
 
-  const options =
-    bookingOptions.filter(
-      (option) => {
-        if (
-          !option.isActive ||
-          option.bookableItemId !==
-            line.bookableItemId
-        ) {
-          return false;
+    const options = bookingOptions.filter((option) => {
+        if (!option.isActive || option.bookableItemId !== line.bookableItemId) {
+            return false;
         }
 
-        if (
-          option.serviceId === null
-        ) {
-          return (
-            line.serviceId === ''
-          );
+        if (option.serviceId === null) {
+            return line.serviceId === '';
         }
 
-        return (
-          option.serviceId ===
-          line.serviceId
-        );
-      }
-    );
+        return option.serviceId === line.serviceId;
+    });
 
-  return sortBookingOptions(
-    options
-  ).map((option) => ({
-    value: option.id,
-    label:
-      getBookingOptionLabel(option),
-  }));
+    return sortBookingOptions(options).map((option) => ({
+        value: option.id,
+        label: getBookingOptionLabel(option),
+    }));
 }
 
 export function getSelectedBookingOption(
-  line: BookingLine,
-  bookingOptions: CatalogBookingOption[]
+    line: BookingLine,
+    bookingOptions: CatalogBookingOption[],
 ): CatalogBookingOption | undefined {
-  return bookingOptions.find(
-    (option) => {
-      if (
-        !option.isActive ||
-        option.id !==
-          line.bookingOptionId ||
-        option.bookableItemId !==
-          line.bookableItemId
-      ) {
-        return false;
-      }
+    return bookingOptions.find((option) => {
+        if (
+            !option.isActive ||
+            option.id !== line.bookingOptionId ||
+            option.bookableItemId !== line.bookableItemId
+        ) {
+            return false;
+        }
 
-      if (
-        option.serviceId === null
-      ) {
-        return line.serviceId === '';
-      }
+        if (option.serviceId === null) {
+            return line.serviceId === '';
+        }
 
-      return (
-        option.serviceId ===
-        line.serviceId
-      );
-    }
-  );
+        return option.serviceId === line.serviceId;
+    });
 }
 
-export function getBookingLinePrice(
-  line: BookingLine,
-  bookingOptions: CatalogBookingOption[]
-) {
-  return (
-    getSelectedBookingOption(
-      line,
-      bookingOptions
-    )?.price ?? 0
-  );
+export function getBookingLinePrice(line: BookingLine, bookingOptions: CatalogBookingOption[]) {
+    return getSelectedBookingOption(line, bookingOptions)?.price ?? 0;
 }
 
 export function isBookableItemCompatibleWithService(
-  bookableItemId: string,
-  serviceId: string,
-  bookingOptions: CatalogBookingOption[]
+    bookableItemId: string,
+    serviceId: string,
+    bookingOptions: CatalogBookingOption[],
 ) {
-  if (
-    !bookableItemId ||
-    !serviceId
-  ) {
-    return false;
-  }
+    if (!bookableItemId || !serviceId) {
+        return false;
+    }
 
-  return bookingOptions.some(
-    (option) =>
-      option.isActive &&
-      option.bookableItemId ===
-        bookableItemId &&
-      option.serviceId === serviceId
-  );
+    return bookingOptions.some(
+        (option) =>
+            option.isActive &&
+            option.bookableItemId === bookableItemId &&
+            option.serviceId === serviceId,
+    );
 }
 
 export function buildBookingItems(
-  lines: BookingLine[],
-  items: CatalogItem[],
-  bookingOptions: CatalogBookingOption[]
+    lines: BookingLine[],
+    items: CatalogItem[],
+    bookingOptions: CatalogBookingOption[],
 ): BookingRequestItem[] {
-  return lines.map((line) => {
-    const bookableItem =
-      getCatalogItem(
-        items,
-        line.bookableItemId
-      );
+    return lines.map((line) => {
+        const bookableItem = getCatalogItem(items, line.bookableItemId);
 
-    const selectedOption =
-      getSelectedBookingOption(
-        line,
-        bookingOptions
-      );
+        const selectedOption = getSelectedBookingOption(line, bookingOptions);
 
-    const service = selectedOption
-      ? getServiceItem(
-          items,
-          selectedOption.serviceId
-        )
-      : undefined;
+        const service = selectedOption
+            ? getServiceItem(items, selectedOption.serviceId)
+            : undefined;
 
-    return {
-      bookingOptionId:
-        selectedOption?.id ?? '',
+        return {
+            bookingOptionId: selectedOption?.id ?? '',
 
-      bookableItemId:
-        bookableItem?.id ?? '',
+            bookableItemId: bookableItem?.id ?? '',
 
-      bookableItemTitle:
-        bookableItem?.title ??
-        'Не выбрана техника или пакет',
+            bookableItemTitle: bookableItem?.title ?? 'Не выбрана техника или пакет',
 
-      serviceId:
-        selectedOption?.serviceId ??
-        null,
+            serviceId: selectedOption?.serviceId ?? null,
 
-      serviceTitle:
-        service?.title,
+            serviceTitle: service?.title,
 
-      bookingOptionTitle:
-        selectedOption
-          ? getBookingOptionLabel(
-              selectedOption
-            )
-          : '',
+            bookingOptionTitle: selectedOption ? getBookingOptionLabel(selectedOption) : '',
 
-      date: line.date,
-      time: line.time,
+            date: line.date,
+            time: line.time,
 
-      durationMinutes:
-        selectedOption
-          ?.durationMinutes ?? 0,
+            durationMinutes: selectedOption?.durationMinutes ?? 0,
 
-      price:
-        selectedOption?.price ?? 0,
-    };
-  });
+            price: selectedOption?.price ?? 0,
+        };
+    });
 }

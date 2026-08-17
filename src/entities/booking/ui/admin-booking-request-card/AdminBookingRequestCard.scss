@@ -61,7 +61,7 @@
     &__booking-item {
         min-width: 0;
 
-        &+& {
+        & + & {
             padding-top: 18px;
             border-top: 1px solid #e8e8e8;
         }
@@ -75,8 +75,7 @@
 
     &__fields {
         display: grid;
-        grid-template-columns:
-            repeat(4, minmax(0, 1fr));
+        grid-template-columns: repeat(4, minmax(0, 1fr));
         gap: 12px;
     }
 
@@ -217,8 +216,7 @@
 @media (max-width: 1000px) {
     .admin-booking-request-card {
         &__fields {
-            grid-template-columns:
-                repeat(2, minmax(0, 1fr));
+            grid-template-columns: repeat(2, minmax(0, 1fr));
         }
     }
 }

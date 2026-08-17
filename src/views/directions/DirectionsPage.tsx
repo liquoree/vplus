@@ -6,110 +6,110 @@ import './DirectionsPage.scss';
 import { COMPANY_LOCATION } from '@/shared/config/company-location';
 
 export function DirectionsPage() {
-  return (
-    <div className="directions-page">
-      <Header />
+    return (
+        <div className="directions-page">
+            <Header />
 
-      <main className="directions-page__main">
-        <TemplateInfoPage
-          title="Как до нас добраться?"
-          description="Рассказываем про способы проезда до базы отдыха"
-        >
-          <div className="directions-page__content">
-            <div className="directions-page__top">
-              <section className="directions-page__address">
-                <div className="directions-page__address-heading">
-                  <Image
-                    className="directions-page__address-icon"
-                    src="/images/location-pin.svg"
-                    alt=""
-                    width={32}
-                    height={49}
-                  />
+            <main className="directions-page__main">
+                <TemplateInfoPage
+                    title="Как до нас добраться?"
+                    description="Рассказываем про способы проезда до базы отдыха"
+                >
+                    <div className="directions-page__content">
+                        <div className="directions-page__top">
+                            <section className="directions-page__address">
+                                <div className="directions-page__address-heading">
+                                    <Image
+                                        className="directions-page__address-icon"
+                                        src="/images/location-pin.svg"
+                                        alt=""
+                                        width={32}
+                                        height={49}
+                                    />
 
-                  <h2 className="directions-page__address-title">Наш адрес</h2>
-                </div>
+                                    <h2 className="directions-page__address-title">Наш адрес</h2>
+                                </div>
 
-                <p className="directions-page__address-text">
-                  Республика Карелия, Прионежский район, Деревянское сельское поселение,
-                  Онежский парк, Большая Прибрежная улица, 1,
-                </p>
+                                <p className="directions-page__address-text">
+                                    Республика Карелия, Прионежский район, Деревянское сельское
+                                    поселение, Онежский парк, Большая Прибрежная улица, 1,
+                                </p>
 
-                <p className="directions-page__address-distance">
-                  7 км от Петрозаводска
-                </p>
-              </section>
+                                <p className="directions-page__address-distance">
+                                    7 км от Петрозаводска
+                                </p>
+                            </section>
 
-                <YandexMap
-                    className="directions-page__map"
-                    center={COMPANY_LOCATION.coordinates}
-                    markerCoordinates={COMPANY_LOCATION.coordinates}
-                    zoom={15}
-                    title={COMPANY_LOCATION.title}
-                />
-            </div>
+                            <YandexMap
+                                className="directions-page__map"
+                                center={COMPANY_LOCATION.coordinates}
+                                markerCoordinates={COMPANY_LOCATION.coordinates}
+                                zoom={15}
+                                title={COMPANY_LOCATION.title}
+                            />
+                        </div>
 
-            <div className="directions-page__cards">
-              <DirectionInfoCard
-                icon="car"
-                title="На личном автомобиле"
-                description="Асфальтированная дорога, охраняемая парковка на территории"
-              />
+                        <div className="directions-page__cards">
+                            <DirectionInfoCard
+                                icon="car"
+                                title="На личном автомобиле"
+                                description="Асфальтированная дорога, охраняемая парковка на территории"
+                            />
 
-              <DirectionInfoCard
-                icon="bus"
-                title="На общественном транспорте"
-                description="От автовокзала города Петрозаводска: такси/пригородные автобусы"
-              />
+                            <DirectionInfoCard
+                                icon="bus"
+                                title="На общественном транспорте"
+                                description="От автовокзала города Петрозаводска: такси/пригородные автобусы"
+                            />
 
-              <DirectionInfoCard
-                className="directions-page__transfer-card"
-                icon="minibus"
-                title="Организованный трансфер"
-              >
-                <div className="directions-page__transfer">
-                  <div className="directions-page__transfer-column">
-                    <h3 className="directions-page__transfer-title">
-                      От автовокзала/жд-вокзала:
-                    </h3>
+                            <DirectionInfoCard
+                                className="directions-page__transfer-card"
+                                icon="minibus"
+                                title="Организованный трансфер"
+                            >
+                                <div className="directions-page__transfer">
+                                    <div className="directions-page__transfer-column">
+                                        <h3 className="directions-page__transfer-title">
+                                            От автовокзала/жд-вокзала:
+                                        </h3>
 
-                    <ul className="directions-page__transfer-list">
-                      <li>1-2 человека — 750₽</li>
-                      <li>3-4 человека — 800₽</li>
-                      <li>5-8 человек — 1200₽</li>
-                    </ul>
-                  </div>
+                                        <ul className="directions-page__transfer-list">
+                                            <li>1-2 человека — 750₽</li>
+                                            <li>3-4 человека — 800₽</li>
+                                            <li>5-8 человек — 1200₽</li>
+                                        </ul>
+                                    </div>
 
-                  <div className="directions-page__transfer-column">
-                    <h3 className="directions-page__transfer-title">
-                      От аэропорта «Бесовец»:
-                    </h3>
+                                    <div className="directions-page__transfer-column">
+                                        <h3 className="directions-page__transfer-title">
+                                            От аэропорта «Бесовец»:
+                                        </h3>
 
-                    <ul className="directions-page__transfer-list">
-                      <li>1-2 человека — 1200₽</li>
-                      <li>3-4 человека — 1500₽</li>
-                      <li>5-8 человек — 2000₽</li>
-                    </ul>
-                  </div>
-                </div>
-              </DirectionInfoCard>
-            </div>
+                                        <ul className="directions-page__transfer-list">
+                                            <li>1-2 человека — 1200₽</li>
+                                            <li>3-4 человека — 1500₽</li>
+                                            <li>5-8 человек — 2000₽</li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </DirectionInfoCard>
+                        </div>
 
-            <HelpCta
-              className="directions-page__transfer-cta"
-              icon="phone-bubble"
-              title={`Хотите заказать трансфер?
+                        <HelpCta
+                            className="directions-page__transfer-cta"
+                            icon="phone-bubble"
+                            title={`Хотите заказать трансфер?
             Звоните!`}
-              mobileTitle="Хотите заказать трансфер?"
-              description={`+7 (911) 404-73-03`}
-              buttonText="Связаться с менеджером"
-              href="/about"
-            />
-          </div>
-        </TemplateInfoPage>
-      </main>
+                            mobileTitle="Хотите заказать трансфер?"
+                            description={`+7 (911) 404-73-03`}
+                            buttonText="Связаться с менеджером"
+                            href="/about"
+                        />
+                    </div>
+                </TemplateInfoPage>
+            </main>
 
-      <Footer />
-    </div>
-  );
+            <Footer />
+        </div>
+    );
 }

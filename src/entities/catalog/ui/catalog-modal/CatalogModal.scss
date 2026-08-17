@@ -165,7 +165,7 @@
         line-height: 1;
         user-select: none;
         transition: scale 0.2s ease;
-        
+
         &:hover {
             scale: 1.05;
         }
@@ -218,7 +218,7 @@
         user-select: none;
 
         &--unavailable {
-            background: var(--color-accent)
+            background: var(--color-accent);
         }
 
         &:hover {
@@ -279,7 +279,7 @@
         gap: 24px;
         margin-top: 22px;
 
-    &--single {
+        &--single {
             .catalog-modal__cancel {
                 width: 100%;
                 max-width: 190px;

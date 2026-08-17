@@ -4,8 +4,8 @@
     min-height: 100svh;
     background: var(--color-page-bg);
 
-    >header,
-    >footer {
+    > header,
+    > footer {
         flex-shrink: 0;
     }
 
@@ -39,7 +39,9 @@
         font-size: 18px;
         line-height: 1;
         cursor: pointer;
-        transition: border-color 0.2s ease, color 0.2s ease;
+        transition:
+            border-color 0.2s ease,
+            color 0.2s ease;
 
         &:hover {
             border-color: var(--color-white);

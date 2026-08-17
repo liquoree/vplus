@@ -1,18 +1,9 @@
-import {
-  getAdminBookingRequests,
-} from '@/entities/booking/server';
+import { getAdminBookingRequests } from '@/entities/booking/server';
 
-import {
-  AdminRequestsPage,
-} from '@/views/';
+import { AdminRequestsPage } from '@/views/';
 
 export default async function Page() {
-  const requests =
-    await getAdminBookingRequests();
+    const requests = await getAdminBookingRequests();
 
-  return (
-    <AdminRequestsPage
-      initialRequests={requests}
-    />
-  );
+    return <AdminRequestsPage initialRequests={requests} />;
 }

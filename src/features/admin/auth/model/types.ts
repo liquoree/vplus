@@ -1,18 +1,18 @@
 export type AdminPublic = {
-  id: string;
-  login: string;
-  createdAt: string;
+    id: string;
+    login: string;
+    createdAt: string;
 };
 
 export type AdminLoginCredentials = {
-  login: string;
-  password: string;
+    login: string;
+    password: string;
 };
 
 export type AdminLoginResponse = {
-  admin: AdminPublic;
+    admin: AdminPublic;
 };
 
 export type AdminLogoutResponse = {
-  success: boolean;
+    success: boolean;
 };

@@ -1,17 +1,9 @@
-import {
-  apiClient,
-} from '@/shared/api/client';
+import { apiClient } from '@/shared/api/client';
 
-import type {
-  AdminLogoutResponse,
-} from '../model/types';
+import type { AdminLogoutResponse } from '../model/types';
 
-export async function logoutAdmin():
-  Promise<AdminLogoutResponse> {
-  const response =
-    await apiClient.post<AdminLogoutResponse>(
-      '/admin/auth/logout'
-    );
+export async function logoutAdmin(): Promise<AdminLogoutResponse> {
+    const response = await apiClient.post<AdminLogoutResponse>('/admin/auth/logout');
 
-  return response.data;
+    return response.data;
 }

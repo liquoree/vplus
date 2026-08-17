@@ -37,8 +37,7 @@
 
         &:focus {
             border-color: var(--color-accent);
-            box-shadow:
-                0 0 0 3px rgb(236 11 34 / 10%);
+            box-shadow: 0 0 0 3px rgb(236 11 34 / 10%);
         }
 
         &[aria-invalid='true'] {

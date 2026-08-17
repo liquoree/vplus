@@ -12,7 +12,7 @@
     &__content {
         position: relative;
         z-index: 1;
-        max-width: calc(1200px + 48px*2);
+        max-width: calc(1200px + 48px * 2);
         padding: 0 48px;
         margin: 0 auto;
         margin-top: 55px;
@@ -41,7 +41,7 @@
 }
 
 @media (max-width: 1100px) {
-    .hero {    
+    .hero {
         &__content {
             padding: 0 28px 40px;
         }

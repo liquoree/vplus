@@ -1,318 +1,318 @@
 name: Frontend CI
 
 on:
-  push:
-    branches:
-      - main
+    push:
+        branches:
+            - main
 
-  pull_request:
-    branches:
-      - main
+    pull_request:
+        branches:
+            - main
 
 concurrency:
-  group: frontend-ci-${{ github.ref }}
-  cancel-in-progress: false
+    group: frontend-ci-${{ github.ref }}
+    cancel-in-progress: false
 
 jobs:
-  checks:
-    name: Checks
-    runs-on: ubuntu-latest
+    checks:
+        name: Checks
+        runs-on: ubuntu-latest
 
-    permissions:
-      contents: read
-      packages: write
+        permissions:
+            contents: read
+            packages: write
 
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v6
+        steps:
+            - name: Checkout repository
+              uses: actions/checkout@v6
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v6
-        with:
-          node-version: "22"
-          cache: npm
+            - name: Setup Node.js
+              uses: actions/setup-node@v6
+              with:
+                  node-version: '22'
+                  cache: npm
 
-      - name: Install dependencies
-        run: npm ci
+            - name: Install dependencies
+              run: npm ci
 
-      - name: ESLint
-        run: npm run lint
+            - name: ESLint
+              run: npm run lint
 
-      - name: Build production Docker image
-        env:
-          NEXT_PUBLIC_YANDEX_MAPS_API_KEY: ${{ secrets.NEXT_PUBLIC_YANDEX_MAPS_API_KEY }}
-          NEXT_PUBLIC_CAPTCHA_SITE_KEY: ${{ secrets.NEXT_PUBLIC_CAPTCHA_SITE_KEY }}
-        run: |
-          docker build \
-            --build-arg "NEXT_PUBLIC_YANDEX_MAPS_API_KEY=$NEXT_PUBLIC_YANDEX_MAPS_API_KEY" \
-            --build-arg "NEXT_PUBLIC_CAPTCHA_SITE_KEY=$NEXT_PUBLIC_CAPTCHA_SITE_KEY" \
-            --tag vplus-frontend:ci \
-            .
+            - name: Build production Docker image
+              env:
+                  NEXT_PUBLIC_YANDEX_MAPS_API_KEY: ${{ secrets.NEXT_PUBLIC_YANDEX_MAPS_API_KEY }}
+                  NEXT_PUBLIC_CAPTCHA_SITE_KEY: ${{ secrets.NEXT_PUBLIC_CAPTCHA_SITE_KEY }}
+              run: |
+                  docker build \
+                    --build-arg "NEXT_PUBLIC_YANDEX_MAPS_API_KEY=$NEXT_PUBLIC_YANDEX_MAPS_API_KEY" \
+                    --build-arg "NEXT_PUBLIC_CAPTCHA_SITE_KEY=$NEXT_PUBLIC_CAPTCHA_SITE_KEY" \
+                    --tag vplus-frontend:ci \
+                    .
 
-      - name: Start production image
-        run: |
-          docker run \
-            --detach \
-            --name vplus-frontend-ci \
-            --publish 3000:3000 \
-            vplus-frontend:ci
+            - name: Start production image
+              run: |
+                  docker run \
+                    --detach \
+                    --name vplus-frontend-ci \
+                    --publish 3000:3000 \
+                    vplus-frontend:ci
 
-      - name: Check application startup
-        run: |
-          for attempt in {1..30}; do
-            if curl \
-              --fail \
-              --silent \
-              --show-error \
-              http://127.0.0.1:3000/privacy \
-              > /dev/null
-            then
-              exit 0
-            fi
+            - name: Check application startup
+              run: |
+                  for attempt in {1..30}; do
+                    if curl \
+                      --fail \
+                      --silent \
+                      --show-error \
+                      http://127.0.0.1:3000/privacy \
+                      > /dev/null
+                    then
+                      exit 0
+                    fi
 
-            if [ "$(docker inspect \
-              --format '{{.State.Running}}' \
-              vplus-frontend-ci)" != "true" ]
-            then
-              echo "Frontend container stopped unexpectedly."
-              docker logs vplus-frontend-ci
-              exit 1
-            fi
+                    if [ "$(docker inspect \
+                      --format '{{.State.Running}}' \
+                      vplus-frontend-ci)" != "true" ]
+                    then
+                      echo "Frontend container stopped unexpectedly."
+                      docker logs vplus-frontend-ci
+                      exit 1
+                    fi
 
-            sleep 1
-          done
+                    sleep 1
+                  done
 
-          echo "Frontend did not become ready."
-          docker logs vplus-frontend-ci
-          exit 1
+                  echo "Frontend did not become ready."
+                  docker logs vplus-frontend-ci
+                  exit 1
 
-      - name: Stop production image
-        if: always()
-        run: |
-          docker rm \
-            --force \
-            vplus-frontend-ci \
-            2>/dev/null || true
+            - name: Stop production image
+              if: always()
+              run: |
+                  docker rm \
+                    --force \
+                    vplus-frontend-ci \
+                    2>/dev/null || true
 
-      - name: Set GHCR image name
-        if: github.event_name == 'push'
-        run: |
-          IMAGE_NAME="ghcr.io/${GITHUB_REPOSITORY}"
-          IMAGE_NAME="$(echo "$IMAGE_NAME" | tr '[:upper:]' '[:lower:]')"
-          echo "IMAGE_NAME=$IMAGE_NAME" >> "$GITHUB_ENV"
+            - name: Set GHCR image name
+              if: github.event_name == 'push'
+              run: |
+                  IMAGE_NAME="ghcr.io/${GITHUB_REPOSITORY}"
+                  IMAGE_NAME="$(echo "$IMAGE_NAME" | tr '[:upper:]' '[:lower:]')"
+                  echo "IMAGE_NAME=$IMAGE_NAME" >> "$GITHUB_ENV"
 
-      - name: Log in to GHCR
-        if: github.event_name == 'push'
-        run: |
-          echo "${{ secrets.GITHUB_TOKEN }}" |
-            docker login ghcr.io \
-              --username "${{ github.actor }}" \
-              --password-stdin
+            - name: Log in to GHCR
+              if: github.event_name == 'push'
+              run: |
+                  echo "${{ secrets.GITHUB_TOKEN }}" |
+                    docker login ghcr.io \
+                      --username "${{ github.actor }}" \
+                      --password-stdin
 
-      - name: Push Docker image to GHCR
-        if: github.event_name == 'push'
-        run: |
-          docker tag \
-            vplus-frontend:ci \
-            "$IMAGE_NAME:$GITHUB_SHA"
+            - name: Push Docker image to GHCR
+              if: github.event_name == 'push'
+              run: |
+                  docker tag \
+                    vplus-frontend:ci \
+                    "$IMAGE_NAME:$GITHUB_SHA"
 
-          docker tag \
-            vplus-frontend:ci \
-            "$IMAGE_NAME:master"
+                  docker tag \
+                    vplus-frontend:ci \
+                    "$IMAGE_NAME:master"
 
-          docker push "$IMAGE_NAME:$GITHUB_SHA"
-          docker push "$IMAGE_NAME:master"
+                  docker push "$IMAGE_NAME:$GITHUB_SHA"
+                  docker push "$IMAGE_NAME:master"
 
-  deploy:
-    name: Deploy production
-    needs:
-      - checks
+    deploy:
+        name: Deploy production
+        needs:
+            - checks
 
-    if: >-
-      github.event_name == 'push' &&
-      github.ref == 'refs/heads/main'
+        if: >-
+            github.event_name == 'push' &&
+            github.ref == 'refs/heads/main'
 
-    runs-on: ubuntu-latest
+        runs-on: ubuntu-latest
 
-    permissions:
-      contents: read
+        permissions:
+            contents: read
 
-    steps:
-      - name: Configure SSH
-        env:
-          DEPLOY_SSH_KEY: ${{ secrets.DEPLOY_SSH_KEY }}
-          DEPLOY_KNOWN_HOSTS: ${{ secrets.DEPLOY_KNOWN_HOSTS }}
-        run: |
-          install -m 700 -d ~/.ssh
+        steps:
+            - name: Configure SSH
+              env:
+                  DEPLOY_SSH_KEY: ${{ secrets.DEPLOY_SSH_KEY }}
+                  DEPLOY_KNOWN_HOSTS: ${{ secrets.DEPLOY_KNOWN_HOSTS }}
+              run: |
+                  install -m 700 -d ~/.ssh
 
-          printf '%s\n' "$DEPLOY_SSH_KEY" \
-            > ~/.ssh/id_ed25519
+                  printf '%s\n' "$DEPLOY_SSH_KEY" \
+                    > ~/.ssh/id_ed25519
 
-          chmod 600 ~/.ssh/id_ed25519
+                  chmod 600 ~/.ssh/id_ed25519
 
-          printf '%s\n' "$DEPLOY_KNOWN_HOSTS" \
-            > ~/.ssh/known_hosts
+                  printf '%s\n' "$DEPLOY_KNOWN_HOSTS" \
+                    > ~/.ssh/known_hosts
 
-          chmod 600 ~/.ssh/known_hosts
+                  chmod 600 ~/.ssh/known_hosts
 
-      - name: Deploy frontend
-        env:
-          DEPLOY_HOST: ${{ secrets.DEPLOY_HOST }}
-          DEPLOY_USER: ${{ secrets.DEPLOY_USER }}
-        run: |
-          REPOSITORY="${GITHUB_REPOSITORY,,}"
-          NEW_IMAGE="ghcr.io/${REPOSITORY}:${GITHUB_SHA}"
+            - name: Deploy frontend
+              env:
+                  DEPLOY_HOST: ${{ secrets.DEPLOY_HOST }}
+                  DEPLOY_USER: ${{ secrets.DEPLOY_USER }}
+              run: |
+                  REPOSITORY="${GITHUB_REPOSITORY,,}"
+                  NEW_IMAGE="ghcr.io/${REPOSITORY}:${GITHUB_SHA}"
 
-          ssh \
-            -i ~/.ssh/id_ed25519 \
-            -o IdentitiesOnly=yes \
-            -o BatchMode=yes \
-            -o StrictHostKeyChecking=yes \
-            "$DEPLOY_USER@$DEPLOY_HOST" \
-            "bash -s -- '$NEW_IMAGE'" <<'REMOTE'
-          set -Eeuo pipefail
+                  ssh \
+                    -i ~/.ssh/id_ed25519 \
+                    -o IdentitiesOnly=yes \
+                    -o BatchMode=yes \
+                    -o StrictHostKeyChecking=yes \
+                    "$DEPLOY_USER@$DEPLOY_HOST" \
+                    "bash -s -- '$NEW_IMAGE'" <<'REMOTE'
+                  set -Eeuo pipefail
 
-          NEW_IMAGE="$1"
+                  NEW_IMAGE="$1"
 
-          cd /opt/vplus/backend
+                  cd /opt/vplus/backend
 
-          PREVIOUS_IMAGE="$(
-            sed -n \
-              's/^FRONTEND_IMAGE=//p' \
-              .env |
-              head -n 1
-          )"
+                  PREVIOUS_IMAGE="$(
+                    sed -n \
+                      's/^FRONTEND_IMAGE=//p' \
+                      .env |
+                      head -n 1
+                  )"
 
-          if [ -z "$PREVIOUS_IMAGE" ]; then
-            echo "FRONTEND_IMAGE is missing in .env"
-            exit 1
-          fi
+                  if [ -z "$PREVIOUS_IMAGE" ]; then
+                    echo "FRONTEND_IMAGE is missing in .env"
+                    exit 1
+                  fi
 
-          echo "Current image: $PREVIOUS_IMAGE"
-          echo "New image:     $NEW_IMAGE"
+                  echo "Current image: $PREVIOUS_IMAGE"
+                  echo "New image:     $NEW_IMAGE"
 
-          set_frontend_image() {
-            IMAGE="$1"
+                  set_frontend_image() {
+                    IMAGE="$1"
 
-            if grep -q '^FRONTEND_IMAGE=' .env; then
-              sed -i \
-                "s|^FRONTEND_IMAGE=.*$|FRONTEND_IMAGE=$IMAGE|" \
-                .env
-            else
-              printf '\nFRONTEND_IMAGE=%s\n' \
-                "$IMAGE" >> .env
-            fi
-          }
+                    if grep -q '^FRONTEND_IMAGE=' .env; then
+                      sed -i \
+                        "s|^FRONTEND_IMAGE=.*$|FRONTEND_IMAGE=$IMAGE|" \
+                        .env
+                    else
+                      printf '\nFRONTEND_IMAGE=%s\n' \
+                        "$IMAGE" >> .env
+                    fi
+                  }
 
-          echo "Validating Compose config..."
+                  echo "Validating Compose config..."
 
-          FRONTEND_IMAGE="$NEW_IMAGE" \
-            docker compose config --quiet
+                  FRONTEND_IMAGE="$NEW_IMAGE" \
+                    docker compose config --quiet
 
-          echo "Pulling new image..."
+                  echo "Pulling new image..."
 
-          FRONTEND_IMAGE="$NEW_IMAGE" \
-            docker compose pull frontend
+                  FRONTEND_IMAGE="$NEW_IMAGE" \
+                    docker compose pull frontend
 
-          echo "Switching frontend to new image..."
+                  echo "Switching frontend to new image..."
 
-          set_frontend_image "$NEW_IMAGE"
+                  set_frontend_image "$NEW_IMAGE"
 
-          if docker compose up \
-            -d \
-            --no-deps \
-            --wait \
-            --wait-timeout 60 \
-            frontend
-          then
-            sleep 2
+                  if docker compose up \
+                    -d \
+                    --no-deps \
+                    --wait \
+                    --wait-timeout 60 \
+                    frontend
+                  then
+                    sleep 2
 
-            PRIVACY_OK=false
-            HOME_OK=false
-            API_OK=false
+                    PRIVACY_OK=false
+                    HOME_OK=false
+                    API_OK=false
 
-            if curl \
-              --fail \
-              --silent \
-              --show-error \
-              http://127.0.0.1:3000/privacy \
-              > /dev/null
-            then
-              PRIVACY_OK=true
-            fi
+                    if curl \
+                      --fail \
+                      --silent \
+                      --show-error \
+                      http://127.0.0.1:3000/privacy \
+                      > /dev/null
+                    then
+                      PRIVACY_OK=true
+                    fi
 
-            if curl \
-              --fail \
-              --silent \
-              --show-error \
-              http://127.0.0.1:3000/ \
-              > /dev/null
-            then
-              HOME_OK=true
-            fi
+                    if curl \
+                      --fail \
+                      --silent \
+                      --show-error \
+                      http://127.0.0.1:3000/ \
+                      > /dev/null
+                    then
+                      HOME_OK=true
+                    fi
 
-            if curl \
-              --fail \
-              --silent \
-              --show-error \
-              http://127.0.0.1:3000/api/v1/health \
-              > /dev/null
-            then
-              API_OK=true
-            fi
+                    if curl \
+                      --fail \
+                      --silent \
+                      --show-error \
+                      http://127.0.0.1:3000/api/v1/health \
+                      > /dev/null
+                    then
+                      API_OK=true
+                    fi
 
-            if \
-              [ "$PRIVACY_OK" = "true" ] \
-              && [ "$HOME_OK" = "true" ] \
-              && [ "$API_OK" = "true" ]
-            then
-              echo "Frontend deployment successful."
+                    if \
+                      [ "$PRIVACY_OK" = "true" ] \
+                      && [ "$HOME_OK" = "true" ] \
+                      && [ "$API_OK" = "true" ]
+                    then
+                      echo "Frontend deployment successful."
 
-              docker compose images frontend
+                      docker compose images frontend
 
-              exit 0
-            fi
-          fi
+                      exit 0
+                    fi
+                  fi
 
-          echo "New frontend failed checks."
-          echo "Rollback started."
+                  echo "New frontend failed checks."
+                  echo "Rollback started."
 
-          docker compose logs \
-            --tail=100 \
-            frontend || true
+                  docker compose logs \
+                    --tail=100 \
+                    frontend || true
 
-          set_frontend_image "$PREVIOUS_IMAGE"
+                  set_frontend_image "$PREVIOUS_IMAGE"
 
-          docker compose up \
-            -d \
-            --no-deps \
-            --wait \
-            --wait-timeout 60 \
-            frontend
+                  docker compose up \
+                    -d \
+                    --no-deps \
+                    --wait \
+                    --wait-timeout 60 \
+                    frontend
 
-          curl \
-            --fail \
-            --silent \
-            --show-error \
-            http://127.0.0.1:3000/privacy \
-            > /dev/null
+                  curl \
+                    --fail \
+                    --silent \
+                    --show-error \
+                    http://127.0.0.1:3000/privacy \
+                    > /dev/null
 
-          curl \
-            --fail \
-            --silent \
-            --show-error \
-            http://127.0.0.1:3000/ \
-            > /dev/null
+                  curl \
+                    --fail \
+                    --silent \
+                    --show-error \
+                    http://127.0.0.1:3000/ \
+                    > /dev/null
 
-          curl \
-            --fail \
-            --silent \
-            --show-error \
-            http://127.0.0.1:3000/api/v1/health \
-            > /dev/null
+                  curl \
+                    --fail \
+                    --silent \
+                    --show-error \
+                    http://127.0.0.1:3000/api/v1/health \
+                    > /dev/null
 
-          echo "Previous frontend image restored:"
-          echo "$PREVIOUS_IMAGE"
+                  echo "Previous frontend image restored:"
+                  echo "$PREVIOUS_IMAGE"
 
-          exit 1
-          REMOTE
+                  exit 1
+                  REMOTE

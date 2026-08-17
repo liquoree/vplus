@@ -11,25 +11,22 @@ import { getCatalogItems } from '@/entities/catalog/server';
 import './HomePage.scss';
 
 export async function HomePage() {
-  const catalogItems = await getCatalogItems();
+    const catalogItems = await getCatalogItems();
 
-  const popularItems =
-  getSeasonalPopularItems(
-    catalogItems
-  );
-  return (
-    <div className="home-page">
-      <Header />
+    const popularItems = getSeasonalPopularItems(catalogItems);
+    return (
+        <div className="home-page">
+            <Header />
 
-      <main className="home-page__main">
-        <Hero />
-        <WhyChooseUs />
-        <Popular items={popularItems} />
-        <HowRent />
-        <WhereUs />
-      </main>
+            <main className="home-page__main">
+                <Hero />
+                <WhyChooseUs />
+                <Popular items={popularItems} />
+                <HowRent />
+                <WhereUs />
+            </main>
 
-      <Footer />
-    </div>
-  );
+            <Footer />
+        </div>
+    );
 }

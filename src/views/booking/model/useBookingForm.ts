@@ -1,825 +1,601 @@
 import type { FormEvent } from 'react';
-import {
-  useMemo,
-  useRef,
-  useState,
-} from 'react';
+import { useMemo, useRef, useState } from 'react';
 
-import {
-  getBookingAvailability,
-  submitBookingRequest,
-} from '@/entities/booking';
+import { getBookingAvailability, submitBookingRequest } from '@/entities/booking';
 import type { BookingRequestItem } from '@/entities/booking';
 
 import {
-  buildBookingItems,
-  createEmptyBookingLine,
-  createInitialBookingLine,
-  getBookableItemOptions,
-  getBookingLinePrice,
-  getCatalogItem,
-  getProgramOptions,
-  getSelectedBookingOption,
-  getServiceOptions,
-  isBookableItemCompatibleWithService,
-  isPackageBookingLine,
+    buildBookingItems,
+    createEmptyBookingLine,
+    createInitialBookingLine,
+    getBookableItemOptions,
+    getBookingLinePrice,
+    getCatalogItem,
+    getProgramOptions,
+    getSelectedBookingOption,
+    getServiceOptions,
+    isBookableItemCompatibleWithService,
+    isPackageBookingLine,
 } from '../lib/booking-catalog';
 
-import {
-  getMaxBookingDateValue,
-  getTodayDateValue,
-} from '../lib/booking-date';
+import { getMaxBookingDateValue, getTodayDateValue } from '../lib/booking-date';
 
-import {
-  validateBookingLines,
-  validateContacts,
-} from '../lib/booking-validation';
+import { validateBookingLines, validateContacts } from '../lib/booking-validation';
 
 import type {
-  BookingLine,
-  BookingLineAvailability,
-  BookingLineErrors,
-  BookingPageProps,
-  ContactErrors,
-  ContactValues,
+    BookingLine,
+    BookingLineAvailability,
+    BookingLineErrors,
+    BookingPageProps,
+    ContactErrors,
+    ContactValues,
 } from './types';
 
 const initialContacts: ContactValues = {
-  name: '',
-  email: '',
-  phone: '',
-  bookingTerms: false,
-  personalData: false,
+    name: '',
+    email: '',
+    phone: '',
+    bookingTerms: false,
+    personalData: false,
 };
 
 export function useBookingForm({
-  items,
-  bookingOptions,
-  initialVehicleSlug,
-  initialServiceSlug,
-  initialPackageSlug,
+    items,
+    bookingOptions,
+    initialVehicleSlug,
+    initialServiceSlug,
+    initialPackageSlug,
 }: BookingPageProps) {
-  const [bookingLines, setBookingLines] =
-    useState<BookingLine[]>(() => [
-      createInitialBookingLine(
-        items,
-        bookingOptions,
-        {
-          initialVehicleSlug,
-          initialServiceSlug,
-          initialPackageSlug,
-        }
-      ),
+    const [bookingLines, setBookingLines] = useState<BookingLine[]>(() => [
+        createInitialBookingLine(items, bookingOptions, {
+            initialVehicleSlug,
+            initialServiceSlug,
+            initialPackageSlug,
+        }),
     ]);
 
-  const [
-    bookingLineErrors,
-    setBookingLineErrors,
-  ] = useState<
-    Record<string, BookingLineErrors>
-  >({});
-
-  const [
-    captchaToken,
-    setCaptchaToken,
-  ] = useState<string | null>(
-    null
-  );
-
-  const [
-    captchaResetKey,
-    setCaptchaResetKey,
-  ] = useState(0);
-
-  const [
-    captchaError,
-    setCaptchaError,
-  ] = useState('');
-
-  const [
-    availabilityByLine,
-    setAvailabilityByLine,
-  ] = useState<
-    Record<string, BookingLineAvailability>
-  >({});
-
-  const [contacts, setContacts] =
-    useState<ContactValues>(initialContacts);
-
-  const [contactErrors, setContactErrors] =
-    useState<ContactErrors>({});
-
-  const [isSubmitting, setIsSubmitting] =
-    useState(false);
-
-  const [modalStatus, setModalStatus] =
-    useState<
-      'success' | 'error' | null
-    >(null);
-
-  const [
-    modalErrorMessage,
-    setModalErrorMessage,
-  ] = useState<string | null>(
-    null
-  );
-
-  const [
-    submittedBookingItems,
-    setSubmittedBookingItems,
-  ] = useState<BookingRequestItem[]>([]);
-
-  const availabilityRequestIds = useRef<
-    Record<string, number>
-  >({});
-
-  const totalPrice = useMemo(() => {
-    return bookingLines.reduce(
-      (total, line) =>
-        total +
-        getBookingLinePrice(
-          line,
-          bookingOptions
-        ),
-      0
+    const [bookingLineErrors, setBookingLineErrors] = useState<Record<string, BookingLineErrors>>(
+        {},
     );
-  }, [bookingLines, bookingOptions]);
 
-  const prepaymentPrice =
-    Math.ceil(totalPrice * 0.2);
+    const [captchaToken, setCaptchaToken] = useState<string | null>(null);
 
-  const minDate = getTodayDateValue();
-  const maxDate = getMaxBookingDateValue();
+    const [captchaResetKey, setCaptchaResetKey] = useState(0);
 
-  const clearBookingLineErrors = (
-    lineId: string,
-    patch: Partial<BookingLine>
-  ) => {
-    setBookingLineErrors((currentErrors) => {
-      const currentLineErrors =
-        currentErrors[lineId];
+    const [captchaError, setCaptchaError] = useState('');
 
-      if (!currentLineErrors) {
-        return currentErrors;
-      }
+    const [availabilityByLine, setAvailabilityByLine] = useState<
+        Record<string, BookingLineAvailability>
+    >({});
 
-      const nextLineErrors = {
-        ...currentLineErrors,
-      };
+    const [contacts, setContacts] = useState<ContactValues>(initialContacts);
 
-      const errorFields: Array<
-        keyof BookingLineErrors
-      > = [
-        'serviceId',
-        'bookableItemId',
-        'bookingOptionId',
-        'date',
-        'time',
-      ];
+    const [contactErrors, setContactErrors] = useState<ContactErrors>({});
 
-      errorFields.forEach((field) => {
-        if (field in patch) {
-          delete nextLineErrors[field];
-        }
-      });
+    const [isSubmitting, setIsSubmitting] = useState(false);
 
-      const nextErrors = {
-        ...currentErrors,
-      };
+    const [modalStatus, setModalStatus] = useState<'success' | 'error' | null>(null);
 
-      if (
-        Object.keys(nextLineErrors).length === 0
-      ) {
-        delete nextErrors[lineId];
-      } else {
-        nextErrors[lineId] = nextLineErrors;
-      }
+    const [modalErrorMessage, setModalErrorMessage] = useState<string | null>(null);
 
-      return nextErrors;
-    });
-  };
+    const [submittedBookingItems, setSubmittedBookingItems] = useState<BookingRequestItem[]>([]);
 
-  const updateBookingLine = (
-    lineId: string,
-    patch: Partial<BookingLine>
-  ) => {
-    setBookingLines((currentLines) =>
-      currentLines.map((line) =>
-        line.id === lineId
-          ? {
-              ...line,
-              ...patch,
+    const availabilityRequestIds = useRef<Record<string, number>>({});
+
+    const totalPrice = useMemo(() => {
+        return bookingLines.reduce(
+            (total, line) => total + getBookingLinePrice(line, bookingOptions),
+            0,
+        );
+    }, [bookingLines, bookingOptions]);
+
+    const prepaymentPrice = Math.ceil(totalPrice * 0.2);
+
+    const minDate = getTodayDateValue();
+    const maxDate = getMaxBookingDateValue();
+
+    const clearBookingLineErrors = (lineId: string, patch: Partial<BookingLine>) => {
+        setBookingLineErrors((currentErrors) => {
+            const currentLineErrors = currentErrors[lineId];
+
+            if (!currentLineErrors) {
+                return currentErrors;
             }
-          : line
-      )
-    );
 
-    clearBookingLineErrors(lineId, patch);
-  };
+            const nextLineErrors = {
+                ...currentLineErrors,
+            };
 
-  const updateContact = <
-    Key extends keyof ContactValues,
-  >(
-    key: Key,
-    value: ContactValues[Key]
-  ) => {
-    setContacts((currentContacts) => ({
-      ...currentContacts,
-      [key]: value,
-    }));
+            const errorFields: Array<keyof BookingLineErrors> = [
+                'serviceId',
+                'bookableItemId',
+                'bookingOptionId',
+                'date',
+                'time',
+            ];
 
-    setContactErrors((currentErrors) => {
-      if (!currentErrors[key]) {
-        return currentErrors;
-      }
+            errorFields.forEach((field) => {
+                if (field in patch) {
+                    delete nextLineErrors[field];
+                }
+            });
 
-      const nextErrors = {
-        ...currentErrors,
-      };
+            const nextErrors = {
+                ...currentErrors,
+            };
 
-      delete nextErrors[key];
+            if (Object.keys(nextLineErrors).length === 0) {
+                delete nextErrors[lineId];
+            } else {
+                nextErrors[lineId] = nextLineErrors;
+            }
 
-      return nextErrors;
-    });
-  };
-
-  const clearAvailability = (
-    lineId: string
-  ) => {
-    availabilityRequestIds.current[lineId] =
-      (availabilityRequestIds.current[lineId] ??
-        0) + 1;
-
-    setAvailabilityByLine(
-      (currentAvailability) => ({
-        ...currentAvailability,
-        [lineId]: {
-          isLoading: false,
-          timeOptions: [],
-        },
-      })
-    );
-  };
-
-  const loadAvailability = async (
-    line: BookingLine
-  ) => {
-    const requestId =
-      (availabilityRequestIds.current[line.id] ??
-        0) + 1;
-
-    availabilityRequestIds.current[line.id] =
-      requestId;
-
-    const selectedOption =
-      getSelectedBookingOption(
-        line,
-        bookingOptions
-      );
-
-    if (
-      !line.bookableItemId ||
-      !line.date ||
-      !selectedOption ||
-      selectedOption.durationMinutes <= 0
-    ) {
-      setAvailabilityByLine(
-        (currentAvailability) => ({
-          ...currentAvailability,
-          [line.id]: {
-            isLoading: false,
-            timeOptions: [],
-          },
-        })
-      );
-
-      return;
-    }
-
-    setAvailabilityByLine(
-      (currentAvailability) => ({
-        ...currentAvailability,
-        [line.id]: {
-          isLoading: true,
-          timeOptions: [],
-        },
-      })
-    );
-
-    try {
-        const result =
-        await getBookingAvailability({
-            bookableItemId:
-            line.bookableItemId,
-
-            date: line.date,
-
-            durationMinutes:
-            selectedOption.durationMinutes,
+            return nextErrors;
         });
+    };
 
-      if (
-        availabilityRequestIds.current[
-          line.id
-        ] !== requestId
-      ) {
-        return;
-      }
-
-      setAvailabilityByLine(
-        (currentAvailability) => ({
-          ...currentAvailability,
-          [line.id]: {
-            isLoading: false,
-
-            timeOptions: result.slots.map(
-              (slot) => ({
-                value: slot.startTime,
-                label: `${slot.startTime}–${slot.endTime}`,
-              })
+    const updateBookingLine = (lineId: string, patch: Partial<BookingLine>) => {
+        setBookingLines((currentLines) =>
+            currentLines.map((line) =>
+                line.id === lineId
+                    ? {
+                          ...line,
+                          ...patch,
+                      }
+                    : line,
             ),
-          },
-        })
-      );
-    } catch {
-      if (
-        availabilityRequestIds.current[
-          line.id
-        ] !== requestId
-      ) {
-        return;
-      }
+        );
 
-      setAvailabilityByLine(
-        (currentAvailability) => ({
-          ...currentAvailability,
-          [line.id]: {
-            isLoading: false,
-            timeOptions: [],
-          },
-        })
-      );
-    }
-  };
+        clearBookingLineErrors(lineId, patch);
+    };
 
-  const handleServiceChange = (
-    line: BookingLine,
-    serviceId: string
-  ) => {
-    if (!serviceId) {
-      updateBookingLine(line.id, {
-        serviceId: '',
-        bookingOptionId: '',
+    const updateContact = <Key extends keyof ContactValues>(
+        key: Key,
+        value: ContactValues[Key],
+    ) => {
+        setContacts((currentContacts) => ({
+            ...currentContacts,
+            [key]: value,
+        }));
 
-        selectionSource:
-          line.bookableItemId
-            ? 'bookable'
-            : null,
+        setContactErrors((currentErrors) => {
+            if (!currentErrors[key]) {
+                return currentErrors;
+            }
 
-        time: '',
-      });
+            const nextErrors = {
+                ...currentErrors,
+            };
 
-      clearAvailability(line.id);
-      return;
-    }
+            delete nextErrors[key];
 
-    const canKeepBookableItem =
-      isBookableItemCompatibleWithService(
-        line.bookableItemId,
-        serviceId,
-        bookingOptions
-      );
+            return nextErrors;
+        });
+    };
 
-    const nextBookableItemId =
-      canKeepBookableItem
-        ? line.bookableItemId
-        : '';
+    const clearAvailability = (lineId: string) => {
+        availabilityRequestIds.current[lineId] = (availabilityRequestIds.current[lineId] ?? 0) + 1;
 
-    /*
-     * Если техника сохранилась, сохраняем и первоначальный
-     * источник выбора.
-     *
-     * Если технику пришлось очистить, новой основной
-     * точкой выбора становится услуга.
-     */
-    const nextSelectionSource =
-      nextBookableItemId
-        ? line.selectionSource ?? 'service'
-        : 'service';
+        setAvailabilityByLine((currentAvailability) => ({
+            ...currentAvailability,
+            [lineId]: {
+                isLoading: false,
+                timeOptions: [],
+            },
+        }));
+    };
 
-    updateBookingLine(line.id, {
-      serviceId,
-      bookableItemId:
-        nextBookableItemId,
+    const loadAvailability = async (line: BookingLine) => {
+        const requestId = (availabilityRequestIds.current[line.id] ?? 0) + 1;
 
-      bookingOptionId: '',
-      selectionSource:
-        nextSelectionSource,
+        availabilityRequestIds.current[line.id] = requestId;
 
-      time: '',
-    });
+        const selectedOption = getSelectedBookingOption(line, bookingOptions);
 
-    clearAvailability(line.id);
-  };
+        if (
+            !line.bookableItemId ||
+            !line.date ||
+            !selectedOption ||
+            selectedOption.durationMinutes <= 0
+        ) {
+            setAvailabilityByLine((currentAvailability) => ({
+                ...currentAvailability,
+                [line.id]: {
+                    isLoading: false,
+                    timeOptions: [],
+                },
+            }));
 
-  const handleBookableItemChange = (
-    line: BookingLine,
-    bookableItemId: string
-  ) => {
-    if (!bookableItemId) {
-      updateBookingLine(line.id, {
-        bookableItemId: '',
-        bookingOptionId: '',
+            return;
+        }
 
-        selectionSource:
-          line.serviceId
-            ? 'service'
-            : null,
+        setAvailabilityByLine((currentAvailability) => ({
+            ...currentAvailability,
+            [line.id]: {
+                isLoading: true,
+                timeOptions: [],
+            },
+        }));
 
-        time: '',
-      });
+        try {
+            const result = await getBookingAvailability({
+                bookableItemId: line.bookableItemId,
 
-      clearAvailability(line.id);
-      return;
-    }
+                date: line.date,
 
-    const selectedItem = getCatalogItem(
-      items,
-      bookableItemId
-    );
+                durationMinutes: selectedOption.durationMinutes,
+            });
 
-    if (selectedItem?.kind === 'package') {
-      updateBookingLine(line.id, {
-        serviceId: '',
-        bookableItemId,
-        bookingOptionId: '',
+            if (availabilityRequestIds.current[line.id] !== requestId) {
+                return;
+            }
+
+            setAvailabilityByLine((currentAvailability) => ({
+                ...currentAvailability,
+                [line.id]: {
+                    isLoading: false,
+
+                    timeOptions: result.slots.map((slot) => ({
+                        value: slot.startTime,
+                        label: `${slot.startTime}–${slot.endTime}`,
+                    })),
+                },
+            }));
+        } catch {
+            if (availabilityRequestIds.current[line.id] !== requestId) {
+                return;
+            }
+
+            setAvailabilityByLine((currentAvailability) => ({
+                ...currentAvailability,
+                [line.id]: {
+                    isLoading: false,
+                    timeOptions: [],
+                },
+            }));
+        }
+    };
+
+    const handleServiceChange = (line: BookingLine, serviceId: string) => {
+        if (!serviceId) {
+            updateBookingLine(line.id, {
+                serviceId: '',
+                bookingOptionId: '',
+
+                selectionSource: line.bookableItemId ? 'bookable' : null,
+
+                time: '',
+            });
+
+            clearAvailability(line.id);
+            return;
+        }
+
+        const canKeepBookableItem = isBookableItemCompatibleWithService(
+            line.bookableItemId,
+            serviceId,
+            bookingOptions,
+        );
+
+        const nextBookableItemId = canKeepBookableItem ? line.bookableItemId : '';
 
         /*
-         * Пакет является самостоятельной программой,
-         * поэтому источник выбора становится bookable.
+         * Если техника сохранилась, сохраняем и первоначальный
+         * источник выбора.
+         *
+         * Если технику пришлось очистить, новой основной
+         * точкой выбора становится услуга.
          */
-        selectionSource: 'bookable',
+        const nextSelectionSource = nextBookableItemId
+            ? (line.selectionSource ?? 'service')
+            : 'service';
 
-        time: '',
-      });
+        updateBookingLine(line.id, {
+            serviceId,
+            bookableItemId: nextBookableItemId,
 
-      clearAvailability(line.id);
-      return;
-    }
+            bookingOptionId: '',
+            selectionSource: nextSelectionSource,
 
-    const canKeepService =
-      isBookableItemCompatibleWithService(
-        bookableItemId,
-        line.serviceId,
-        bookingOptions
-      );
+            time: '',
+        });
 
-    const nextServiceId =
-      canKeepService
-        ? line.serviceId
-        : '';
-
-    /*
-     * Если услуга сохранилась, не меняем первоначальный
-     * источник подбора.
-     *
-     * Если услуга несовместима и была очищена,
-     * основной точкой выбора становится техника.
-     */
-    const nextSelectionSource =
-      nextServiceId
-        ? line.selectionSource ?? 'bookable'
-        : 'bookable';
-
-    updateBookingLine(line.id, {
-      serviceId: nextServiceId,
-      bookableItemId,
-      bookingOptionId: '',
-
-      selectionSource:
-        nextSelectionSource,
-
-      time: '',
-    });
-
-    clearAvailability(line.id);
-  };
-
-  const handleBookingOptionChange = (
-    line: BookingLine,
-    bookingOptionId: string
-  ) => {
-    const nextLine: BookingLine = {
-      ...line,
-      bookingOptionId,
-      time: '',
+        clearAvailability(line.id);
     };
 
-    updateBookingLine(line.id, {
-      bookingOptionId,
-      time: '',
-    });
+    const handleBookableItemChange = (line: BookingLine, bookableItemId: string) => {
+        if (!bookableItemId) {
+            updateBookingLine(line.id, {
+                bookableItemId: '',
+                bookingOptionId: '',
 
-    if (
-      bookingOptionId &&
-      nextLine.date
-    ) {
-      void loadAvailability(nextLine);
-      return;
-    }
+                selectionSource: line.serviceId ? 'service' : null,
 
-    clearAvailability(line.id);
-  };
+                time: '',
+            });
 
-  const handleDateChange = (
-    line: BookingLine,
-    date: string
-  ) => {
-    const nextLine: BookingLine = {
-      ...line,
-      date,
-      time: '',
+            clearAvailability(line.id);
+            return;
+        }
+
+        const selectedItem = getCatalogItem(items, bookableItemId);
+
+        if (selectedItem?.kind === 'package') {
+            updateBookingLine(line.id, {
+                serviceId: '',
+                bookableItemId,
+                bookingOptionId: '',
+
+                /*
+                 * Пакет является самостоятельной программой,
+                 * поэтому источник выбора становится bookable.
+                 */
+                selectionSource: 'bookable',
+
+                time: '',
+            });
+
+            clearAvailability(line.id);
+            return;
+        }
+
+        const canKeepService = isBookableItemCompatibleWithService(
+            bookableItemId,
+            line.serviceId,
+            bookingOptions,
+        );
+
+        const nextServiceId = canKeepService ? line.serviceId : '';
+
+        /*
+         * Если услуга сохранилась, не меняем первоначальный
+         * источник подбора.
+         *
+         * Если услуга несовместима и была очищена,
+         * основной точкой выбора становится техника.
+         */
+        const nextSelectionSource = nextServiceId
+            ? (line.selectionSource ?? 'bookable')
+            : 'bookable';
+
+        updateBookingLine(line.id, {
+            serviceId: nextServiceId,
+            bookableItemId,
+            bookingOptionId: '',
+
+            selectionSource: nextSelectionSource,
+
+            time: '',
+        });
+
+        clearAvailability(line.id);
     };
 
-    updateBookingLine(line.id, {
-      date,
-      time: '',
-    });
-
-    void loadAvailability(nextLine);
-  };
-
-  const handleTimeChange = (
-    lineId: string,
-    time: string
-  ) => {
-    updateBookingLine(lineId, {
-      time,
-    });
-  };
-
-  const handleCaptchaSuccess = (
-    token: string
-  ) => {
-    setCaptchaToken(token);
-    setCaptchaError('');
-  };
-
-  const handleCaptchaExpired = () => {
-    setCaptchaToken(null);
-
-    setCaptchaError(
-      'Проверка CAPTCHA истекла. Пройдите её ещё раз'
-    );
-  };
-
-  const resetCaptcha = () => {
-    setCaptchaToken(null);
-
-    setCaptchaResetKey(
-      (currentKey) =>
-        currentKey + 1
-    );
-  };
-
-  const addBookingLine = () => {
-    setBookingLines((currentLines) => [
-      ...currentLines,
-      createEmptyBookingLine(),
-    ]);
-  };
-
-  const removeBookingLine = (
-    lineId: string
-  ) => {
-    availabilityRequestIds.current[lineId] =
-      (availabilityRequestIds.current[lineId] ??
-        0) + 1;
-
-    setBookingLines((currentLines) =>
-      currentLines.filter(
-        (line) => line.id !== lineId
-      )
-    );
-
-    setBookingLineErrors((currentErrors) => {
-      const nextErrors = {
-        ...currentErrors,
-      };
-
-      delete nextErrors[lineId];
-
-      return nextErrors;
-    });
-
-    setAvailabilityByLine(
-      (currentAvailability) => {
-        const nextAvailability = {
-          ...currentAvailability,
+    const handleBookingOptionChange = (line: BookingLine, bookingOptionId: string) => {
+        const nextLine: BookingLine = {
+            ...line,
+            bookingOptionId,
+            time: '',
         };
 
-        delete nextAvailability[lineId];
+        updateBookingLine(line.id, {
+            bookingOptionId,
+            time: '',
+        });
 
-        return nextAvailability;
-      }
-    );
+        if (bookingOptionId && nextLine.date) {
+            void loadAvailability(nextLine);
+            return;
+        }
 
-    delete availabilityRequestIds.current[
-      lineId
-    ];
-  };
+        clearAvailability(line.id);
+    };
 
-  const getLineServiceOptions = (
-    line: BookingLine
-  ) => {
-    return getServiceOptions(
-      line,
-      items,
-      bookingOptions
-    );
-  };
+    const handleDateChange = (line: BookingLine, date: string) => {
+        const nextLine: BookingLine = {
+            ...line,
+            date,
+            time: '',
+        };
 
-  const getLineBookableOptions = (
-    line: BookingLine
-  ) => {
-    return getBookableItemOptions(
-      line,
-      items,
-      bookingOptions
-    );
-  };
+        updateBookingLine(line.id, {
+            date,
+            time: '',
+        });
 
-  const getLineProgramOptions = (
-    line: BookingLine
-  ) => {
-    return getProgramOptions(
-      line,
-      bookingOptions
-    );
-  };
+        void loadAvailability(nextLine);
+    };
 
-  const isLinePackage = (
-    line: BookingLine
-  ) => {
-    return isPackageBookingLine(
-      line,
-      items
-    );
-  };
+    const handleTimeChange = (lineId: string, time: string) => {
+        updateBookingLine(lineId, {
+            time,
+        });
+    };
 
-  const handleSubmit = async (
-    event: FormEvent<HTMLFormElement>
-  ) => {
-    event.preventDefault();
+    const handleCaptchaSuccess = (token: string) => {
+        setCaptchaToken(token);
+        setCaptchaError('');
+    };
 
-    if (isSubmitting) {
-      return;
-    }
+    const handleCaptchaExpired = () => {
+        setCaptchaToken(null);
 
-    const nextBookingLineErrors =
-      validateBookingLines(
+        setCaptchaError('Проверка CAPTCHA истекла. Пройдите её ещё раз');
+    };
+
+    const resetCaptcha = () => {
+        setCaptchaToken(null);
+
+        setCaptchaResetKey((currentKey) => currentKey + 1);
+    };
+
+    const addBookingLine = () => {
+        setBookingLines((currentLines) => [...currentLines, createEmptyBookingLine()]);
+    };
+
+    const removeBookingLine = (lineId: string) => {
+        availabilityRequestIds.current[lineId] = (availabilityRequestIds.current[lineId] ?? 0) + 1;
+
+        setBookingLines((currentLines) => currentLines.filter((line) => line.id !== lineId));
+
+        setBookingLineErrors((currentErrors) => {
+            const nextErrors = {
+                ...currentErrors,
+            };
+
+            delete nextErrors[lineId];
+
+            return nextErrors;
+        });
+
+        setAvailabilityByLine((currentAvailability) => {
+            const nextAvailability = {
+                ...currentAvailability,
+            };
+
+            delete nextAvailability[lineId];
+
+            return nextAvailability;
+        });
+
+        delete availabilityRequestIds.current[lineId];
+    };
+
+    const getLineServiceOptions = (line: BookingLine) => {
+        return getServiceOptions(line, items, bookingOptions);
+    };
+
+    const getLineBookableOptions = (line: BookingLine) => {
+        return getBookableItemOptions(line, items, bookingOptions);
+    };
+
+    const getLineProgramOptions = (line: BookingLine) => {
+        return getProgramOptions(line, bookingOptions);
+    };
+
+    const isLinePackage = (line: BookingLine) => {
+        return isPackageBookingLine(line, items);
+    };
+
+    const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
+        event.preventDefault();
+
+        if (isSubmitting) {
+            return;
+        }
+
+        const nextBookingLineErrors = validateBookingLines(bookingLines, items, bookingOptions);
+
+        const nextContactErrors = validateContacts(contacts);
+
+        setBookingLineErrors(nextBookingLineErrors);
+
+        setContactErrors(nextContactErrors);
+
+        if (
+            Object.keys(nextBookingLineErrors).length > 0 ||
+            Object.keys(nextContactErrors).length > 0
+        ) {
+            return;
+        }
+
+        if (!captchaToken) {
+            setCaptchaError('Подтвердите, что вы не робот');
+
+            return;
+        }
+
+        const bookingItems = buildBookingItems(bookingLines, items, bookingOptions);
+
+        setSubmittedBookingItems(bookingItems);
+
+        setIsSubmitting(true);
+
+        try {
+            const result = await submitBookingRequest(
+                {
+                    items: bookingItems,
+
+                    customer: {
+                        name: contacts.name.trim(),
+
+                        email: contacts.email.trim(),
+
+                        phone: contacts.phone.trim(),
+                    },
+
+                    totalPrice,
+                    prepaymentPrice,
+                },
+                captchaToken,
+            );
+
+            if (!result.success) {
+                setModalErrorMessage(result.message ?? 'Не удалось отправить заявку');
+
+                setModalStatus('error');
+
+                return;
+            }
+
+            setModalErrorMessage(null);
+            setModalStatus('success');
+        } catch {
+            setModalErrorMessage('Не удалось отправить заявку. Попробуйте ещё раз.');
+
+            setModalStatus('error');
+        } finally {
+            setIsSubmitting(false);
+
+            resetCaptcha();
+        }
+    };
+
+    const closeModal = () => {
+        setModalStatus(null);
+        setModalErrorMessage(null);
+    };
+
+    return {
         bookingLines,
-        items,
-        bookingOptions
-      );
+        bookingLineErrors,
+        availabilityByLine,
 
-    const nextContactErrors =
-      validateContacts(contacts);
+        contacts,
+        contactErrors,
 
-    setBookingLineErrors(
-      nextBookingLineErrors
-    );
+        minDate,
+        maxDate,
 
-    setContactErrors(
-      nextContactErrors
-    );
+        totalPrice,
+        prepaymentPrice,
 
-    if (
-      Object.keys(
-        nextBookingLineErrors
-      ).length > 0 ||
-      Object.keys(
-        nextContactErrors
-      ).length > 0
-    ) {
-      return;
-    }
+        isSubmitting,
+        modalStatus,
+        modalErrorMessage,
+        submittedBookingItems,
 
-    if (!captchaToken) {
-      setCaptchaError(
-        'Подтвердите, что вы не робот'
-      );
+        getLineServiceOptions,
+        getLineBookableOptions,
+        getLineProgramOptions,
+        isLinePackage,
 
-      return;
-    }
+        handleServiceChange,
+        handleBookableItemChange,
+        handleBookingOptionChange,
+        handleDateChange,
+        handleTimeChange,
 
-    const bookingItems =
-      buildBookingItems(
-        bookingLines,
-        items,
-        bookingOptions
-      );
+        captchaError,
+        captchaResetKey,
+        handleCaptchaSuccess,
+        handleCaptchaExpired,
 
-    setSubmittedBookingItems(
-      bookingItems
-    );
+        addBookingLine,
+        removeBookingLine,
 
-    setIsSubmitting(true);
-
-    try {
-      const result =
-        await submitBookingRequest(
-          {
-            items: bookingItems,
-
-            customer: {
-              name:
-                contacts.name.trim(),
-
-              email:
-                contacts.email.trim(),
-
-              phone:
-                contacts.phone.trim(),
-            },
-
-            totalPrice,
-            prepaymentPrice,
-          },
-          captchaToken
-        );
-
-      if (!result.success) {
-        setModalErrorMessage(
-          result.message ??
-            'Не удалось отправить заявку'
-        );
-
-        setModalStatus('error');
-
-        return;
-      }
-
-      setModalErrorMessage(null);
-      setModalStatus('success');
-    } catch {
-      setModalErrorMessage(
-        'Не удалось отправить заявку. Попробуйте ещё раз.'
-      );
-
-      setModalStatus('error');
-    } finally {
-      setIsSubmitting(false);
-
-      resetCaptcha();
-    }
-  };
-
-  const closeModal = () => {
-    setModalStatus(null);
-    setModalErrorMessage(null);
-  };
-
-  return {
-    bookingLines,
-    bookingLineErrors,
-    availabilityByLine,
-
-    contacts,
-    contactErrors,
-
-    minDate,
-    maxDate,
-
-    totalPrice,
-    prepaymentPrice,
-
-    isSubmitting,
-    modalStatus,
-    modalErrorMessage,
-    submittedBookingItems,
-
-    getLineServiceOptions,
-    getLineBookableOptions,
-    getLineProgramOptions,
-    isLinePackage,
-
-    handleServiceChange,
-    handleBookableItemChange,
-    handleBookingOptionChange,
-    handleDateChange,
-    handleTimeChange,
-
-    captchaError,
-    captchaResetKey,
-    handleCaptchaSuccess,
-    handleCaptchaExpired,
-  
-    addBookingLine,
-    removeBookingLine,
-
-    updateContact,
-    handleSubmit,
-    closeModal,
-  };
+        updateContact,
+        handleSubmit,
+        closeModal,
+    };
 }

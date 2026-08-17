@@ -1,82 +1,79 @@
 import type {
-  CatalogBookingOption,
-  CatalogItem,
-  CatalogItemKind,
-  PriceUnit,
-  DurationUnit,
-  Season,
+    CatalogBookingOption,
+    CatalogItem,
+    CatalogItemKind,
+    PriceUnit,
+    DurationUnit,
+    Season,
 } from '@/entities/catalog';
 
-export type CatalogItemFormMode =
-  | 'create'
-  | 'edit';
+export type CatalogItemFormMode = 'create' | 'edit';
 
 export type CatalogItemFormImage = {
-  id: string;
-  url: string;
-  alt: string;
-  file?: File;
+    id: string;
+    url: string;
+    alt: string;
+    file?: File;
 };
 
 export type CatalogBookingOptionFormValue = {
-  id: string;
-  serviceId: string;
-  peopleCount: string;
+    id: string;
+    serviceId: string;
+    peopleCount: string;
 
-  durationValue: string;
-  durationUnit: DurationUnit;
+    durationValue: string;
+    durationUnit: DurationUnit;
 
-  price: string;
-  isActive: boolean;
+    price: string;
+    isActive: boolean;
 };
 
 export type CatalogItemFormValues = {
-  id: string;
-  slug: string;
+    id: string;
+    slug: string;
 
-  kind: CatalogItemKind;
+    kind: CatalogItemKind;
 
-  title: string;
-  description: string;
+    title: string;
+    description: string;
 
-  price: string;
-  oldPrice: string;
-  priceUnit: PriceUnit;
+    price: string;
+    oldPrice: string;
+    priceUnit: PriceUnit;
 
-  characteristicsText: string;
+    characteristicsText: string;
 
-  season: Season;
+    season: Season;
 
-  includedVehicleIds: string[];
-  includedServiceIds: string[];
+    includedVehicleIds: string[];
+    includedServiceIds: string[];
 
-  isAvailable: boolean;
+    isAvailable: boolean;
 
-  images: CatalogItemFormImage[];
+    images: CatalogItemFormImage[];
 
-  bookingOptions:
-    CatalogBookingOptionFormValue[];
+    bookingOptions: CatalogBookingOptionFormValue[];
 };
 
 export type CatalogItemFormErrors = {
-  title?: string;
-  price?: string;
-  oldPrice?: string;
-  images?: string;
-  packageItems?: string;
-  bookingOptions?: string;
-  submit?: string;
+    title?: string;
+    price?: string;
+    oldPrice?: string;
+    images?: string;
+    packageItems?: string;
+    bookingOptions?: string;
+    submit?: string;
 
-  optionRows: Record<string, string>;
+    optionRows: Record<string, string>;
 };
 
 export type CatalogItemFormSubmitPayload = {
-  item: CatalogItem;
-  bookingOptions: CatalogBookingOption[];
+    item: CatalogItem;
+    bookingOptions: CatalogBookingOption[];
 
-  /**
-   * При подключении FastAPI эти файлы
-   * отправляются через multipart/form-data.
-   */
-  imageFiles: File[];
+    /**
+     * При подключении FastAPI эти файлы
+     * отправляются через multipart/form-data.
+     */
+    imageFiles: File[];
 };

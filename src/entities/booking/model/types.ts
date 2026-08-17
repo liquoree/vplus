@@ -1,91 +1,83 @@
 export type BookingRequestItem = {
-  bookingOptionId: string;
+    bookingOptionId: string;
 
-  bookableItemId: string;
-  bookableItemTitle: string;
+    bookableItemId: string;
+    bookableItemTitle: string;
 
-  serviceId: string | null;
-  serviceTitle?: string | null;
+    serviceId: string | null;
+    serviceTitle?: string | null;
 
-  bookingOptionTitle: string;
+    bookingOptionTitle: string;
 
-  date: string;
-  time: string;
+    date: string;
+    time: string;
 
-  durationMinutes: number;
-  price: number;
+    durationMinutes: number;
+    price: number;
 };
 
 export type BookingCustomer = {
-  name: string;
-  email: string;
-  phone: string;
+    name: string;
+    email: string;
+    phone: string;
 };
 
 export type BookingRequestPayload = {
-  items: BookingRequestItem[];
-  customer: BookingCustomer;
+    items: BookingRequestItem[];
+    customer: BookingCustomer;
 
-  totalPrice: number;
-  prepaymentPrice: number;
+    totalPrice: number;
+    prepaymentPrice: number;
 };
 
-export type BookingRequestStatus =
-  | 'pending'
-  | 'approved'
-  | 'rejected'
-  | 'cancelled';
+export type BookingRequestStatus = 'pending' | 'approved' | 'rejected' | 'cancelled';
 
-export type BookingRequestDecision = Exclude<
-  BookingRequestStatus,
-  'pending'
->;
+export type BookingRequestDecision = Exclude<BookingRequestStatus, 'pending'>;
 
 export type BookingRequestRecord = {
-  id: string;
+    id: string;
 
-  items: BookingRequestItem[];
-  customer: BookingCustomer;
+    items: BookingRequestItem[];
+    customer: BookingCustomer;
 
-  totalPrice: number;
-  prepaymentPrice: number;
+    totalPrice: number;
+    prepaymentPrice: number;
 
-  status: BookingRequestStatus;
+    status: BookingRequestStatus;
 
-  createdAt: string;
-  reviewedAt: string | null;
+    createdAt: string;
+    reviewedAt: string | null;
 };
 
-export type AdminBookingRequestRecord =
-  BookingRequestRecord & {
+export type AdminBookingRequestRecord = BookingRequestRecord & {
     publicNumber: string;
     version: number;
-  };
+};
 
-  export type BookingSubmitResult = {
-  success: boolean;
+export type BookingSubmitResult = {
+    success: boolean;
 
-  bookingId?: string;
-  publicNumber?: string;
+    bookingId?: string;
+    publicNumber?: string;
 
-  totalPrice?: number;
-  prepaymentPrice?: number;
+    totalPrice?: number;
+    prepaymentPrice?: number;
 
-  status?: BookingRequestStatus;
+    status?: BookingRequestStatus;
 
-  message?: string;
+    message?: string;
 
-  code?:
-    | 'BOOKING_CONFLICT'
-    | 'BOOKING_OUTSIDE_SEASON'
-    | 'CAPTCHA_FAILED'
-    | 'CAPTCHA_UNAVAILABLE'
-    | 'VALIDATION_ERROR'
-    | 'UNKNOWN_ERROR';
+    code?:
+        | 'BOOKING_CONFLICT'
+        | 'BOOKING_OUTSIDE_SEASON'
+        | 'CAPTCHA_FAILED'
+        | 'CAPTCHA_UNAVAILABLE'
+        | 'VALIDATION_ERROR'
+        | 'UNKNOWN_ERROR';
 };
 
 export type BookingRequestStatusUpdateResult = {
-  success: boolean;
-  request?: AdminBookingRequestRecord;
-  message?: string;
+    success: boolean;
+    request?: AdminBookingRequestRecord;
+    message?: string;
 };
