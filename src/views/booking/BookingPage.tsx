@@ -114,8 +114,8 @@ export function BookingPage(props: BookingPageProps) {
                 <BookingModal
                     status={form.modalStatus}
                     bookingItems={form.submittedBookingItems}
-                    totalPrice={form.totalPrice}
-                    prepaymentPrice={form.prepaymentPrice}
+                    totalPrice={form.submittedTotalPrice}
+                    prepaymentPrice={form.submittedPrepaymentPrice}
                     errorMessage={form.modalErrorMessage}
                     onClose={form.closeModal}
                 />

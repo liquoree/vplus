@@ -1,568 +1,281 @@
 import type { FormEvent } from 'react';
-import { useMemo, useRef, useState } from 'react';
+import { useMemo, useState, useEffect } from 'react';
 
-import { getBookingAvailability, submitBookingRequest } from '@/entities/booking';
-import type { BookingRequestItem } from '@/entities/booking';
 
 import {
     buildBookingItems,
-    createEmptyBookingLine,
-    createInitialBookingLine,
-    getBookableItemOptions,
     getBookingLinePrice,
-    getCatalogItem,
-    getProgramOptions,
-    getSelectedBookingOption,
-    getServiceOptions,
-    isBookableItemCompatibleWithService,
-    isPackageBookingLine,
 } from '../lib/booking-catalog';
 
-import { getMaxBookingDateValue, getTodayDateValue } from '../lib/booking-date';
+import {
+    getPaymentStatusMock,
+    startPayment,
+} from '@/entities/payment';
 
-import { validateBookingLines, validateContacts } from '../lib/booking-validation';
+import {
+    getMaxBookingDateValue,
+    getTodayDateValue,
+} from '../lib/booking-date';
 
-import type {
-    BookingLine,
-    BookingLineAvailability,
-    BookingLineErrors,
-    BookingPageProps,
-    ContactErrors,
-    ContactValues,
-} from './types';
+import { useBookingAvailability } from './internal/useBookingAvailability';
+import { useBookingCaptcha } from './internal/useBookingCaptcha';
+import { useBookingContacts } from './internal/useBookingContacts';
+import { useBookingLines } from './internal/useBookingLines';
+import { useBookingModal } from './internal/useBookingModal';
 
-const initialContacts: ContactValues = {
-    name: '',
-    email: '',
-    phone: '',
-    bookingTerms: false,
-    personalData: false,
+import type { BookingPageProps } from './types';
+
+type PendingBookingSnapshot = {
+    bookingItems: ReturnType<typeof buildBookingItems>;
+    totalPrice: number;
+    prepaymentPrice: number;
 };
 
 export function useBookingForm({
-    items,
-    bookingOptions,
-    initialVehicleSlug,
-    initialServiceSlug,
-    initialPackageSlug,
-}: BookingPageProps) {
-    const [bookingLines, setBookingLines] = useState<BookingLine[]>(() => [
-        createInitialBookingLine(items, bookingOptions, {
-            initialVehicleSlug,
-            initialServiceSlug,
-            initialPackageSlug,
-        }),
-    ]);
+                                   items,
+                                   bookingOptions,
+                                   initialVehicleSlug,
+                                   initialServiceSlug,
+                                   initialPackageSlug,
+                               }: BookingPageProps) {
+    // { start-mock
+    const PENDING_BOOKING_KEY = 'pending-booking';
 
-    const [bookingLineErrors, setBookingLineErrors] = useState<Record<string, BookingLineErrors>>(
-        {},
-    );
+    function savePendingBooking(
+        snapshot: PendingBookingSnapshot,
+    ) {
+        sessionStorage.setItem(
+            PENDING_BOOKING_KEY,
+            JSON.stringify(snapshot),
+        );
+    }
 
-    const [captchaToken, setCaptchaToken] = useState<string | null>(null);
+    function getPendingBooking(): PendingBookingSnapshot | null {
+        const value = sessionStorage.getItem(
+            PENDING_BOOKING_KEY,
+        );
 
-    const [captchaResetKey, setCaptchaResetKey] = useState(0);
+        if (!value) {
+            return null;
+        }
 
-    const [captchaError, setCaptchaError] = useState('');
+        try {
+            return JSON.parse(value) as PendingBookingSnapshot;
+        } catch {
+            return null;
+        }
+    }
 
-    const [availabilityByLine, setAvailabilityByLine] = useState<
-        Record<string, BookingLineAvailability>
-    >({});
+    function clearPendingBooking() {
+        sessionStorage.removeItem(PENDING_BOOKING_KEY);
+    }
 
-    const [contacts, setContacts] = useState<ContactValues>(initialContacts);
 
-    const [contactErrors, setContactErrors] = useState<ContactErrors>({});
+    // end-mock }
 
-    const [isSubmitting, setIsSubmitting] = useState(false);
+    const [isSubmitting, setIsSubmitting] =
+        useState(false);
 
-    const [modalStatus, setModalStatus] = useState<'success' | 'error' | null>(null);
+    const availability =
+        useBookingAvailability(bookingOptions);
 
-    const [modalErrorMessage, setModalErrorMessage] = useState<string | null>(null);
+    const lines = useBookingLines({
+        items,
+        bookingOptions,
 
-    const [submittedBookingItems, setSubmittedBookingItems] = useState<BookingRequestItem[]>([]);
+        initialVehicleSlug,
+        initialServiceSlug,
+        initialPackageSlug,
 
-    const availabilityRequestIds = useRef<Record<string, number>>({});
+        loadAvailability:
+        availability.loadAvailability,
+
+        clearAvailability:
+        availability.clearAvailability,
+
+        removeAvailability:
+        availability.removeAvailability,
+    });
+
+    const contacts = useBookingContacts();
+    const captcha = useBookingCaptcha();
+    const modal = useBookingModal();
 
     const totalPrice = useMemo(() => {
-        return bookingLines.reduce(
-            (total, line) => total + getBookingLinePrice(line, bookingOptions),
+        return lines.bookingLines.reduce(
+            (total, line) =>
+                total +
+                getBookingLinePrice(
+                    line,
+                    bookingOptions,
+                ),
             0,
         );
-    }, [bookingLines, bookingOptions]);
+    }, [lines.bookingLines, bookingOptions]);
 
-    const prepaymentPrice = Math.ceil(totalPrice * 0.2);
+    const prepaymentPrice =
+        Math.ceil(totalPrice * 0.2);
 
     const minDate = getTodayDateValue();
     const maxDate = getMaxBookingDateValue();
 
-    const clearBookingLineErrors = (lineId: string, patch: Partial<BookingLine>) => {
-        setBookingLineErrors((currentErrors) => {
-            const currentLineErrors = currentErrors[lineId];
+    useEffect(() => {
+        const url = new URL(window.location.href);
 
-            if (!currentLineErrors) {
-                return currentErrors;
-            }
+        const isPaymentReturn =
+            url.searchParams.get('paymentReturn') === '1';
 
-            const nextLineErrors = {
-                ...currentLineErrors,
-            };
+        const paymentId =
+            url.searchParams.get('paymentId');
 
-            const errorFields: Array<keyof BookingLineErrors> = [
-                'serviceId',
-                'bookableItemId',
-                'bookingOptionId',
-                'date',
-                'time',
-            ];
+        if (!isPaymentReturn || !paymentId) {
+            return;
+        }
 
-            errorFields.forEach((field) => {
-                if (field in patch) {
-                    delete nextLineErrors[field];
+        const handlePaymentReturn = async () => {
+            setIsSubmitting(true);
+
+            try {
+                const payment =
+                    await getPaymentStatusMock(paymentId);
+
+                const pendingBooking =
+                    getPendingBooking();
+
+                if (!pendingBooking) {
+                    modal.openError(
+                        'Не удалось получить данные заявки.',
+                    );
+
+                    return;
                 }
-            });
 
-            const nextErrors = {
-                ...currentErrors,
-            };
+                if (payment.status === 'paid') {
+                    modal.openSuccess(
+                        pendingBooking.bookingItems,
+                        pendingBooking.totalPrice,
+                        pendingBooking.prepaymentPrice,
+                    );
 
-            if (Object.keys(nextLineErrors).length === 0) {
-                delete nextErrors[lineId];
-            } else {
-                nextErrors[lineId] = nextLineErrors;
+                    clearPendingBooking();
+
+                    return;
+                }
+
+                if (
+                    payment.status === 'failed' ||
+                    payment.status === 'canceled'
+                ) {
+                    modal.openError(
+                        'Не удалось отправить заявку.',
+                    );
+
+                    clearPendingBooking();
+                }
+            } catch {
+                modal.openError(
+                    'Не удалось проверить результат оплаты.',
+                );
+            } finally {
+                setIsSubmitting(false);
+
+                url.searchParams.delete(
+                    'paymentReturn',
+                );
+
+                url.searchParams.delete(
+                    'paymentId',
+                );
+
+                window.history.replaceState(
+                    {},
+                    '',
+                    `${url.pathname}${url.search}${url.hash}`,
+                );
             }
+        };
 
-            return nextErrors;
-        });
-    };
+        void handlePaymentReturn();
+    }, []);
 
-    const updateBookingLine = (lineId: string, patch: Partial<BookingLine>) => {
-        setBookingLines((currentLines) =>
-            currentLines.map((line) =>
-                line.id === lineId
-                    ? {
-                          ...line,
-                          ...patch,
-                      }
-                    : line,
-            ),
-        );
-
-        clearBookingLineErrors(lineId, patch);
-    };
-
-    const updateContact = <Key extends keyof ContactValues>(
-        key: Key,
-        value: ContactValues[Key],
+    const handleSubmit = async (
+        event: FormEvent<HTMLFormElement>,
     ) => {
-        setContacts((currentContacts) => ({
-            ...currentContacts,
-            [key]: value,
-        }));
-
-        setContactErrors((currentErrors) => {
-            if (!currentErrors[key]) {
-                return currentErrors;
-            }
-
-            const nextErrors = {
-                ...currentErrors,
-            };
-
-            delete nextErrors[key];
-
-            return nextErrors;
-        });
-    };
-
-    const clearAvailability = (lineId: string) => {
-        availabilityRequestIds.current[lineId] = (availabilityRequestIds.current[lineId] ?? 0) + 1;
-
-        setAvailabilityByLine((currentAvailability) => ({
-            ...currentAvailability,
-            [lineId]: {
-                isLoading: false,
-                timeOptions: [],
-            },
-        }));
-    };
-
-    const loadAvailability = async (line: BookingLine) => {
-        const requestId = (availabilityRequestIds.current[line.id] ?? 0) + 1;
-
-        availabilityRequestIds.current[line.id] = requestId;
-
-        const selectedOption = getSelectedBookingOption(line, bookingOptions);
-
-        if (
-            !line.bookableItemId ||
-            !line.date ||
-            !selectedOption ||
-            selectedOption.durationMinutes <= 0
-        ) {
-            setAvailabilityByLine((currentAvailability) => ({
-                ...currentAvailability,
-                [line.id]: {
-                    isLoading: false,
-                    timeOptions: [],
-                },
-            }));
-
-            return;
-        }
-
-        setAvailabilityByLine((currentAvailability) => ({
-            ...currentAvailability,
-            [line.id]: {
-                isLoading: true,
-                timeOptions: [],
-            },
-        }));
-
-        try {
-            const result = await getBookingAvailability({
-                bookableItemId: line.bookableItemId,
-
-                date: line.date,
-
-                durationMinutes: selectedOption.durationMinutes,
-            });
-
-            if (availabilityRequestIds.current[line.id] !== requestId) {
-                return;
-            }
-
-            setAvailabilityByLine((currentAvailability) => ({
-                ...currentAvailability,
-                [line.id]: {
-                    isLoading: false,
-
-                    timeOptions: result.slots.map((slot) => ({
-                        value: slot.startTime,
-                        label: `${slot.startTime}–${slot.endTime}`,
-                    })),
-                },
-            }));
-        } catch {
-            if (availabilityRequestIds.current[line.id] !== requestId) {
-                return;
-            }
-
-            setAvailabilityByLine((currentAvailability) => ({
-                ...currentAvailability,
-                [line.id]: {
-                    isLoading: false,
-                    timeOptions: [],
-                },
-            }));
-        }
-    };
-
-    const handleServiceChange = (line: BookingLine, serviceId: string) => {
-        if (!serviceId) {
-            updateBookingLine(line.id, {
-                serviceId: '',
-                bookingOptionId: '',
-
-                selectionSource: line.bookableItemId ? 'bookable' : null,
-
-                time: '',
-            });
-
-            clearAvailability(line.id);
-            return;
-        }
-
-        const canKeepBookableItem = isBookableItemCompatibleWithService(
-            line.bookableItemId,
-            serviceId,
-            bookingOptions,
-        );
-
-        const nextBookableItemId = canKeepBookableItem ? line.bookableItemId : '';
-
-        /*
-         * Если техника сохранилась, сохраняем и первоначальный
-         * источник выбора.
-         *
-         * Если технику пришлось очистить, новой основной
-         * точкой выбора становится услуга.
-         */
-        const nextSelectionSource = nextBookableItemId
-            ? (line.selectionSource ?? 'service')
-            : 'service';
-
-        updateBookingLine(line.id, {
-            serviceId,
-            bookableItemId: nextBookableItemId,
-
-            bookingOptionId: '',
-            selectionSource: nextSelectionSource,
-
-            time: '',
-        });
-
-        clearAvailability(line.id);
-    };
-
-    const handleBookableItemChange = (line: BookingLine, bookableItemId: string) => {
-        if (!bookableItemId) {
-            updateBookingLine(line.id, {
-                bookableItemId: '',
-                bookingOptionId: '',
-
-                selectionSource: line.serviceId ? 'service' : null,
-
-                time: '',
-            });
-
-            clearAvailability(line.id);
-            return;
-        }
-
-        const selectedItem = getCatalogItem(items, bookableItemId);
-
-        if (selectedItem?.kind === 'package') {
-            updateBookingLine(line.id, {
-                serviceId: '',
-                bookableItemId,
-                bookingOptionId: '',
-
-                /*
-                 * Пакет является самостоятельной программой,
-                 * поэтому источник выбора становится bookable.
-                 */
-                selectionSource: 'bookable',
-
-                time: '',
-            });
-
-            clearAvailability(line.id);
-            return;
-        }
-
-        const canKeepService = isBookableItemCompatibleWithService(
-            bookableItemId,
-            line.serviceId,
-            bookingOptions,
-        );
-
-        const nextServiceId = canKeepService ? line.serviceId : '';
-
-        /*
-         * Если услуга сохранилась, не меняем первоначальный
-         * источник подбора.
-         *
-         * Если услуга несовместима и была очищена,
-         * основной точкой выбора становится техника.
-         */
-        const nextSelectionSource = nextServiceId
-            ? (line.selectionSource ?? 'bookable')
-            : 'bookable';
-
-        updateBookingLine(line.id, {
-            serviceId: nextServiceId,
-            bookableItemId,
-            bookingOptionId: '',
-
-            selectionSource: nextSelectionSource,
-
-            time: '',
-        });
-
-        clearAvailability(line.id);
-    };
-
-    const handleBookingOptionChange = (line: BookingLine, bookingOptionId: string) => {
-        const nextLine: BookingLine = {
-            ...line,
-            bookingOptionId,
-            time: '',
-        };
-
-        updateBookingLine(line.id, {
-            bookingOptionId,
-            time: '',
-        });
-
-        if (bookingOptionId && nextLine.date) {
-            void loadAvailability(nextLine);
-            return;
-        }
-
-        clearAvailability(line.id);
-    };
-
-    const handleDateChange = (line: BookingLine, date: string) => {
-        const nextLine: BookingLine = {
-            ...line,
-            date,
-            time: '',
-        };
-
-        updateBookingLine(line.id, {
-            date,
-            time: '',
-        });
-
-        void loadAvailability(nextLine);
-    };
-
-    const handleTimeChange = (lineId: string, time: string) => {
-        updateBookingLine(lineId, {
-            time,
-        });
-    };
-
-    const handleCaptchaSuccess = (token: string) => {
-        setCaptchaToken(token);
-        setCaptchaError('');
-    };
-
-    const handleCaptchaExpired = () => {
-        setCaptchaToken(null);
-
-        setCaptchaError('Проверка CAPTCHA истекла. Пройдите её ещё раз');
-    };
-
-    const resetCaptcha = () => {
-        setCaptchaToken(null);
-
-        setCaptchaResetKey((currentKey) => currentKey + 1);
-    };
-
-    const addBookingLine = () => {
-        setBookingLines((currentLines) => [...currentLines, createEmptyBookingLine()]);
-    };
-
-    const removeBookingLine = (lineId: string) => {
-        availabilityRequestIds.current[lineId] = (availabilityRequestIds.current[lineId] ?? 0) + 1;
-
-        setBookingLines((currentLines) => currentLines.filter((line) => line.id !== lineId));
-
-        setBookingLineErrors((currentErrors) => {
-            const nextErrors = {
-                ...currentErrors,
-            };
-
-            delete nextErrors[lineId];
-
-            return nextErrors;
-        });
-
-        setAvailabilityByLine((currentAvailability) => {
-            const nextAvailability = {
-                ...currentAvailability,
-            };
-
-            delete nextAvailability[lineId];
-
-            return nextAvailability;
-        });
-
-        delete availabilityRequestIds.current[lineId];
-    };
-
-    const getLineServiceOptions = (line: BookingLine) => {
-        return getServiceOptions(line, items, bookingOptions);
-    };
-
-    const getLineBookableOptions = (line: BookingLine) => {
-        return getBookableItemOptions(line, items, bookingOptions);
-    };
-
-    const getLineProgramOptions = (line: BookingLine) => {
-        return getProgramOptions(line, bookingOptions);
-    };
-
-    const isLinePackage = (line: BookingLine) => {
-        return isPackageBookingLine(line, items);
-    };
-
-    const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
         event.preventDefault();
 
         if (isSubmitting) {
             return;
         }
 
-        const nextBookingLineErrors = validateBookingLines(bookingLines, items, bookingOptions);
+        const areBookingLinesValid =
+            lines.validate();
 
-        const nextContactErrors = validateContacts(contacts);
-
-        setBookingLineErrors(nextBookingLineErrors);
-
-        setContactErrors(nextContactErrors);
+        const areContactsValid =
+            contacts.validate();
 
         if (
-            Object.keys(nextBookingLineErrors).length > 0 ||
-            Object.keys(nextContactErrors).length > 0
+            !areBookingLinesValid ||
+            !areContactsValid
         ) {
             return;
         }
 
-        if (!captchaToken) {
-            setCaptchaError('Подтвердите, что вы не робот');
+        const captchaToken = captcha.validate();
 
+        if (!captchaToken) {
             return;
         }
 
-        const bookingItems = buildBookingItems(bookingLines, items, bookingOptions);
-
-        setSubmittedBookingItems(bookingItems);
+        const bookingItems = buildBookingItems(
+            lines.bookingLines,
+            items,
+            bookingOptions,
+        );
 
         setIsSubmitting(true);
 
         try {
-            const result = await submitBookingRequest(
-                {
-                    items: bookingItems,
+            savePendingBooking({
+                bookingItems,
+                totalPrice,
+                prepaymentPrice,
+            });
 
-                    customer: {
-                        name: contacts.name.trim(),
+            await startPayment({
+                items: bookingItems,
 
-                        email: contacts.email.trim(),
-
-                        phone: contacts.phone.trim(),
-                    },
-
-                    totalPrice,
-                    prepaymentPrice,
+                customer: {
+                    name: contacts.contacts.name.trim(),
+                    email: contacts.contacts.email.trim(),
+                    phone: contacts.contacts.phone.trim(),
                 },
+
+                totalPrice,
+                prepaymentPrice,
+
                 captchaToken,
+            });
+        } catch {
+            clearPendingBooking();
+
+            modal.openError(
+                'Не удалось перейти к оплате. Попробуйте ещё раз.',
             );
 
-            if (!result.success) {
-                setModalErrorMessage(result.message ?? 'Не удалось отправить заявку');
-
-                setModalStatus('error');
-
-                return;
-            }
-
-            setModalErrorMessage(null);
-            setModalStatus('success');
-        } catch {
-            setModalErrorMessage('Не удалось отправить заявку. Попробуйте ещё раз.');
-
-            setModalStatus('error');
-        } finally {
             setIsSubmitting(false);
-
-            resetCaptcha();
+            captcha.resetCaptcha();
         }
     };
 
-    const closeModal = () => {
-        setModalStatus(null);
-        setModalErrorMessage(null);
-    };
-
     return {
-        bookingLines,
-        bookingLineErrors,
-        availabilityByLine,
+        bookingLines: lines.bookingLines,
+        bookingLineErrors: lines.bookingLineErrors,
 
-        contacts,
-        contactErrors,
+        availabilityByLine:
+        availability.availabilityByLine,
+
+        contacts: contacts.contacts,
+        contactErrors: contacts.contactErrors,
 
         minDate,
         maxDate,
@@ -571,31 +284,70 @@ export function useBookingForm({
         prepaymentPrice,
 
         isSubmitting,
-        modalStatus,
-        modalErrorMessage,
-        submittedBookingItems,
 
-        getLineServiceOptions,
-        getLineBookableOptions,
-        getLineProgramOptions,
-        isLinePackage,
+        modalStatus: modal.modalStatus,
+        modalErrorMessage:
+        modal.modalErrorMessage,
 
-        handleServiceChange,
-        handleBookableItemChange,
-        handleBookingOptionChange,
-        handleDateChange,
-        handleTimeChange,
+        submittedBookingItems:
+        modal.submittedBookingItems,
 
-        captchaError,
-        captchaResetKey,
-        handleCaptchaSuccess,
-        handleCaptchaExpired,
+        getLineServiceOptions:
+        lines.getLineServiceOptions,
 
-        addBookingLine,
-        removeBookingLine,
+        getLineBookableOptions:
+        lines.getLineBookableOptions,
 
-        updateContact,
+        getLineProgramOptions:
+        lines.getLineProgramOptions,
+
+        isLinePackage:
+        lines.isLinePackage,
+
+        handleServiceChange:
+        lines.handleServiceChange,
+
+        handleBookableItemChange:
+        lines.handleBookableItemChange,
+
+        handleBookingOptionChange:
+        lines.handleBookingOptionChange,
+
+        handleDateChange:
+        lines.handleDateChange,
+
+        handleTimeChange:
+        lines.handleTimeChange,
+
+        captchaError:
+        captcha.captchaError,
+
+        captchaResetKey:
+        captcha.captchaResetKey,
+
+        handleCaptchaSuccess:
+        captcha.handleCaptchaSuccess,
+
+        handleCaptchaExpired:
+        captcha.handleCaptchaExpired,
+
+        addBookingLine:
+        lines.addBookingLine,
+
+        removeBookingLine:
+        lines.removeBookingLine,
+
+        updateContact:
+        contacts.updateContact,
+
         handleSubmit,
-        closeModal,
+
+        closeModal: modal.close,
+
+        submittedTotalPrice:
+        modal.submittedTotalPrice,
+
+        submittedPrepaymentPrice:
+        modal.submittedPrepaymentPrice,
     };
 }

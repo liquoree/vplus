@@ -247,10 +247,9 @@
 
     &__option-fields {
         display: grid;
-        grid-template-columns: minmax(170px, 220px) minmax(100px, 0.65fr) minmax(
-                220px,
-                1.25fr
-            ) minmax(120px, 0.8fr) auto;
+        grid-template-columns:
+            minmax(170px, 220px) minmax(100px, 0.65fr) minmax(220px, 1.25fr)
+            minmax(120px, 0.8fr) auto;
         align-items: end;
         gap: 12px;
 
