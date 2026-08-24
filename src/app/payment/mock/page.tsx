@@ -1,54 +1,69 @@
 'use client';
 
+import { useState } from 'react';
 import { useSearchParams } from 'next/navigation';
 
-import {
-    setMockPaymentStatus,
-} from '@/entities/payment/mock/payment-mock-state';
+import { completeMockPayment } from '@/entities/payment';
+import type { CompleteMockPaymentStatus } from '@/entities/payment';
 
 export default function PaymentMockPage() {
     const searchParams = useSearchParams();
 
     const paymentId = searchParams.get('paymentId');
 
-    const handleSuccess = () => {
-        if (!paymentId) {
+    const [isSubmitting, setIsSubmitting] = useState(false);
+
+    const [error, setError] = useState('');
+
+    const completePayment = async (status: CompleteMockPaymentStatus) => {
+        if (!paymentId || isSubmitting) {
             return;
         }
 
-        setMockPaymentStatus(paymentId, 'paid');
+        setError('');
+        setIsSubmitting(true);
 
-        window.location.assign(
-            `/booking?paymentReturn=1&paymentId=${encodeURIComponent(paymentId)}`,
-        );
-    };
+        try {
+            await completeMockPayment(paymentId, status);
 
-    const handleError = () => {
-        if (!paymentId) {
-            return;
+            window.location.assign(
+                `/booking?paymentReturn=1&paymentId=${encodeURIComponent(paymentId)}`,
+            );
+        } catch {
+            setError('Не удалось изменить статус тестового платежа.');
+            setIsSubmitting(false);
         }
-
-        setMockPaymentStatus(paymentId, 'failed');
-
-        window.location.assign(
-            `/booking?paymentReturn=1&paymentId=${encodeURIComponent(paymentId)}`,
-        );
     };
+
+    if (!paymentId) {
+        return (
+            <main>
+                <h1>Тестовая оплата</h1>
+                <p>Платёж не найден.</p>
+            </main>
+        );
+    }
 
     return (
         <main>
             <h1>Тестовая оплата</h1>
 
+            <p>Выберите результат тестового платежа.</p>
+
+            {error && <p role="alert">{error}</p>}
+
             <button
                 type="button"
-                onClick={handleSuccess}
+                disabled={isSubmitting}
+                onClick={() => void completePayment('paid')}
             >
-                Успешная оплата
+                {isSubmitting ? 'Обработка...' : 'Успешная оплата'}
             </button>
 
             <button
                 type="button"
-                onClick={handleError}
+                disabled={isSubmitting}
+                onClick={() => void completePayment('failed')}
             >
                 Ошибка оплаты
             </button>

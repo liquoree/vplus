@@ -1,10 +1,11 @@
-import {PaymentStatusResult} from "@/entities/payment/model/types";
+import { apiClient } from '@/shared/api/client';
 
-export async function getPaymentStatus(
-    // bookingId: string,
-): Promise<PaymentStatusResult> {
-    return {
-        paymentId: "mock-payment-123",
-        status: "paid",
-    };
+import type { PaymentStatusResult } from '../../../../../Downloads/frontend_payment_admin_patch/src/entities/payment/model/types';
+
+export async function getPaymentStatus(paymentId: string): Promise<PaymentStatusResult> {
+    const response = await apiClient.get<PaymentStatusResult>(
+        `/payments/${encodeURIComponent(paymentId)}`,
+    );
+
+    return response.data;
 }

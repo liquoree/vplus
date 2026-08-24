@@ -1,21 +1,11 @@
 import type { FormEvent } from 'react';
-import { useMemo, useState, useEffect } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 
+import { getPaymentStatus, startPayment } from '@/entities/payment';
+import type { PaymentStatusResult } from '@/entities/payment';
 
-import {
-    buildBookingItems,
-    getBookingLinePrice,
-} from '../lib/booking-catalog';
-
-import {
-    getPaymentStatusMock,
-    startPayment,
-} from '@/entities/payment';
-
-import {
-    getMaxBookingDateValue,
-    getTodayDateValue,
-} from '../lib/booking-date';
+import { buildBookingItems, getBookingLinePrice } from '../lib/booking-catalog';
+import { getMaxBookingDateValue, getTodayDateValue } from '../lib/booking-date';
 
 import { useBookingAvailability } from './internal/useBookingAvailability';
 import { useBookingCaptcha } from './internal/useBookingCaptcha';
@@ -25,59 +15,40 @@ import { useBookingModal } from './internal/useBookingModal';
 
 import type { BookingPageProps } from './types';
 
-type PendingBookingSnapshot = {
-    bookingItems: ReturnType<typeof buildBookingItems>;
-    totalPrice: number;
-    prepaymentPrice: number;
-};
+const PAYMENT_STATUS_RETRY_COUNT = 8;
+const PAYMENT_STATUS_RETRY_DELAY_MS = 750;
+
+function wait(milliseconds: number) {
+    return new Promise<void>((resolve) => {
+        window.setTimeout(resolve, milliseconds);
+    });
+}
+
+async function waitForFinalPaymentStatus(paymentId: string): Promise<PaymentStatusResult> {
+    let payment = await getPaymentStatus(paymentId);
+
+    for (let attempt = 1; attempt < PAYMENT_STATUS_RETRY_COUNT; attempt += 1) {
+        if (payment.status !== 'pending') {
+            return payment;
+        }
+
+        await wait(PAYMENT_STATUS_RETRY_DELAY_MS);
+        payment = await getPaymentStatus(paymentId);
+    }
+
+    return payment;
+}
 
 export function useBookingForm({
-                                   items,
-                                   bookingOptions,
-                                   initialVehicleSlug,
-                                   initialServiceSlug,
-                                   initialPackageSlug,
-                               }: BookingPageProps) {
-    // { start-mock
-    const PENDING_BOOKING_KEY = 'pending-booking';
+    items,
+    bookingOptions,
+    initialVehicleSlug,
+    initialServiceSlug,
+    initialPackageSlug,
+}: BookingPageProps) {
+    const [isSubmitting, setIsSubmitting] = useState(false);
 
-    function savePendingBooking(
-        snapshot: PendingBookingSnapshot,
-    ) {
-        sessionStorage.setItem(
-            PENDING_BOOKING_KEY,
-            JSON.stringify(snapshot),
-        );
-    }
-
-    function getPendingBooking(): PendingBookingSnapshot | null {
-        const value = sessionStorage.getItem(
-            PENDING_BOOKING_KEY,
-        );
-
-        if (!value) {
-            return null;
-        }
-
-        try {
-            return JSON.parse(value) as PendingBookingSnapshot;
-        } catch {
-            return null;
-        }
-    }
-
-    function clearPendingBooking() {
-        sessionStorage.removeItem(PENDING_BOOKING_KEY);
-    }
-
-
-    // end-mock }
-
-    const [isSubmitting, setIsSubmitting] =
-        useState(false);
-
-    const availability =
-        useBookingAvailability(bookingOptions);
+    const availability = useBookingAvailability(bookingOptions);
 
     const lines = useBookingLines({
         items,
@@ -87,14 +58,11 @@ export function useBookingForm({
         initialServiceSlug,
         initialPackageSlug,
 
-        loadAvailability:
-        availability.loadAvailability,
+        loadAvailability: availability.loadAvailability,
 
-        clearAvailability:
-        availability.clearAvailability,
+        clearAvailability: availability.clearAvailability,
 
-        removeAvailability:
-        availability.removeAvailability,
+        removeAvailability: availability.removeAvailability,
     });
 
     const contacts = useBookingContacts();
@@ -103,18 +71,12 @@ export function useBookingForm({
 
     const totalPrice = useMemo(() => {
         return lines.bookingLines.reduce(
-            (total, line) =>
-                total +
-                getBookingLinePrice(
-                    line,
-                    bookingOptions,
-                ),
+            (total, line) => total + getBookingLinePrice(line, bookingOptions),
             0,
         );
     }, [lines.bookingLines, bookingOptions]);
 
-    const prepaymentPrice =
-        Math.ceil(totalPrice * 0.2);
+    const prepaymentPrice = Math.ceil(totalPrice * 0.2);
 
     const minDate = getTodayDateValue();
     const maxDate = getMaxBookingDateValue();
@@ -122,101 +84,82 @@ export function useBookingForm({
     useEffect(() => {
         const url = new URL(window.location.href);
 
-        const isPaymentReturn =
-            url.searchParams.get('paymentReturn') === '1';
+        const isPaymentReturn = url.searchParams.get('paymentReturn') === '1';
 
-        const paymentId =
-            url.searchParams.get('paymentId');
+        const paymentId = url.searchParams.get('paymentId');
 
         if (!isPaymentReturn || !paymentId) {
             return;
         }
 
         const handlePaymentReturn = async () => {
+            let shouldClearPaymentParams = false;
+
             setIsSubmitting(true);
 
             try {
-                const payment =
-                    await getPaymentStatusMock(paymentId);
-
-                const pendingBooking =
-                    getPendingBooking();
-
-                if (!pendingBooking) {
-                    modal.openError(
-                        'Не удалось получить данные заявки.',
-                    );
-
-                    return;
-                }
+                const payment = await waitForFinalPaymentStatus(paymentId);
 
                 if (payment.status === 'paid') {
                     modal.openSuccess(
-                        pendingBooking.bookingItems,
-                        pendingBooking.totalPrice,
-                        pendingBooking.prepaymentPrice,
+                        payment.booking.items,
+                        payment.booking.totalPrice,
+                        payment.booking.prepaymentPrice,
                     );
 
-                    clearPendingBooking();
-
+                    shouldClearPaymentParams = true;
                     return;
                 }
 
-                if (
-                    payment.status === 'failed' ||
-                    payment.status === 'canceled'
-                ) {
-                    modal.openError(
-                        'Не удалось отправить заявку.',
-                    );
+                if (payment.status === 'refunded') {
+                    modal.openError('Оплата возвращена. Заявка не подтверждена.');
 
-                    clearPendingBooking();
+                    shouldClearPaymentParams = true;
+                    return;
                 }
+
+                if (payment.status === 'failed' || payment.status === 'canceled') {
+                    modal.openError('Оплата не завершена. Заявка не отправлена.');
+
+                    shouldClearPaymentParams = true;
+                    return;
+                }
+
+                modal.openError(
+                    'Платёж ещё обрабатывается. Обновите страницу через несколько секунд.',
+                );
             } catch {
                 modal.openError(
-                    'Не удалось проверить результат оплаты.',
+                    'Не удалось проверить результат оплаты. Обновите страницу и попробуйте ещё раз.',
                 );
             } finally {
                 setIsSubmitting(false);
 
-                url.searchParams.delete(
-                    'paymentReturn',
-                );
+                if (shouldClearPaymentParams) {
+                    url.searchParams.delete('paymentReturn');
 
-                url.searchParams.delete(
-                    'paymentId',
-                );
+                    url.searchParams.delete('paymentId');
 
-                window.history.replaceState(
-                    {},
-                    '',
-                    `${url.pathname}${url.search}${url.hash}`,
-                );
+                    window.history.replaceState({}, '', `${url.pathname}${url.search}${url.hash}`);
+                }
             }
         };
 
         void handlePaymentReturn();
-    }, []);
+    }, [modal]);
 
-    const handleSubmit = async (
-        event: FormEvent<HTMLFormElement>,
-    ) => {
+    const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
         event.preventDefault();
 
         if (isSubmitting) {
             return;
         }
 
-        const areBookingLinesValid =
-            lines.validate();
+        const areBookingLinesValid = lines.validate();
 
-        const areContactsValid =
-            contacts.validate();
+        const areContactsValid = contacts.validate();
 
-        if (
-            !areBookingLinesValid ||
-            !areContactsValid
-        ) {
+        if (!areBookingLinesValid || !areContactsValid) {
             return;
         }
 
@@ -226,21 +169,11 @@ export function useBookingForm({
             return;
         }
 
-        const bookingItems = buildBookingItems(
-            lines.bookingLines,
-            items,
-            bookingOptions,
-        );
+        const bookingItems = buildBookingItems(lines.bookingLines, items, bookingOptions);
 
         setIsSubmitting(true);
 
         try {
-            savePendingBooking({
-                bookingItems,
-                totalPrice,
-                prepaymentPrice,
-            });
-
             await startPayment({
                 items: bookingItems,
 
@@ -250,17 +183,10 @@ export function useBookingForm({
                     phone: contacts.contacts.phone.trim(),
                 },
 
-                totalPrice,
-                prepaymentPrice,
-
                 captchaToken,
             });
         } catch {
-            clearPendingBooking();
-
-            modal.openError(
-                'Не удалось перейти к оплате. Попробуйте ещё раз.',
-            );
+            modal.openError('Не удалось перейти к оплате. Попробуйте ещё раз.');
 
             setIsSubmitting(false);
             captcha.resetCaptcha();
@@ -271,8 +197,7 @@ export function useBookingForm({
         bookingLines: lines.bookingLines,
         bookingLineErrors: lines.bookingLineErrors,
 
-        availabilityByLine:
-        availability.availabilityByLine,
+        availabilityByLine: availability.availabilityByLine,
 
         contacts: contacts.contacts,
         contactErrors: contacts.contactErrors,
@@ -286,68 +211,48 @@ export function useBookingForm({
         isSubmitting,
 
         modalStatus: modal.modalStatus,
-        modalErrorMessage:
-        modal.modalErrorMessage,
+        modalErrorMessage: modal.modalErrorMessage,
 
-        submittedBookingItems:
-        modal.submittedBookingItems,
+        submittedBookingItems: modal.submittedBookingItems,
 
-        getLineServiceOptions:
-        lines.getLineServiceOptions,
+        getLineServiceOptions: lines.getLineServiceOptions,
 
-        getLineBookableOptions:
-        lines.getLineBookableOptions,
+        getLineBookableOptions: lines.getLineBookableOptions,
 
-        getLineProgramOptions:
-        lines.getLineProgramOptions,
+        getLineProgramOptions: lines.getLineProgramOptions,
 
-        isLinePackage:
-        lines.isLinePackage,
+        isLinePackage: lines.isLinePackage,
 
-        handleServiceChange:
-        lines.handleServiceChange,
+        handleServiceChange: lines.handleServiceChange,
 
-        handleBookableItemChange:
-        lines.handleBookableItemChange,
+        handleBookableItemChange: lines.handleBookableItemChange,
 
-        handleBookingOptionChange:
-        lines.handleBookingOptionChange,
+        handleBookingOptionChange: lines.handleBookingOptionChange,
 
-        handleDateChange:
-        lines.handleDateChange,
+        handleDateChange: lines.handleDateChange,
 
-        handleTimeChange:
-        lines.handleTimeChange,
+        handleTimeChange: lines.handleTimeChange,
 
-        captchaError:
-        captcha.captchaError,
+        captchaError: captcha.captchaError,
 
-        captchaResetKey:
-        captcha.captchaResetKey,
+        captchaResetKey: captcha.captchaResetKey,
 
-        handleCaptchaSuccess:
-        captcha.handleCaptchaSuccess,
+        handleCaptchaSuccess: captcha.handleCaptchaSuccess,
 
-        handleCaptchaExpired:
-        captcha.handleCaptchaExpired,
+        handleCaptchaExpired: captcha.handleCaptchaExpired,
 
-        addBookingLine:
-        lines.addBookingLine,
+        addBookingLine: lines.addBookingLine,
 
-        removeBookingLine:
-        lines.removeBookingLine,
+        removeBookingLine: lines.removeBookingLine,
 
-        updateContact:
-        contacts.updateContact,
+        updateContact: contacts.updateContact,
 
         handleSubmit,
 
         closeModal: modal.close,
 
-        submittedTotalPrice:
-        modal.submittedTotalPrice,
+        submittedTotalPrice: modal.submittedTotalPrice,
 
-        submittedPrepaymentPrice:
-        modal.submittedPrepaymentPrice,
+        submittedPrepaymentPrice: modal.submittedPrepaymentPrice,
     };
 }

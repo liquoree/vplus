@@ -1,20 +1,6 @@
-import type {
-    PaymentStatusResult,
-} from "../model/types";
+import { getPaymentStatus } from '../api/get-payment-status';
+import type { PaymentStatusResult } from '../model/types';
 
-import {
-    getMockPaymentStatus,
-} from "./payment-mock-state";
-
-export async function getPaymentStatusMock(
-    paymentId: string,
-): Promise<PaymentStatusResult> {
-    await new Promise((resolve) => {
-        setTimeout(resolve, 500);
-    });
-
-    return {
-        paymentId,
-        status: getMockPaymentStatus(paymentId),
-    };
+export async function getPaymentStatusMock(paymentId: string): Promise<PaymentStatusResult> {
+    return getPaymentStatus(paymentId);
 }

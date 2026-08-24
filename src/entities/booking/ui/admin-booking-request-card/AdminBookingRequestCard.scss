@@ -169,18 +169,6 @@
             opacity: 0.6;
         }
 
-        &--approve {
-            border: 0;
-            background: #18c900;
-            color: #ffffff;
-        }
-
-        &--reject {
-            border: 0;
-            background: var(--color-accent);
-            color: #ffffff;
-        }
-
         &--cancel {
             border: 1px solid var(--color-accent);
             background: transparent;
@@ -196,14 +184,9 @@
     &__status {
         background: transparent;
 
-        &--approved {
+        &--active {
             border: 1px solid #18c900;
             color: #18c900;
-        }
-
-        &--rejected {
-            border: 1px solid var(--color-accent);
-            color: var(--color-accent);
         }
 
         &--cancelled {

@@ -2,10 +2,7 @@ import { useState } from 'react';
 
 import { validateContacts } from '../../lib/booking-validation';
 
-import type {
-    ContactErrors,
-    ContactValues,
-} from '../types';
+import type { ContactErrors, ContactValues } from '../types';
 
 const initialContacts: ContactValues = {
     name: '',
@@ -16,15 +13,11 @@ const initialContacts: ContactValues = {
 };
 
 export function useBookingContacts() {
-    const [contacts, setContacts] =
-        useState<ContactValues>(initialContacts);
+    const [contacts, setContacts] = useState<ContactValues>(initialContacts);
 
-    const [contactErrors, setContactErrors] =
-        useState<ContactErrors>({});
+    const [contactErrors, setContactErrors] = useState<ContactErrors>({});
 
-    const updateContact = <
-        Key extends keyof ContactValues,
-    >(
+    const updateContact = <Key extends keyof ContactValues>(
         key: Key,
         value: ContactValues[Key],
     ) => {

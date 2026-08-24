@@ -104,12 +104,14 @@ export function BookingModal({
                     </div>
 
                     <h2 className="booking-modal__title">
-                        {isSuccess ? 'Заявка отправлена!' : 'Не удалось отправить заявку'}
+                        {isSuccess ? 'Заявка подтверждена!' : 'Не удалось отправить заявку'}
                     </h2>
 
                     {isSuccess ? (
                         <>
-                            <p className="booking-modal__subtitle">Вы бронируете:</p>
+                            <p className="booking-modal__subtitle">
+                                Предоплата получена. Вы бронируете:
+                            </p>
 
                             <ul className="booking-modal__list">
                                 {bookingItems.map((item) => (

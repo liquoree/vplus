@@ -30,9 +30,9 @@ export type BookingRequestPayload = {
     prepaymentPrice: number;
 };
 
-export type BookingRequestStatus = 'pending' | 'approved' | 'rejected' | 'cancelled';
+export type BookingRequestStatus = 'active' | 'cancelled';
 
-export type BookingRequestDecision = Exclude<BookingRequestStatus, 'pending'>;
+export type BookingRequestDecision = 'cancelled';
 
 export type BookingRequestRecord = {
     id: string;
@@ -46,12 +46,18 @@ export type BookingRequestRecord = {
     status: BookingRequestStatus;
 
     createdAt: string;
-    reviewedAt: string | null;
+    cancelledAt: string | null;
 };
 
 export type AdminBookingRequestRecord = BookingRequestRecord & {
     publicNumber: string;
     version: number;
+};
+
+export type BookingCancelResult = {
+    success: boolean;
+    request?: AdminBookingRequestRecord;
+    message?: string;
 };
 
 export type BookingSubmitResult = {
@@ -76,8 +82,4 @@ export type BookingSubmitResult = {
         | 'UNKNOWN_ERROR';
 };
 
-export type BookingRequestStatusUpdateResult = {
-    success: boolean;
-    request?: AdminBookingRequestRecord;
-    message?: string;
-};
+export type BookingRequestStatusUpdateResult = BookingCancelResult;

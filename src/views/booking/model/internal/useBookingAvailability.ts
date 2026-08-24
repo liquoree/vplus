@@ -4,15 +4,9 @@ import { getBookingAvailability } from '@/entities/booking';
 
 import { getSelectedBookingOption } from '../../lib/booking-catalog';
 
-import type {
-    BookingLine,
-    BookingLineAvailability,
-    BookingPageProps,
-} from '../types';
+import type { BookingLine, BookingLineAvailability, BookingPageProps } from '../types';
 
-export function useBookingAvailability(
-    bookingOptions: BookingPageProps['bookingOptions'],
-) {
+export function useBookingAvailability(bookingOptions: BookingPageProps['bookingOptions']) {
     const [availabilityByLine, setAvailabilityByLine] = useState<
         Record<string, BookingLineAvailability>
     >({});
@@ -20,8 +14,7 @@ export function useBookingAvailability(
     const availabilityRequestIds = useRef<Record<string, number>>({});
 
     const clearAvailability = (lineId: string) => {
-        availabilityRequestIds.current[lineId] =
-            (availabilityRequestIds.current[lineId] ?? 0) + 1;
+        availabilityRequestIds.current[lineId] = (availabilityRequestIds.current[lineId] ?? 0) + 1;
 
         setAvailabilityByLine((currentAvailability) => ({
             ...currentAvailability,
@@ -33,8 +26,7 @@ export function useBookingAvailability(
     };
 
     const removeAvailability = (lineId: string) => {
-        availabilityRequestIds.current[lineId] =
-            (availabilityRequestIds.current[lineId] ?? 0) + 1;
+        availabilityRequestIds.current[lineId] = (availabilityRequestIds.current[lineId] ?? 0) + 1;
 
         setAvailabilityByLine((currentAvailability) => {
             const nextAvailability = {
@@ -50,15 +42,11 @@ export function useBookingAvailability(
     };
 
     const loadAvailability = async (line: BookingLine) => {
-        const requestId =
-            (availabilityRequestIds.current[line.id] ?? 0) + 1;
+        const requestId = (availabilityRequestIds.current[line.id] ?? 0) + 1;
 
         availabilityRequestIds.current[line.id] = requestId;
 
-        const selectedOption = getSelectedBookingOption(
-            line,
-            bookingOptions,
-        );
+        const selectedOption = getSelectedBookingOption(line, bookingOptions);
 
         if (
             !line.bookableItemId ||
@@ -92,10 +80,7 @@ export function useBookingAvailability(
                 durationMinutes: selectedOption.durationMinutes,
             });
 
-            if (
-                availabilityRequestIds.current[line.id] !==
-                requestId
-            ) {
+            if (availabilityRequestIds.current[line.id] !== requestId) {
                 return;
             }
 
@@ -110,10 +95,7 @@ export function useBookingAvailability(
                 },
             }));
         } catch {
-            if (
-                availabilityRequestIds.current[line.id] !==
-                requestId
-            ) {
+            if (availabilityRequestIds.current[line.id] !== requestId) {
                 return;
             }
 

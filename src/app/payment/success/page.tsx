@@ -1,20 +1,16 @@
-"use client";
+'use client';
 
-import { useEffect, useState } from "react";
-import { useSearchParams } from "next/navigation";
+import { useEffect, useState } from 'react';
+import { useSearchParams } from 'next/navigation';
 
-
-import type {
-    PaymentStatus,
-} from "@/entities/payment/model/types";
-import {getPaymentStatusMock} from "@/entities/payment/mock/get-payment-status-mock";
+import type { PaymentStatus } from '@/entities/payment/model/types';
+import { getPaymentStatusMock } from '@/entities/payment/mock/get-payment-status-mock';
 
 export default function PaymentSuccessPage() {
     const searchParams = useSearchParams();
-    const paymentId = searchParams.get("paymentId");
+    const paymentId = searchParams.get('paymentId');
 
-    const [status, setStatus] =
-        useState<PaymentStatus>("pending");
+    const [status, setStatus] = useState<PaymentStatus>('pending');
 
     useEffect(() => {
         if (!paymentId) {
@@ -26,11 +22,11 @@ export default function PaymentSuccessPage() {
         });
     }, [paymentId]);
 
-    if (status === "pending") {
+    if (status === 'pending') {
         return <div>Проверяем оплату...</div>;
     }
 
-    if (status === "paid") {
+    if (status === 'paid') {
         return <div>Оплата прошла успешно</div>;
     }
 

@@ -1,16 +1,11 @@
-import type {
-    BookingRequestDecision,
-    BookingRequestItem,
-    BookingRequestRecord,
-} from '../../model/types';
+import type { AdminBookingRequestRecord, BookingRequestItem } from '../../model/types';
 
 import './AdminBookingRequestCard.scss';
 
 type AdminBookingRequestCardProps = {
-    request: BookingRequestRecord;
+    request: AdminBookingRequestRecord;
     isUpdating?: boolean;
-
-    onChangeStatus: (requestId: string, status: BookingRequestDecision) => void;
+    onCancel: (requestId: string) => void;
 };
 
 function formatDate(dateValue: string) {
@@ -25,7 +20,6 @@ function formatDate(dateValue: string) {
 
 function formatDuration(durationMinutes: number) {
     const hours = Math.floor(durationMinutes / 60);
-
     const minutes = durationMinutes % 60;
 
     if (hours && minutes) {
@@ -54,20 +48,12 @@ function formatPrice(price: number) {
     return `${price.toLocaleString('ru-RU')} ₽`;
 }
 
-function getStatusText(status: BookingRequestRecord['status']) {
-    if (status === 'approved') {
-        return 'Одобрено';
+function getStatusText(status: AdminBookingRequestRecord['status']) {
+    if (status === 'active') {
+        return 'Оплачено';
     }
 
-    if (status === 'rejected') {
-        return 'Отклонено';
-    }
-
-    if (status === 'cancelled') {
-        return 'Отменено';
-    }
-
-    return 'Ожидает решения';
+    return 'Отменено';
 }
 
 function BookingItemFields({
@@ -135,11 +121,9 @@ function BookingItemFields({
 export function AdminBookingRequestCard({
     request,
     isUpdating = false,
-    onChangeStatus,
+    onCancel,
 }: AdminBookingRequestCardProps) {
-    const isPending = request.status === 'pending';
-
-    const canCancel = request.status === 'approved';
+    const canCancel = request.status === 'active';
 
     const phoneHref = `tel:${request.customer.phone.replace(/[^\d+]/g, '')}`;
 
@@ -192,48 +176,24 @@ export function AdminBookingRequestCard({
             </div>
 
             <div className="admin-booking-request-card__actions">
-                {isPending ? (
-                    <>
-                        <button
-                            className="admin-booking-request-card__action admin-booking-request-card__action--approve"
-                            type="button"
-                            disabled={isUpdating}
-                            onClick={() => onChangeStatus(request.id, 'approved')}
-                        >
-                            {isUpdating ? 'Обработка...' : 'Одобрить'}
-                        </button>
+                <span
+                    className={[
+                        'admin-booking-request-card__status',
+                        `admin-booking-request-card__status--${request.status}`,
+                    ].join(' ')}
+                >
+                    {getStatusText(request.status)}
+                </span>
 
-                        <button
-                            className="admin-booking-request-card__action admin-booking-request-card__action--reject"
-                            type="button"
-                            disabled={isUpdating}
-                            onClick={() => onChangeStatus(request.id, 'rejected')}
-                        >
-                            Отклонить
-                        </button>
-                    </>
-                ) : (
-                    <>
-                        <span
-                            className={[
-                                'admin-booking-request-card__status',
-                                `admin-booking-request-card__status--${request.status}`,
-                            ].join(' ')}
-                        >
-                            {getStatusText(request.status)}
-                        </span>
-
-                        {canCancel && (
-                            <button
-                                className="admin-booking-request-card__action admin-booking-request-card__action--cancel"
-                                type="button"
-                                disabled={isUpdating}
-                                onClick={() => onChangeStatus(request.id, 'cancelled')}
-                            >
-                                {isUpdating ? 'Обработка...' : 'Отменить'}
-                            </button>
-                        )}
-                    </>
+                {canCancel && (
+                    <button
+                        className="admin-booking-request-card__action admin-booking-request-card__action--cancel"
+                        type="button"
+                        disabled={isUpdating}
+                        onClick={() => onCancel(request.id)}
+                    >
+                        {isUpdating ? 'Обработка...' : 'Отменить'}
+                    </button>
                 )}
             </div>
         </article>

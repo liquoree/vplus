@@ -5,10 +5,9 @@ import { useMemo, useState } from 'react';
 import {
     AdminBookingRequestCard,
     AdminRequestDecisionModal,
-    updateBookingRequestStatus,
+    cancelBookingRequest,
 } from '@/entities/booking';
-
-import type { AdminBookingRequestRecord, BookingRequestDecision } from '@/entities/booking';
+import type { AdminBookingRequestRecord } from '@/entities/booking';
 
 import './AdminRequestsPage.scss';
 
@@ -16,94 +15,75 @@ type AdminRequestsPageProps = {
     initialRequests: AdminBookingRequestRecord[];
 };
 
-type PendingDecision = {
-    request: AdminBookingRequestRecord;
-    decision: BookingRequestDecision;
-};
-
 function sortByCreatedAt(first: AdminBookingRequestRecord, second: AdminBookingRequestRecord) {
     return new Date(second.createdAt).getTime() - new Date(first.createdAt).getTime();
 }
 
-function sortByReviewedAt(first: AdminBookingRequestRecord, second: AdminBookingRequestRecord) {
-    const firstDate = first.reviewedAt ?? first.createdAt;
+function sortByCancelledAt(first: AdminBookingRequestRecord, second: AdminBookingRequestRecord) {
+    const firstDate = first.cancelledAt ?? first.createdAt;
 
-    const secondDate = second.reviewedAt ?? second.createdAt;
+    const secondDate = second.cancelledAt ?? second.createdAt;
 
     return new Date(secondDate).getTime() - new Date(firstDate).getTime();
-}
-
-function canApplyDecision(request: AdminBookingRequestRecord, decision: BookingRequestDecision) {
-    if (request.status === 'pending') {
-        return decision === 'approved' || decision === 'rejected';
-    }
-
-    if (request.status === 'approved') {
-        return decision === 'cancelled';
-    }
-
-    return false;
 }
 
 export function AdminRequestsPage({ initialRequests }: AdminRequestsPageProps) {
     const [requests, setRequests] = useState<AdminBookingRequestRecord[]>(initialRequests);
 
-    const [pendingDecision, setPendingDecision] = useState<PendingDecision | null>(null);
+    const [pendingCancellation, setPendingCancellation] =
+        useState<AdminBookingRequestRecord | null>(null);
 
     const [updatingRequestId, setUpdatingRequestId] = useState<string | null>(null);
 
     const [error, setError] = useState('');
 
-    const pendingRequests = useMemo(
-        () => requests.filter((request) => request.status === 'pending').sort(sortByCreatedAt),
+    const activeRequests = useMemo(
+        () => requests.filter((request) => request.status === 'active').sort(sortByCreatedAt),
         [requests],
     );
 
-    const processedRequests = useMemo(
-        () => requests.filter((request) => request.status !== 'pending').sort(sortByReviewedAt),
+    const cancelledRequests = useMemo(
+        () => requests.filter((request) => request.status === 'cancelled').sort(sortByCancelledAt),
         [requests],
     );
 
-    const handleRequestDecision = (requestId: string, decision: BookingRequestDecision) => {
+    const handleRequestCancel = (requestId: string) => {
         const request = requests.find((currentRequest) => currentRequest.id === requestId);
 
-        if (!request || !canApplyDecision(request, decision)) {
+        if (!request || request.status !== 'active') {
             return;
         }
 
         setError('');
-
-        setPendingDecision({
-            request,
-            decision,
-        });
+        setPendingCancellation(request);
     };
 
-    const closeDecisionModal = () => {
+    const closeCancelModal = () => {
         if (updatingRequestId) {
             return;
         }
 
-        setPendingDecision(null);
+        setPendingCancellation(null);
     };
 
-    const confirmDecision = async () => {
-        if (!pendingDecision || updatingRequestId) {
+    const confirmCancellation = async () => {
+        if (!pendingCancellation || updatingRequestId) {
             return;
         }
 
-        const { request, decision } = pendingDecision;
-
         setError('');
-        setUpdatingRequestId(request.id);
+        setUpdatingRequestId(pendingCancellation.id);
 
         try {
-            const result = await updateBookingRequestStatus(request.id, decision, request.version);
+            const result = await cancelBookingRequest(
+                pendingCancellation.id,
+                pendingCancellation.version,
+            );
 
             const updatedRequest = result.request;
 
             if (!result.success || !updatedRequest) {
-                setError(result.message ?? 'Не удалось изменить статус заявки');
+                setError(result.message ?? 'Не удалось отменить заявку и оформить возврат');
 
                 return;
             }
@@ -114,9 +94,9 @@ export function AdminRequestsPage({ initialRequests }: AdminRequestsPageProps) {
                 ),
             );
 
-            setPendingDecision(null);
+            setPendingCancellation(null);
         } catch {
-            setError('Не удалось изменить статус заявки');
+            setError('Не удалось отменить заявку и оформить возврат');
         } finally {
             setUpdatingRequestId(null);
         }
@@ -133,58 +113,55 @@ export function AdminRequestsPage({ initialRequests }: AdminRequestsPageProps) {
 
                 <section className="admin-requests-page__section">
                     <h2 className="admin-requests-page__title">
-                        Непросмотренные
-                        <span>{pendingRequests.length}</span>
+                        Оплаченные заявки
+                        <span>{activeRequests.length}</span>
                     </h2>
 
-                    {pendingRequests.length > 0 ? (
+                    {activeRequests.length > 0 ? (
                         <div className="admin-requests-page__list">
-                            {pendingRequests.map((request) => (
+                            {activeRequests.map((request) => (
                                 <AdminBookingRequestCard
                                     request={request}
                                     isUpdating={updatingRequestId === request.id}
-                                    onChangeStatus={handleRequestDecision}
+                                    onCancel={handleRequestCancel}
                                     key={request.id}
                                 />
                             ))}
                         </div>
                     ) : (
-                        <div className="admin-requests-page__empty">Новых заявок пока нет</div>
+                        <div className="admin-requests-page__empty">Оплаченных заявок пока нет</div>
                     )}
                 </section>
 
                 <section className="admin-requests-page__section">
                     <h2 className="admin-requests-page__title">
-                        Просмотренные
-                        <span>{processedRequests.length}</span>
+                        Отменённые
+                        <span>{cancelledRequests.length}</span>
                     </h2>
 
-                    {processedRequests.length > 0 ? (
+                    {cancelledRequests.length > 0 ? (
                         <div className="admin-requests-page__list">
-                            {processedRequests.map((request) => (
+                            {cancelledRequests.map((request) => (
                                 <AdminBookingRequestCard
                                     request={request}
-                                    isUpdating={updatingRequestId === request.id}
-                                    onChangeStatus={handleRequestDecision}
+                                    isUpdating={false}
+                                    onCancel={handleRequestCancel}
                                     key={request.id}
                                 />
                             ))}
                         </div>
                     ) : (
-                        <div className="admin-requests-page__empty">
-                            Обработанных заявок пока нет
-                        </div>
+                        <div className="admin-requests-page__empty">Отменённых заявок пока нет</div>
                     )}
                 </section>
             </div>
 
-            {pendingDecision && (
+            {pendingCancellation && (
                 <AdminRequestDecisionModal
-                    request={pendingDecision.request}
-                    decision={pendingDecision.decision}
-                    isSubmitting={updatingRequestId === pendingDecision.request.id}
-                    onConfirm={confirmDecision}
-                    onClose={closeDecisionModal}
+                    request={pendingCancellation}
+                    isSubmitting={updatingRequestId === pendingCancellation.id}
+                    onConfirm={confirmCancellation}
+                    onClose={closeCancelModal}
                 />
             )}
         </>

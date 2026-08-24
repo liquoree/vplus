@@ -1,13 +1,14 @@
 export type {
-    BookingRequestPayload,
-    BookingRequestItem,
-    BookingCustomer,
-    BookingRequestRecord,
     AdminBookingRequestRecord,
-    BookingRequestStatus,
+    BookingCancelResult,
+    BookingCustomer,
     BookingRequestDecision,
-    BookingSubmitResult,
+    BookingRequestItem,
+    BookingRequestPayload,
+    BookingRequestRecord,
+    BookingRequestStatus,
     BookingRequestStatusUpdateResult,
+    BookingSubmitResult,
 } from './model/types';
 
 export type {
@@ -16,11 +17,8 @@ export type {
     BookingTimeSlot,
 } from './model/availability-types';
 
-export { submitBookingRequest } from './api/submit-booking-request';
-
+export { cancelBookingRequest } from './api/cancel-booking-request';
 export { getBookingAvailability } from './api/get-booking-availability';
-
-export { updateBookingRequestStatus } from './api/update-booking-request-status';
 
 export { BookingModal } from './ui/booking-modal/BookingModal';
 

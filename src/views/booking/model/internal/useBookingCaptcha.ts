@@ -1,14 +1,11 @@
 import { useState } from 'react';
 
 export function useBookingCaptcha() {
-    const [captchaToken, setCaptchaToken] =
-        useState<string | null>(null);
+    const [captchaToken, setCaptchaToken] = useState<string | null>(null);
 
-    const [captchaResetKey, setCaptchaResetKey] =
-        useState(0);
+    const [captchaResetKey, setCaptchaResetKey] = useState(0);
 
-    const [captchaError, setCaptchaError] =
-        useState('');
+    const [captchaError, setCaptchaError] = useState('');
 
     const handleCaptchaSuccess = (token: string) => {
         setCaptchaToken(token);
@@ -18,9 +15,7 @@ export function useBookingCaptcha() {
     const handleCaptchaExpired = () => {
         setCaptchaToken(null);
 
-        setCaptchaError(
-            'Проверка CAPTCHA истекла. Пройдите её ещё раз',
-        );
+        setCaptchaError('Проверка CAPTCHA истекла. Пройдите её ещё раз');
     };
 
     const validate = () => {
@@ -36,9 +31,7 @@ export function useBookingCaptcha() {
     const resetCaptcha = () => {
         setCaptchaToken(null);
 
-        setCaptchaResetKey(
-            (currentKey) => currentKey + 1,
-        );
+        setCaptchaResetKey((currentKey) => currentKey + 1);
     };
 
     return {

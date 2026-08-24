@@ -3,28 +3,15 @@ import { useState } from 'react';
 import type { BookingRequestItem } from '@/entities/booking';
 
 export function useBookingModal() {
-    const [modalStatus, setModalStatus] =
-        useState<'success' | 'error' | null>(null);
+    const [modalStatus, setModalStatus] = useState<'success' | 'error' | null>(null);
 
-    const [
-        submittedTotalPrice,
-        setSubmittedTotalPrice,
-    ] = useState(0);
+    const [submittedTotalPrice, setSubmittedTotalPrice] = useState(0);
 
-    const [
-        submittedPrepaymentPrice,
-        setSubmittedPrepaymentPrice,
-    ] = useState(0);
+    const [submittedPrepaymentPrice, setSubmittedPrepaymentPrice] = useState(0);
 
-    const [
-        modalErrorMessage,
-        setModalErrorMessage,
-    ] = useState<string | null>(null);
+    const [modalErrorMessage, setModalErrorMessage] = useState<string | null>(null);
 
-    const [
-        submittedBookingItems,
-        setSubmittedBookingItems,
-    ] = useState<BookingRequestItem[]>([]);
+    const [submittedBookingItems, setSubmittedBookingItems] = useState<BookingRequestItem[]>([]);
 
     const openSuccess = (
         bookingItems: BookingRequestItem[],
@@ -33,9 +20,7 @@ export function useBookingModal() {
     ) => {
         setSubmittedBookingItems(bookingItems);
         setSubmittedTotalPrice(totalPrice);
-        setSubmittedPrepaymentPrice(
-            prepaymentPrice,
-        );
+        setSubmittedPrepaymentPrice(prepaymentPrice);
 
         setModalErrorMessage(null);
         setModalStatus('success');

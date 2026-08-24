@@ -1,10 +1,8 @@
-import { createPaymentMock } from '../mock/create-payment-mock';
+import { createPayment } from '../api/create-payment';
 import type { CreatePaymentInput } from '../model/types';
 
-export async function startPayment(
-    input: CreatePaymentInput,
-): Promise<void> {
-    const payment = await createPaymentMock(input);
+export async function startPayment(input: CreatePaymentInput): Promise<void> {
+    const payment = await createPayment(input);
 
     window.location.assign(payment.paymentUrl);
 }

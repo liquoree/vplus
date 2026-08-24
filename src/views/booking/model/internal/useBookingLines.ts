@@ -13,11 +13,7 @@ import {
 
 import { validateBookingLines } from '../../lib/booking-validation';
 
-import type {
-    BookingLine,
-    BookingLineErrors,
-    BookingPageProps,
-} from '../types';
+import type { BookingLine, BookingLineErrors, BookingPageProps } from '../types';
 
 type UseBookingLinesParams = {
     items: BookingPageProps['items'];
@@ -33,20 +29,18 @@ type UseBookingLinesParams = {
 };
 
 export function useBookingLines({
-                                    items,
-                                    bookingOptions,
+    items,
+    bookingOptions,
 
-                                    initialVehicleSlug,
-                                    initialServiceSlug,
-                                    initialPackageSlug,
+    initialVehicleSlug,
+    initialServiceSlug,
+    initialPackageSlug,
 
-                                    loadAvailability,
-                                    clearAvailability,
-                                    removeAvailability,
-                                }: UseBookingLinesParams) {
-    const [bookingLines, setBookingLines] = useState<
-        BookingLine[]
-    >(() => [
+    loadAvailability,
+    clearAvailability,
+    removeAvailability,
+}: UseBookingLinesParams) {
+    const [bookingLines, setBookingLines] = useState<BookingLine[]>(() => [
         createInitialBookingLine(items, bookingOptions, {
             initialVehicleSlug,
             initialServiceSlug,
@@ -54,13 +48,11 @@ export function useBookingLines({
         }),
     ]);
 
-    const [bookingLineErrors, setBookingLineErrors] =
-        useState<Record<string, BookingLineErrors>>({});
+    const [bookingLineErrors, setBookingLineErrors] = useState<Record<string, BookingLineErrors>>(
+        {},
+    );
 
-    const clearBookingLineErrors = (
-        lineId: string,
-        patch: Partial<BookingLine>,
-    ) => {
+    const clearBookingLineErrors = (lineId: string, patch: Partial<BookingLine>) => {
         setBookingLineErrors((currentErrors) => {
             const currentLineErrors = currentErrors[lineId];
 
@@ -100,17 +92,14 @@ export function useBookingLines({
         });
     };
 
-    const updateBookingLine = (
-        lineId: string,
-        patch: Partial<BookingLine>,
-    ) => {
+    const updateBookingLine = (lineId: string, patch: Partial<BookingLine>) => {
         setBookingLines((currentLines) =>
             currentLines.map((line) =>
                 line.id === lineId
                     ? {
-                        ...line,
-                        ...patch,
-                    }
+                          ...line,
+                          ...patch,
+                      }
                     : line,
             ),
         );
@@ -118,17 +107,12 @@ export function useBookingLines({
         clearBookingLineErrors(lineId, patch);
     };
 
-    const handleServiceChange = (
-        line: BookingLine,
-        serviceId: string,
-    ) => {
+    const handleServiceChange = (line: BookingLine, serviceId: string) => {
         if (!serviceId) {
             updateBookingLine(line.id, {
                 serviceId: '',
                 bookingOptionId: '',
-                selectionSource: line.bookableItemId
-                    ? 'bookable'
-                    : null,
+                selectionSource: line.bookableItemId ? 'bookable' : null,
                 time: '',
             });
 
@@ -137,16 +121,13 @@ export function useBookingLines({
             return;
         }
 
-        const canKeepBookableItem =
-            isBookableItemCompatibleWithService(
-                line.bookableItemId,
-                serviceId,
-                bookingOptions,
-            );
+        const canKeepBookableItem = isBookableItemCompatibleWithService(
+            line.bookableItemId,
+            serviceId,
+            bookingOptions,
+        );
 
-        const nextBookableItemId = canKeepBookableItem
-            ? line.bookableItemId
-            : '';
+        const nextBookableItemId = canKeepBookableItem ? line.bookableItemId : '';
 
         const nextSelectionSource = nextBookableItemId
             ? (line.selectionSource ?? 'service')
@@ -163,17 +144,12 @@ export function useBookingLines({
         clearAvailability(line.id);
     };
 
-    const handleBookableItemChange = (
-        line: BookingLine,
-        bookableItemId: string,
-    ) => {
+    const handleBookableItemChange = (line: BookingLine, bookableItemId: string) => {
         if (!bookableItemId) {
             updateBookingLine(line.id, {
                 bookableItemId: '',
                 bookingOptionId: '',
-                selectionSource: line.serviceId
-                    ? 'service'
-                    : null,
+                selectionSource: line.serviceId ? 'service' : null,
                 time: '',
             });
 
@@ -182,10 +158,7 @@ export function useBookingLines({
             return;
         }
 
-        const selectedItem = getCatalogItem(
-            items,
-            bookableItemId,
-        );
+        const selectedItem = getCatalogItem(items, bookableItemId);
 
         if (selectedItem?.kind === 'package') {
             updateBookingLine(line.id, {
@@ -201,16 +174,13 @@ export function useBookingLines({
             return;
         }
 
-        const canKeepService =
-            isBookableItemCompatibleWithService(
-                bookableItemId,
-                line.serviceId,
-                bookingOptions,
-            );
+        const canKeepService = isBookableItemCompatibleWithService(
+            bookableItemId,
+            line.serviceId,
+            bookingOptions,
+        );
 
-        const nextServiceId = canKeepService
-            ? line.serviceId
-            : '';
+        const nextServiceId = canKeepService ? line.serviceId : '';
 
         const nextSelectionSource = nextServiceId
             ? (line.selectionSource ?? 'bookable')
@@ -227,10 +197,7 @@ export function useBookingLines({
         clearAvailability(line.id);
     };
 
-    const handleBookingOptionChange = (
-        line: BookingLine,
-        bookingOptionId: string,
-    ) => {
+    const handleBookingOptionChange = (line: BookingLine, bookingOptionId: string) => {
         const nextLine: BookingLine = {
             ...line,
             bookingOptionId,
@@ -251,10 +218,7 @@ export function useBookingLines({
         clearAvailability(line.id);
     };
 
-    const handleDateChange = (
-        line: BookingLine,
-        date: string,
-    ) => {
+    const handleDateChange = (line: BookingLine, date: string) => {
         const nextLine: BookingLine = {
             ...line,
             date,
@@ -269,28 +233,18 @@ export function useBookingLines({
         void loadAvailability(nextLine);
     };
 
-    const handleTimeChange = (
-        lineId: string,
-        time: string,
-    ) => {
+    const handleTimeChange = (lineId: string, time: string) => {
         updateBookingLine(lineId, {
             time,
         });
     };
 
     const addBookingLine = () => {
-        setBookingLines((currentLines) => [
-            ...currentLines,
-            createEmptyBookingLine(),
-        ]);
+        setBookingLines((currentLines) => [...currentLines, createEmptyBookingLine()]);
     };
 
     const removeBookingLine = (lineId: string) => {
-        setBookingLines((currentLines) =>
-            currentLines.filter(
-                (line) => line.id !== lineId,
-            ),
-        );
+        setBookingLines((currentLines) => currentLines.filter((line) => line.id !== lineId));
 
         setBookingLineErrors((currentErrors) => {
             const nextErrors = {
@@ -306,21 +260,11 @@ export function useBookingLines({
     };
 
     const getLineServiceOptions = (line: BookingLine) => {
-        return getServiceOptions(
-            line,
-            items,
-            bookingOptions,
-        );
+        return getServiceOptions(line, items, bookingOptions);
     };
 
-    const getLineBookableOptions = (
-        line: BookingLine,
-    ) => {
-        return getBookableItemOptions(
-            line,
-            items,
-            bookingOptions,
-        );
+    const getLineBookableOptions = (line: BookingLine) => {
+        return getBookableItemOptions(line, items, bookingOptions);
     };
 
     const getLineProgramOptions = (line: BookingLine) => {
@@ -332,11 +276,7 @@ export function useBookingLines({
     };
 
     const validate = () => {
-        const errors = validateBookingLines(
-            bookingLines,
-            items,
-            bookingOptions,
-        );
+        const errors = validateBookingLines(bookingLines, items, bookingOptions);
 
         setBookingLineErrors(errors);
 

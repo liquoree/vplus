@@ -1,21 +1,9 @@
+import { createPayment } from '../api/create-payment';
 import type {
     CreatePaymentInput,
     CreatePaymentResult,
-} from "../model/types";
+} from '../model/types';
 
-export async function createPaymentMock(
-    input: CreatePaymentInput,
-): Promise<CreatePaymentResult> {
-    void input;
-
-    await new Promise((resolve) => {
-        setTimeout(resolve, 500);
-    });
-
-    const paymentId = crypto.randomUUID();
-
-    return {
-        paymentId,
-        paymentUrl: `/payment/mock?paymentId=${paymentId}`,
-    };
+export async function createPaymentMock(input: CreatePaymentInput): Promise<CreatePaymentResult> {
+    return createPayment(input);
 }
