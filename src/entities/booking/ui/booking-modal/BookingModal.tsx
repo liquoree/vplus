@@ -56,9 +56,10 @@ function getBookingItemText(item: BookingRequestItem) {
         .filter(Boolean)
         .join(' — ');
 
+    const startTime = item.time.slice(0, 5);
     const endTime = addMinutesToTime(item.time, item.durationMinutes);
 
-    return `${program}, ${formatBookingDate(item.date)}, с ${item.time} до ${endTime}`;
+    return `${program}, ${formatBookingDate(item.date)}, с ${startTime} до ${endTime}`;
 }
 
 export function BookingModal({
@@ -110,7 +111,7 @@ export function BookingModal({
                     {isSuccess ? (
                         <>
                             <p className="booking-modal__subtitle">
-                                Предоплата получена. Вы бронируете:
+                                Предоплата <b>{prepaymentPrice.toLocaleString('ru-RU')}₽</b> получена. Вы бронируете:
                             </p>
 
                             <ul className="booking-modal__list">
@@ -131,18 +132,15 @@ export function BookingModal({
 
                             <div className="booking-modal__price">
                                 <p>
-                                    Итоговая стоимость: <b>{totalPrice.toLocaleString('ru-RU')}₽</b>
-                                </p>
-
-                                <p>
-                                    Предоплата: <b>{prepaymentPrice.toLocaleString('ru-RU')}₽</b>
+                                    Общая итоговая стоимость: <b>{totalPrice.toLocaleString('ru-RU')}₽</b>
                                 </p>
                             </div>
                         </>
                     ) : (
                         <p className="booking-modal__error-text">
                             {errorMessage ??
-                                'Попробуйте отправить заявку ещё раз или свяжитесь с менеджером.'}
+                                'Попробуйте отправить заявку ещё раз или свяжитесь с нашим менеджером: +7 (911) 404-73-03.'
+                            }
                         </p>
                     )}
 

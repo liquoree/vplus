@@ -87,8 +87,6 @@ export function validateContacts(values: ContactValues) {
 
     if (!values.email.trim()) {
         errors.email = 'Введите email';
-    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(values.email)) {
-        errors.email = 'Введите корректный email';
     }
 
     if (!values.phone.trim()) {

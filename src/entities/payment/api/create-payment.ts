@@ -3,7 +3,7 @@ import { apiClient } from '@/shared/api/client';
 import type {
     CreatePaymentInput,
     CreatePaymentResult,
-} from '../../../../../Downloads/frontend_payment_admin_patch/src/entities/payment/model/types';
+} from '../model/types';
 
 type CreatePaymentRequest = {
     items: {

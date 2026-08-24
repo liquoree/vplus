@@ -49,11 +49,19 @@ export function useBookingContacts() {
         return Object.keys(errors).length === 0;
     };
 
+    const applyValidationErrors = (errors: ContactErrors) => {
+        setContactErrors((currentErrors) => ({
+            ...currentErrors,
+            ...errors,
+        }));
+    };
+
     return {
         contacts,
         contactErrors,
 
         updateContact,
         validate,
+        applyValidationErrors,
     };
 }

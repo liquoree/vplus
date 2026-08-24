@@ -27,7 +27,7 @@ export default function PaymentMockPage() {
             await completeMockPayment(paymentId, status);
 
             window.location.assign(
-                `/booking?paymentReturn=1&paymentId=${encodeURIComponent(paymentId)}`,
+                `/payment/return?paymentId=${encodeURIComponent(paymentId)}`,
             );
         } catch {
             setError('Не удалось изменить статус тестового платежа.');

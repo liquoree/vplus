@@ -1,7 +1,8 @@
+import axios from 'axios';
 import type { FormEvent } from 'react';
-import { useEffect, useMemo, useState } from 'react';
+import { useLayoutEffect, useMemo, useState } from 'react';
 
-import { getPaymentStatus, startPayment } from '@/entities/payment';
+import { startPayment } from '@/entities/payment';
 import type { PaymentStatusResult } from '@/entities/payment';
 
 import { buildBookingItems, getBookingLinePrice } from '../lib/booking-catalog';
@@ -13,39 +14,62 @@ import { useBookingContacts } from './internal/useBookingContacts';
 import { useBookingLines } from './internal/useBookingLines';
 import { useBookingModal } from './internal/useBookingModal';
 
-import type { BookingPageProps } from './types';
+import type { BookingPageProps, ContactErrors } from './types';
 
-const PAYMENT_STATUS_RETRY_COUNT = 8;
-const PAYMENT_STATUS_RETRY_DELAY_MS = 750;
+const PAYMENT_RESULT_STORAGE_KEY = 'paymentResult';
+const PAYMENT_RESULT_ERROR = '__PAYMENT_CHECK_ERROR__';
 
-function wait(milliseconds: number) {
-    return new Promise<void>((resolve) => {
-        window.setTimeout(resolve, milliseconds);
-    });
-}
+type ApiErrorResponse = {
+    error?: {
+        code?: string;
+        message?: string;
+        fields?: Record<string, string> | null;
+        requestId?: string;
+    };
+};
 
-async function waitForFinalPaymentStatus(paymentId: string): Promise<PaymentStatusResult> {
-    let payment = await getPaymentStatus(paymentId);
-
-    for (let attempt = 1; attempt < PAYMENT_STATUS_RETRY_COUNT; attempt += 1) {
-        if (payment.status !== 'pending') {
-            return payment;
-        }
-
-        await wait(PAYMENT_STATUS_RETRY_DELAY_MS);
-        payment = await getPaymentStatus(paymentId);
+function getContactValidationErrors(error: unknown): ContactErrors | null {
+    if (!axios.isAxiosError<ApiErrorResponse>(error)) {
+        return null;
     }
 
-    return payment;
+    const backendError = error.response?.data?.error;
+    const status = error.response?.status;
+
+    if (status !== 422 && backendError?.code !== 'VALIDATION_ERROR') {
+        return null;
+    }
+
+    const fields = backendError?.fields;
+
+    if (!fields) {
+        return null;
+    }
+
+    const errors: ContactErrors = {};
+
+    if (fields['customer.name']) {
+        errors.name = fields['customer.name'];
+    }
+
+    if (fields['customer.email']) {
+        errors.email = fields['customer.email'];
+    }
+
+    if (fields['customer.phone']) {
+        errors.phone = fields['customer.phone'];
+    }
+
+    return Object.keys(errors).length > 0 ? errors : null;
 }
 
 export function useBookingForm({
-    items,
-    bookingOptions,
-    initialVehicleSlug,
-    initialServiceSlug,
-    initialPackageSlug,
-}: BookingPageProps) {
+                                   items,
+                                   bookingOptions,
+                                   initialVehicleSlug,
+                                   initialServiceSlug,
+                                   initialPackageSlug,
+                               }: BookingPageProps) {
     const [isSubmitting, setIsSubmitting] = useState(false);
 
     const availability = useBookingAvailability(bookingOptions);
@@ -81,71 +105,52 @@ export function useBookingForm({
     const minDate = getTodayDateValue();
     const maxDate = getMaxBookingDateValue();
 
-    useEffect(() => {
-        const url = new URL(window.location.href);
+    useLayoutEffect(() => {
+        const storedPaymentResult = sessionStorage.getItem(PAYMENT_RESULT_STORAGE_KEY);
 
-        const isPaymentReturn = url.searchParams.get('paymentReturn') === '1';
-
-        const paymentId = url.searchParams.get('paymentId');
-
-        if (!isPaymentReturn || !paymentId) {
+        if (!storedPaymentResult) {
             return;
         }
 
-        const handlePaymentReturn = async () => {
-            let shouldClearPaymentParams = false;
+        sessionStorage.removeItem(PAYMENT_RESULT_STORAGE_KEY);
 
-            setIsSubmitting(true);
+        if (storedPaymentResult === PAYMENT_RESULT_ERROR) {
+            modal.openError(
+                'Не удалось проверить результат оплаты. Обновите страницу и попробуйте ещё раз.',
+            );
+            return;
+        }
 
-            try {
-                const payment = await waitForFinalPaymentStatus(paymentId);
+        try {
+            const payment = JSON.parse(storedPaymentResult) as PaymentStatusResult;
 
-                if (payment.status === 'paid') {
-                    modal.openSuccess(
-                        payment.booking.items,
-                        payment.booking.totalPrice,
-                        payment.booking.prepaymentPrice,
-                    );
-
-                    shouldClearPaymentParams = true;
-                    return;
-                }
-
-                if (payment.status === 'refunded') {
-                    modal.openError('Оплата возвращена. Заявка не подтверждена.');
-
-                    shouldClearPaymentParams = true;
-                    return;
-                }
-
-                if (payment.status === 'failed' || payment.status === 'canceled') {
-                    modal.openError('Оплата не завершена. Заявка не отправлена.');
-
-                    shouldClearPaymentParams = true;
-                    return;
-                }
-
-                modal.openError(
-                    'Платёж ещё обрабатывается. Обновите страницу через несколько секунд.',
+            if (payment.status === 'paid') {
+                modal.openSuccess(
+                    payment.booking.items,
+                    payment.booking.totalPrice,
+                    payment.booking.prepaymentPrice,
                 );
-            } catch {
-                modal.openError(
-                    'Не удалось проверить результат оплаты. Обновите страницу и попробуйте ещё раз.',
-                );
-            } finally {
-                setIsSubmitting(false);
-
-                if (shouldClearPaymentParams) {
-                    url.searchParams.delete('paymentReturn');
-
-                    url.searchParams.delete('paymentId');
-
-                    window.history.replaceState({}, '', `${url.pathname}${url.search}${url.hash}`);
-                }
+                return;
             }
-        };
 
-        void handlePaymentReturn();
+            if (payment.status === 'refunded') {
+                modal.openError('Оплата возвращена. Заявка не подтверждена.');
+                return;
+            }
+
+            if (payment.status === 'failed' || payment.status === 'canceled') {
+                modal.openError('Оплата не завершена. Заявка не отправлена.');
+                return;
+            }
+
+            modal.openError(
+                'Платёж ещё обрабатывается. Обновите страницу через несколько секунд.',
+            );
+        } catch {
+            modal.openError(
+                'Не удалось прочитать результат оплаты. Обновите страницу и попробуйте ещё раз.',
+            );
+        }
     }, [modal]);
 
     const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
@@ -185,7 +190,15 @@ export function useBookingForm({
 
                 captchaToken,
             });
-        } catch {
+        } catch (error) {
+            const contactValidationErrors = getContactValidationErrors(error);
+
+            if (contactValidationErrors) {
+                contacts.applyValidationErrors(contactValidationErrors);
+                setIsSubmitting(false);
+                return;
+            }
+
             modal.openError('Не удалось перейти к оплате. Попробуйте ещё раз.');
 
             setIsSubmitting(false);
