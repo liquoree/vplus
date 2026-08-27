@@ -5,7 +5,7 @@ import { apiClient } from '@/shared/api/client';
 import type {
     AdminBookingRequestRecord,
     BookingCancelResult,
-} from '../../../../../Downloads/frontend_payment_admin_patch/src/entities/booking/model/types';
+} from '../model/types';
 
 type ApiErrorResponse = {
     detail?: string;

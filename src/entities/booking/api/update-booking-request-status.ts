@@ -3,7 +3,7 @@ import { cancelBookingRequest } from './cancel-booking-request';
 import type {
     BookingRequestDecision,
     BookingRequestStatusUpdateResult,
-} from '../../../../../Downloads/frontend_payment_admin_patch/src/entities/booking/model/types';
+} from '../model/types';
 
 export async function updateBookingRequestStatus(
     bookingRequestId: string,
