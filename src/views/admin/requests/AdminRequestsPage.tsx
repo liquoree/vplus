@@ -159,9 +159,14 @@ export function AdminRequestsPage({ initialRequests }: AdminRequestsPageProps) {
             {pendingCancellation && (
                 <AdminRequestDecisionModal
                     request={pendingCancellation}
-                    isSubmitting={updatingRequestId === pendingCancellation.id}
+                    isSubmitting={
+                        updatingRequestId ===
+                        pendingCancellation.id
+                    }
                     onConfirm={confirmCancellation}
-                    onClose={closeCancelModal}
+                    onClose={() => {
+                        setPendingCancellation(null);
+                    }}
                 />
             )}
         </>
