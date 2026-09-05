@@ -14,25 +14,15 @@ export default function robots(): MetadataRoute.Robots {
             },
 
             {
-                userAgent: 'OAI-SearchBot',
+                userAgent: [
+                    'GPTBot',
+                    'OAI-SearchBot',
+                    'ClaudeBot',
+                    'Claude-SearchBot',
+                    'Claude-User',
+                ],
                 allow: '/',
                 disallow: PRIVATE_PATHS,
-            },
-
-            {
-                userAgent: ['Claude-SearchBot', 'Claude-User'],
-                allow: '/',
-                disallow: PRIVATE_PATHS,
-            },
-
-            {
-                userAgent: 'GPTBot',
-                disallow: '/',
-            },
-
-            {
-                userAgent: 'ClaudeBot',
-                disallow: '/',
             },
         ],
 
