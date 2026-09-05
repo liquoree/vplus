@@ -142,14 +142,14 @@ export function BookingContacts({
 
                 <Button
                     type="submit"
-                    text="Отправить заявку"
+                    text="Перейти к предоплате"
                     variant="hero"
                     className="booking-page__submit"
                     isLoading={isSubmitting}
                 />
 
                 <p className="booking-page__note">
-                    После одобрения заявки на указанный email придёт письмо со ссылкой на предоплату
+                    После внесения предоплаты заявка будет автоматически подтверждена.
                 </p>
             </div>
         </div>
